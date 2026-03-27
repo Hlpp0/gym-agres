@@ -1,8 +1,9 @@
 import { getElementBySlug } from '@/lib/elements'
 import { notFound } from 'next/navigation'
 
-export default function ElementPage({ params }: { params: { slug: string } }) {
-  const element = getElementBySlug(params.slug)
+export default async function ElementPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const element = getElementBySlug(slug)
 
   if (!element) return notFound()
 
@@ -16,11 +17,9 @@ export default function ElementPage({ params }: { params: { slug: string } }) {
       <h1 className="text-4xl font-bold mb-8">
         {element.frontmatter.title || element.slug}
       </h1>
-      <div className="prose prose-gray max-w-none">
-        <pre className="whitespace-pre-wrap text-sm text-gray-700">
-          {element.content}
-        </pre>
-      </div>
+      <pre className="whitespace-pre-wrap text-sm text-gray-700">
+        {element.content}
+      </pre>
     </main>
   )
 }
