@@ -4,6 +4,13 @@ import matter from 'gray-matter'
 
 const contentDir = path.join(process.cwd(), 'content/elements')
 
+function convertWikilinks(content: string): string {
+  return content.replace(/\[\[([^\]]+)\]\]/g, (_, name) => {
+    const slug = name.toLowerCase().replace(/\s+/g, '-')
+    return `[${name}](/elements/${slug})`
+  })
+}
+
 export function getAllElements() {
   const agres = fs.readdirSync(contentDir)
   const elements: any[] = []
@@ -39,7 +46,7 @@ export function getElementBySlug(slug: string) {
         const filePath = path.join(agrePath, file)
         const raw = fs.readFileSync(filePath, 'utf-8')
         const { data, content } = matter(raw)
-        return { slug, agres: agre, frontmatter: data, content }
+        return { slug, agres: agre, frontmatter: data, content: convertWikilinks(content) }
       }
     }
   }
