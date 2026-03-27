@@ -4,7 +4,6 @@ import matter from 'gray-matter'
 
 const contentDir = path.join(process.cwd(), 'content/elements')
 
-// Récupère tous les éléments de tous les agrès
 export function getAllElements() {
   const agres = fs.readdirSync(contentDir)
   const elements: any[] = []
@@ -18,7 +17,7 @@ export function getAllElements() {
       const raw = fs.readFileSync(filePath, 'utf-8')
       const { data } = matter(raw)
       elements.push({
-        slug: file.replace('.md', ''),
+        slug: file.replace('.md', '').toLowerCase(),
         agres: agre,
         ...data,
       })
@@ -28,16 +27,20 @@ export function getAllElements() {
   return elements
 }
 
-// Récupère un élément par son slug
 export function getElementBySlug(slug: string) {
   const agres = fs.readdirSync(contentDir)
 
   for (const agre of agres) {
-    const filePath = path.join(contentDir, agre, `${slug}.md`)
-    if (fs.existsSync(filePath)) {
-      const raw = fs.readFileSync(filePath, 'utf-8')
-      const { data, content } = matter(raw)
-      return { slug, agres: agre, frontmatter: data, content }
+    const agrePath = path.join(contentDir, agre)
+    const files = fs.readdirSync(agrePath).filter(f => f.endsWith('.md'))
+    
+    for (const file of files) {
+      if (file.replace('.md', '').toLowerCase() === slug.toLowerCase()) {
+        const filePath = path.join(agrePath, file)
+        const raw = fs.readFileSync(filePath, 'utf-8')
+        const { data, content } = matter(raw)
+        return { slug, agres: agre, frontmatter: data, content }
+      }
     }
   }
 
