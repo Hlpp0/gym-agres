@@ -1,5 +1,7 @@
 import { getElementBySlug } from '@/lib/elements'
 import { notFound } from 'next/navigation'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export default async function ElementPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -17,9 +19,11 @@ export default async function ElementPage({ params }: { params: Promise<{ slug: 
       <h1 className="text-4xl font-bold mb-8">
         {element.frontmatter.title || element.slug}
       </h1>
-      <pre className="whitespace-pre-wrap text-sm text-gray-700">
-        {element.content}
-      </pre>
+      <div className="prose prose-gray max-w-none">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {element.content}
+        </ReactMarkdown>
+      </div>
     </main>
   )
 }
