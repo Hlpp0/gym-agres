@@ -11,6 +11,23 @@ function convertWikilinks(content: string): string {
   })
 }
 
+function convertCallouts(content: string): string {
+  return content.replace(
+    /^>\s*\[!(note|info|warning|tip|important|danger)\]\s*(.*)$/gim,
+    (_, type, title) => {
+      const emoji: Record<string, string> = {
+        note: '📝',
+        info: 'ℹ️',
+        warning: '⚠️',
+        tip: '💡',
+        important: '❗',
+        danger: '🚨',
+      }
+      return `**${emoji[type] ?? '📝'} ${title || type.toUpperCase()}**`
+    }
+  )
+}
+
 export function getAllElements() {
   const agres = fs.readdirSync(contentDir)
   const elements: any[] = []
@@ -40,13 +57,14 @@ export function getElementBySlug(slug: string) {
   for (const agre of agres) {
     const agrePath = path.join(contentDir, agre)
     const files = fs.readdirSync(agrePath).filter(f => f.endsWith('.md'))
-    
+
     for (const file of files) {
       if (file.replace('.md', '').toLowerCase() === slug.toLowerCase()) {
         const filePath = path.join(agrePath, file)
         const raw = fs.readFileSync(filePath, 'utf-8')
         const { data, content } = matter(raw)
-        return { slug, agres: agre, frontmatter: data, content: convertWikilinks(content) }
+        const processed = convertCallouts(convertWikilinks(content))
+        return { slug, agres: agre, frontmatter: data, content: processed }
       }
     }
   }
