@@ -39,64 +39,73 @@ function convertCallouts(content: string): string {
   )
 }
 
-export function getAllElements(): Element[] {
-  const agres = fs.readdirSync(contentDir)
-  const elements: Element[] = []
-
-  for (const agre of agres) {
-    const agrePath = path.join(contentDir, agre)
-    const files = fs.readdirSync(agrePath).filter(f => f.endsWith('.md'))
-
-    for (const file of files) {
-      const filePath = path.join(agrePath, file)
-      const raw = fs.readFileSync(filePath, 'utf-8')
+function readElementsFromDir(agrePath: string, agreName: string): Element[] {
+  if (!fs.existsSync(agrePath) || !fs.statSync(agrePath).isDirectory()) return []
+  return fs
+    .readdirSync(agrePath)
+    .filter(f => f.endsWith('.md'))
+    .map(file => {
+      const raw = fs.readFileSync(path.join(agrePath, file), 'utf-8')
       const { data } = matter(raw)
-      elements.push({
+      return {
         slug: file.replace('.md', '').toLowerCase(),
-        agres: agre,
+        agres: agreName,
         ...data,
-      } as Element)
-    }
-  }
+      } as Element
+    })
+}
 
-  return elements
+export function getAllElements(): Element[] {
+  if (!fs.existsSync(contentDir)) return []
+  return fs
+    .readdirSync(contentDir)
+    .filter(entry => fs.statSync(path.join(contentDir, entry)).isDirectory())
+    .flatMap(agre => readElementsFromDir(path.join(contentDir, agre), agre))
+}
+
+export function getElementsByAgres(agresSlug: string): Element[] {
+  const normalized = agresSlug.toLowerCase()
+  return readElementsFromDir(path.join(contentDir, normalized), normalized)
+    .sort((a, b) => (a.title ?? a.slug).localeCompare(b.title ?? b.slug, 'fr'))
 }
 
 export function getRecentElements(limit = 5): Element[] {
-  const agres = fs.readdirSync(contentDir)
-  const elements: Array<Element & { mtimeMs: number }> = []
+  if (!fs.existsSync(contentDir)) return []
 
-  for (const agre of agres) {
-    const agrePath = path.join(contentDir, agre)
-    const files = fs.readdirSync(agrePath).filter(f => f.endsWith('.md'))
+  const withMtime: Array<Element & { mtimeMs: number }> = fs
+    .readdirSync(contentDir)
+    .filter(entry => fs.statSync(path.join(contentDir, entry)).isDirectory())
+    .flatMap(agre => {
+      const agrePath = path.join(contentDir, agre)
+      return fs
+        .readdirSync(agrePath)
+        .filter(f => f.endsWith('.md'))
+        .map(file => {
+          const filePath = path.join(agrePath, file)
+          const raw = fs.readFileSync(filePath, 'utf-8')
+          const { data } = matter(raw)
+          const { mtimeMs } = fs.statSync(filePath)
+          return {
+            slug: file.replace('.md', '').toLowerCase(),
+            agres: agre,
+            mtimeMs,
+            ...data,
+          } as Element & { mtimeMs: number }
+        })
+    })
 
-    for (const file of files) {
-      const filePath = path.join(agrePath, file)
-      const raw = fs.readFileSync(filePath, 'utf-8')
-      const { data } = matter(raw)
-      const { mtimeMs } = fs.statSync(filePath)
-      elements.push({
-        slug: file.replace('.md', '').toLowerCase(),
-        agres: agre,
-        mtimeMs,
-        ...data,
-      } as Element & { mtimeMs: number })
-    }
-  }
-
-  return elements
+  return withMtime
     .sort((a, b) => b.mtimeMs - a.mtimeMs)
     .slice(0, limit)
 }
 
 export function getElementBySlug(slug: string) {
-  const agres = fs.readdirSync(contentDir)
+  if (!fs.existsSync(contentDir)) return null
 
-  for (const agre of agres) {
+  for (const agre of fs.readdirSync(contentDir)) {
     const agrePath = path.join(contentDir, agre)
-    const files = fs.readdirSync(agrePath).filter(f => f.endsWith('.md'))
-
-    for (const file of files) {
+    if (!fs.statSync(agrePath).isDirectory()) continue
+    for (const file of fs.readdirSync(agrePath).filter(f => f.endsWith('.md'))) {
       if (file.replace('.md', '').toLowerCase() === slug.toLowerCase()) {
         const filePath = path.join(agrePath, file)
         const raw = fs.readFileSync(filePath, 'utf-8')

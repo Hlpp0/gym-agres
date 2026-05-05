@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { AGRES } from '@/lib/agres'
 import { getAllElements, getRecentElements } from '@/lib/elements'
 
 export const metadata: Metadata = {
@@ -7,35 +8,6 @@ export const metadata: Metadata = {
   description:
     'Fiches techniques, critères STV/FSG et ressources pédagogiques pour tous les agrès de la gymnastique artistique suisse.',
 }
-
-const AGRES = [
-  {
-    label: 'Sol',
-    slug: 'sol',
-    color: 'bg-sky-50 border-sky-100 hover:border-sky-400 hover:bg-sky-50',
-  },
-  {
-    label: 'Saut',
-    slug: 'saut',
-    color: 'bg-emerald-50 border-emerald-100 hover:border-emerald-400 hover:bg-emerald-50',
-  },
-  {
-    label: 'Anneaux',
-    slug: 'anneaux',
-    color: 'bg-purple-50 border-purple-100 hover:border-purple-400 hover:bg-purple-50',
-  },
-  {
-    label: 'Reck',
-    slug: 'reck',
-    subtitle: 'Barre fixe',
-    color: 'bg-amber-50 border-amber-100 hover:border-amber-400 hover:bg-amber-50',
-  },
-  {
-    label: 'Barres parallèles',
-    slug: 'barres-paralleles',
-    color: 'bg-rose-50 border-rose-100 hover:border-rose-400 hover:bg-rose-50',
-  },
-]
 
 export default function Home() {
   const allElements = getAllElements()
@@ -79,20 +51,18 @@ export default function Home() {
 
       {/* Choisir un engin */}
       <section className="px-6 py-16 bg-gray-50 border-b border-gray-100">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <h2 className="text-xl font-bold mb-6">Choisir un engin</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {AGRES.map((agre, i) => {
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {AGRES.map(agre => {
               const count = countByAgres[agre.slug] || 0
               return (
                 <Link
                   key={agre.slug}
                   href={`/agres/${agre.slug}`}
-                  className={`flex flex-col items-center justify-center gap-1 p-5 border rounded-2xl transition-all text-center ${agre.color} ${
-                    i === AGRES.length - 1 ? 'col-span-2 md:col-span-1' : ''
-                  }`}
+                  className={`flex flex-col items-center justify-center gap-1 p-5 border rounded-2xl transition-all text-center ${agre.color}`}
                 >
-                  <span className="font-semibold text-gray-800 leading-tight text-sm md:text-base">
+                  <span className="font-semibold text-gray-800 leading-tight text-sm">
                     {agre.label}
                   </span>
                   {agre.subtitle && (
@@ -111,7 +81,7 @@ export default function Home() {
       {/* Derniers éléments */}
       {recent.length > 0 && (
         <section className="px-6 py-16">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div className="flex items-baseline justify-between mb-6">
               <h2 className="text-xl font-bold">Derniers éléments ajoutés</h2>
               <Link
