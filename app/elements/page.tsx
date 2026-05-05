@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getAllElements } from '@/lib/elements'
+import { getAllElements, type Element } from '@/lib/elements'
 
 export default function Elements() {
   const elements = getAllElements()
@@ -8,7 +8,7 @@ export default function Elements() {
     <main className="min-h-screen p-8">
       <h1 className="text-3xl font-bold mb-8">Catalogue des éléments</h1>
       <div className="grid grid-cols-1 gap-4">
-        {elements.map((el: any) => (
+        {elements.map((el: Element) => (
           <Link key={el.slug}
             href={`/elements/${el.slug}`}
             className="block p-4 border border-gray-200 rounded-xl hover:border-gray-400 transition-all"

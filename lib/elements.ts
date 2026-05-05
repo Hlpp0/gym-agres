@@ -4,6 +4,17 @@ import matter from 'gray-matter'
 
 const contentDir = path.join(process.cwd(), 'content/elements')
 
+export interface Element {
+  slug: string
+  agres: string
+  title?: string
+  categorie?: string
+  famille?: string
+  code_est?: string
+  code_stv?: string
+  url_stv?: string
+}
+
 function convertWikilinks(content: string): string {
   return content.replace(/\[\[([^\]]+)\]\]/g, (_, name) => {
     const slug = name.toLowerCase().replace(/\s+/g, '-')
@@ -28,9 +39,9 @@ function convertCallouts(content: string): string {
   )
 }
 
-export function getAllElements() {
+export function getAllElements(): Element[] {
   const agres = fs.readdirSync(contentDir)
-  const elements: any[] = []
+  const elements: Element[] = []
 
   for (const agre of agres) {
     const agrePath = path.join(contentDir, agre)
@@ -44,11 +55,38 @@ export function getAllElements() {
         slug: file.replace('.md', '').toLowerCase(),
         agres: agre,
         ...data,
-      })
+      } as Element)
     }
   }
 
   return elements
+}
+
+export function getRecentElements(limit = 5): Element[] {
+  const agres = fs.readdirSync(contentDir)
+  const elements: Array<Element & { mtimeMs: number }> = []
+
+  for (const agre of agres) {
+    const agrePath = path.join(contentDir, agre)
+    const files = fs.readdirSync(agrePath).filter(f => f.endsWith('.md'))
+
+    for (const file of files) {
+      const filePath = path.join(agrePath, file)
+      const raw = fs.readFileSync(filePath, 'utf-8')
+      const { data } = matter(raw)
+      const { mtimeMs } = fs.statSync(filePath)
+      elements.push({
+        slug: file.replace('.md', '').toLowerCase(),
+        agres: agre,
+        mtimeMs,
+        ...data,
+      } as Element & { mtimeMs: number })
+    }
+  }
+
+  return elements
+    .sort((a, b) => b.mtimeMs - a.mtimeMs)
+    .slice(0, limit)
 }
 
 export function getElementBySlug(slug: string) {
