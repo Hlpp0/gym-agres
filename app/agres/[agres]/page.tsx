@@ -35,9 +35,9 @@ export default async function AgresPage({
   const elements = getElementsByAgres(agres)
 
   return (
-    <main className="min-h-screen px-6 py-12 max-w-4xl mx-auto">
+    <main className="min-h-screen px-6 py-14 max-w-5xl mx-auto">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-gray-400 mb-8">
+      <nav className="flex items-center gap-2 text-sm text-gray-400 mb-10">
         <Link href="/" className="hover:text-gray-700 transition-colors">
           Accueil
         </Link>
@@ -46,26 +46,30 @@ export default async function AgresPage({
       </nav>
 
       {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold mb-2">{agre.label}</h1>
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold tracking-tight mb-2">{agre.label}</h1>
         {agre.subtitle && (
           <p className="text-gray-400 text-sm mb-3">{agre.subtitle}</p>
         )}
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-400 text-sm">
           {elements.length === 0
-            ? 'Aucun élément pour cet engin pour l\'instant'
-            : `${elements.length} élément${elements.length > 1 ? 's' : ''} référencé${elements.length > 1 ? 's' : ''}`}
+            ? 'Aucun élément pour l’instant'
+            : `${elements.length} élément${elements.length > 1 ? 's' : ''} référencé${elements.length > 1 ? 's' : ''}`}
         </p>
       </div>
 
       {/* Empty state */}
       {elements.length === 0 && (
-        <div className="border border-dashed border-gray-200 rounded-2xl p-12 text-center text-gray-400">
-          <p className="text-base mb-2">Aucun élément pour cet engin pour l&apos;instant.</p>
-          <p className="text-sm">Revenez bientôt — le catalogue est en cours de construction.</p>
+        <div className="border border-dashed border-gray-200 rounded-2xl px-8 py-16 text-center">
+          <p className="text-gray-500 mb-2">
+            Aucun élément pour cet engin pour l&apos;instant.
+          </p>
+          <p className="text-sm text-gray-400 mb-8">
+            Le catalogue est en cours de construction — revenez bientôt.
+          </p>
           <Link
             href="/elements"
-            className="inline-block mt-6 text-sm text-gray-500 hover:text-gray-800 transition-colors underline underline-offset-4"
+            className="text-sm text-gray-500 hover:text-gray-900 transition-colors underline underline-offset-4"
           >
             Voir tous les éléments disponibles
           </Link>
@@ -74,27 +78,41 @@ export default async function AgresPage({
 
       {/* Elements grid */}
       {elements.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {elements.map(el => (
             <Link
               key={el.slug}
               href={`/elements/${el.slug}`}
-              className="flex flex-col gap-3 p-5 border border-gray-200 rounded-2xl hover:border-gray-400 hover:shadow-sm transition-all"
+              className="group flex flex-col gap-4 p-6 border border-gray-200 rounded-2xl hover:border-gray-400 hover:shadow-md transition-all"
             >
-              <div className="flex items-center gap-2 flex-wrap">
+              {/* Badges */}
+              <div className="flex items-center gap-2 flex-wrap min-h-[24px]">
                 {el.categorie && (
-                  <span className="text-xs font-medium px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
+                  <span className="text-xs font-medium px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full">
                     {el.categorie}
                   </span>
                 )}
                 {el.code_est && (
-                  <span className="text-xs text-gray-400">EST {el.code_est}</span>
+                  <span className="text-xs text-gray-400 font-mono">
+                    EST&nbsp;{el.code_est}
+                  </span>
                 )}
               </div>
-              <p className="font-semibold text-gray-900 leading-snug">
+
+              {/* Title */}
+              <h2 className="text-lg font-semibold text-gray-900 leading-snug">
                 {el.title || el.slug}
-              </p>
-              <p className="text-xs text-gray-400 mt-auto">Voir la fiche →</p>
+              </h2>
+
+              {/* Famille if available */}
+              {el.famille && (
+                <p className="text-sm text-gray-500 -mt-2">{el.famille}</p>
+              )}
+
+              {/* CTA */}
+              <span className="text-xs text-gray-400 mt-auto group-hover:text-gray-700 transition-colors">
+                Voir la fiche →
+              </span>
             </Link>
           ))}
         </div>
