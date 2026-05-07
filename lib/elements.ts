@@ -15,9 +15,21 @@ export interface Element {
   url_stv?: string
 }
 
+const COMBINING_MARKS = /\p{M}/gu
+
+export function normalizeSlug(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(COMBINING_MARKS, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
 function convertWikilinks(content: string): string {
   return content.replace(/\[\[([^\]]+)\]\]/g, (_, name) => {
-    const slug = name.toLowerCase().replace(/\s+/g, '-')
+    const slug = normalizeSlug(name)
     return `[${name}](/elements/${slug})`
   })
 }
@@ -48,7 +60,7 @@ function readElementsFromDir(agrePath: string, agreName: string): Element[] {
       const raw = fs.readFileSync(path.join(agrePath, file), 'utf-8')
       const { data } = matter(raw)
       return {
-        slug: file.replace('.md', '').toLowerCase(),
+        slug: normalizeSlug(file.replace('.md', '')),
         agres: agreName,
         ...data,
       } as Element
@@ -86,7 +98,7 @@ export function getRecentElements(limit = 5): Element[] {
           const { data } = matter(raw)
           const { mtimeMs } = fs.statSync(filePath)
           return {
-            slug: file.replace('.md', '').toLowerCase(),
+            slug: normalizeSlug(file.replace('.md', '')),
             agres: agre,
             mtimeMs,
             ...data,
@@ -106,7 +118,7 @@ export function getElementBySlug(slug: string) {
     const agrePath = path.join(contentDir, agre)
     if (!fs.statSync(agrePath).isDirectory()) continue
     for (const file of fs.readdirSync(agrePath).filter(f => f.endsWith('.md'))) {
-      if (file.replace('.md', '').toLowerCase() === slug.toLowerCase()) {
+      if (normalizeSlug(file.replace('.md', '')) === normalizeSlug(slug)) {
         const filePath = path.join(agrePath, file)
         const raw = fs.readFileSync(filePath, 'utf-8')
         const { data, content } = matter(raw)
