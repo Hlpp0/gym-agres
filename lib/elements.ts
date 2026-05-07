@@ -13,6 +13,7 @@ export interface Element {
   code_est?: string
   code_stv?: string
   url_stv?: string
+  video_youtube?: string
 }
 
 const COMBINING_MARKS = /\p{M}/gu

@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { getElementBySlug } from '@/lib/elements'
 import { getAgreBySlug } from '@/lib/agres'
+import VideoEmbed from '@/app/components/VideoEmbed'
 
 export async function generateMetadata({
   params,
@@ -102,6 +103,13 @@ export default async function ElementPage({
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-10">
           {element.frontmatter.title || element.slug}
         </h1>
+
+        {element.frontmatter.video_youtube && (
+          <VideoEmbed
+            value={element.frontmatter.video_youtube}
+            title={element.frontmatter.title || element.slug}
+          />
+        )}
 
         <div className="prose prose-gray max-w-none">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
