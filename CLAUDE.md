@@ -43,21 +43,24 @@ Chaque fiche a un YAML frontmatter avec : tags, engin, categorie, structure de m
 - Le symbole `--` dans un nom d'élément = tenue 2 secondes obligatoire
 
 ## Priorités V1 en cours
-- Page 404 personnalisée (en cours - tâche 5)
-- Correction slugs avec accents (en cours - tâche 5)
-- Scroll-aware header
 - Composant VideoEmbed (champ frontmatter : video_youtube)
-- Bouton Edit sur les fiches (lien GitHub)
-- Page /a-propos
 - Google AdSense (après ~10 fiches live + pages légales)
 
 ## Décisions techniques prises
 - lib/agres.ts : source de vérité unique pour les 6 engins (slug, label, couleur)
 - Slugs normalisés en minuscules sans accents dans lib/elements.ts
+  — `normalizeSlug()` : NFD decomposition + strip `\p{M}` + lowercase + tirets
+  — utilisée dans readElementsFromDir, getRecentElements, getElementBySlug, convertWikilinks
 - Nav.tsx en Client Component (usePathname pour lien actif)
+  — position fixed, scroll-aware (translateY -100% au scroll bas, réapparaît au scroll haut)
+  — layout.tsx : pt-16 sur body pour compenser la hauteur du header fixe
 - SSG (generateStaticParams) sur toutes les pages engin
 - Layout max-w-screen-xl pour respirer sur grands écrans
 - scripts/generate_skeletons.py conservé pour générer C2, C3...
+- getElementBySlug retourne filePath (chemin relatif, nom de fichier original avec accents)
+  — utilisé pour construire le lien GitHub edit sur chaque fiche
+- app/not-found.tsx : page 404 personnalisée
+- Fichier Mühlabschwung renommé en ASCII : Muehlabschwung-durchschub-stutz-dorsal.md
 
 ## Mémoire continue
 À chaque session, si une décision technique est prise, une convention est établie,
