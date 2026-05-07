@@ -50,10 +50,10 @@ export default function Home() {
       </section>
 
       {/* Choisir un engin */}
-      <section className="px-6 py-16 bg-gray-50 border-b border-gray-100">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-16 bg-gray-50 border-b border-gray-100">
+        <div className="max-w-screen-xl mx-auto px-6 md:px-10 lg:px-16">
           <h2 className="text-xl font-bold mb-6">Choisir un engin</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
             {AGRES.map(agre => {
               const count = countByAgres[agre.slug] || 0
               return (
@@ -80,8 +80,8 @@ export default function Home() {
 
       {/* Derniers éléments */}
       {recent.length > 0 && (
-        <section className="px-6 py-16">
-          <div className="max-w-5xl mx-auto">
+        <section className="py-16">
+          <div className="max-w-screen-xl mx-auto px-6 md:px-10 lg:px-16">
             <div className="flex items-baseline justify-between mb-6">
               <h2 className="text-xl font-bold">Derniers éléments ajoutés</h2>
               <Link
@@ -91,14 +91,14 @@ export default function Home() {
                 Voir tout →
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+            <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
               {recent.map(el => (
                 <Link
                   key={el.slug}
                   href={`/elements/${el.slug}`}
-                  className="snap-start shrink-0 w-52 p-5 border border-gray-200 rounded-2xl hover:border-gray-400 hover:shadow-sm transition-all"
+                  className="snap-start shrink-0 w-56 p-6 border border-gray-200 rounded-2xl hover:border-gray-400 hover:shadow-sm transition-all"
                 >
-                  <div className="flex items-center gap-1.5 mb-3 flex-wrap">
+                  <div className="flex items-center gap-1.5 mb-4 flex-wrap">
                     <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">
                       {el.agres}
                     </span>
@@ -109,10 +109,10 @@ export default function Home() {
                       </>
                     )}
                   </div>
-                  <p className="font-semibold text-gray-900 leading-snug">
+                  <p className="font-semibold text-gray-900 leading-snug mb-4">
                     {el.title || el.slug}
                   </p>
-                  <p className="text-xs text-gray-400 mt-3">Voir la fiche →</p>
+                  <p className="text-xs text-gray-400">Voir la fiche →</p>
                 </Link>
               ))}
             </div>
