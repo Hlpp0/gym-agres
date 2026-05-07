@@ -2,9 +2,29 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 
 export default function Nav() {
   const pathname = usePathname()
+  const [visible, setVisible] = useState(true)
+  const lastScrollY = useRef(0)
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY
+      if (y < 10) {
+        setVisible(true)
+      } else if (y < lastScrollY.current) {
+        setVisible(true)
+      } else {
+        setVisible(false)
+      }
+      lastScrollY.current = y
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const linkClass = (href: string) =>
     `text-sm transition-colors ${
@@ -14,7 +34,11 @@ export default function Nav() {
     }`
 
   return (
-    <nav className="flex items-center justify-between px-8 py-4 border-b border-gray-100">
+    <nav
+      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100 transition-transform duration-300 ease-in-out ${
+        visible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       <Link href="/" className="font-bold text-lg tracking-tight">
         GETUMA
       </Link>
