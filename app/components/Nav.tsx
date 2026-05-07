@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import Search from './Search'
 
 export default function Nav() {
   const pathname = usePathname()
@@ -42,13 +43,14 @@ export default function Nav() {
       <Link href="/" className="font-bold text-lg tracking-tight">
         GETUMA
       </Link>
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-5">
         <Link href="/elements" className={linkClass('/elements')}>
           Éléments
         </Link>
         <Link href="/a-propos" className={linkClass('/a-propos')}>
           À propos
         </Link>
+        <Search />
       </div>
     </nav>
   )
