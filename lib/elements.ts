@@ -119,11 +119,12 @@ export function getElementBySlug(slug: string) {
     if (!fs.statSync(agrePath).isDirectory()) continue
     for (const file of fs.readdirSync(agrePath).filter(f => f.endsWith('.md'))) {
       if (normalizeSlug(file.replace('.md', '')) === normalizeSlug(slug)) {
-        const filePath = path.join(agrePath, file)
-        const raw = fs.readFileSync(filePath, 'utf-8')
+        const absPath = path.join(agrePath, file)
+        const raw = fs.readFileSync(absPath, 'utf-8')
         const { data, content } = matter(raw)
         const processed = convertCallouts(convertWikilinks(content))
-        return { slug, agres: agre, frontmatter: data, content: processed }
+        const filePath = `content/elements/${agre}/${file}`
+        return { slug, agres: agre, filePath, frontmatter: data, content: processed }
       }
     }
   }
