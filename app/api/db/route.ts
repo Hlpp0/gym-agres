@@ -1,16 +1,19 @@
-import { list, get, put, del } from "@vercel/blob";
+import { deepMerge, deleteDoc, json, listPaths, readDoc, updateDoc, writeDoc, type Doc } from "@/lib/blobdb";
+import { csrfOk, getUser, publicUser, type User } from "@/lib/auth";
 
-// API de GETUMA Coach : stockage des groupes, gymnastes, séances et réglages
-// dans un Blob store PRIVÉ (un fichier JSON par document : db/{collection}/{id}.json).
-// Accès protégé par le code club (variable CLUB_CODE), envoyé dans l'en-tête x-club-code.
+// API de GETUMA Coach : sociétés, groupes, gymnastes, séances.
+// Stockage : Blob privé, un JSON par document : db/{collection}/{id}.json.
+// Droits : l'admin voit et modifie tout. Un coach voit les sociétés de son compte (user.clubs)
+// et peut modifier les gymnastes et séances de leurs groupes. Sociétés et groupes : admin seulement.
 
 export const dynamic = "force-dynamic";
 
-const COLS = new Set(["groups", "gymnasts", "sessions", "club"]);
+const COLS = ["clubs", "groups", "gymnasts", "sessions"] as const;
+type Col = (typeof COLS)[number];
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
-const blobPath = (col: string, id: string) => `db/${col}/${id}.json`;
-type Doc = Record<string, unknown>;
-type Op = { op: "set" | "patch" | "del"; col: string; id: string; data?: Doc; qid?: string };
+const docPath = (col: string, id: string) => `db/${col}/${id}.json`;
+type Op = { op: "set" | "patch" | "del"; col: Col; id: string; data?: Doc; qid?: string };
+type All = Record<Col, Record<string, Doc>>;
 
 class HttpError extends Error {
   status: number;
@@ -20,130 +23,145 @@ class HttpError extends Error {
   }
 }
 
-function deepMerge(a: Doc | undefined, b: Doc): Doc {
-  const o: Doc = { ...(a || {}) };
-  for (const k of Object.keys(b)) {
-    const v = b[k];
-    const cur = o[k];
-    o[k] =
-      v && typeof v === "object" && !Array.isArray(v) && cur && typeof cur === "object" && !Array.isArray(cur)
-        ? deepMerge(cur as Doc, v as Doc)
-        : v;
-  }
-  return o;
-}
-
-async function readDoc(p: string): Promise<{ data: Doc; etag: string } | null> {
-  const r = await get(p, { access: "private", useCache: false });
-  if (!r || r.statusCode !== 200) return null;
-  const txt = await new Response(r.stream).text();
-  return { data: JSON.parse(txt) as Doc, etag: r.blob.etag };
-}
-
-async function writeDoc(p: string, data: Doc, etag?: string) {
-  return put(p, JSON.stringify(data), {
-    access: "private",
-    contentType: "application/json",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    ...(etag ? { ifMatch: etag } : {}),
-  });
-}
-
-async function readAll() {
-  const out: Record<string, Record<string, Doc>> = { groups: {}, gymnasts: {}, sessions: {}, club: {} };
-  const paths: string[] = [];
-  let cursor: string | undefined;
-  do {
-    const r = await list({ prefix: "db/", cursor, limit: 1000 });
-    r.blobs.forEach((b) => paths.push(b.pathname));
-    cursor = r.hasMore ? r.cursor : undefined;
-  } while (cursor);
+async function readAll(): Promise<All> {
+  const out: All = { clubs: {}, groups: {}, gymnasts: {}, sessions: {} };
+  const paths = await listPaths("db/");
   await Promise.all(
     paths.map(async (p) => {
       const m = p.match(/^db\/([a-z]+)\/(.+)\.json$/);
-      if (!m || !COLS.has(m[1])) return;
+      if (!m || !(COLS as readonly string[]).includes(m[1])) return;
       try {
         const d = await readDoc(p);
-        if (d) out[m[1]][m[2]] = d.data;
+        if (d) out[m[1] as Col][m[2]] = d.data;
       } catch (e) {
         console.error("read", p, e);
       }
     }),
   );
-  return { out, count: paths.length };
+  return out;
 }
 
-async function applyOp(op: Op) {
-  if (!COLS.has(op.col) || !ID.test(String(op.id))) throw new HttpError(400, "bad path");
-  const p = blobPath(op.col, op.id);
-  if (op.op === "del") {
-    await del(p).catch(() => {});
-    return;
+/** Première ouverture par l'admin : rattache les groupes sans société à une société par défaut. */
+async function migrate(all: All) {
+  const orphans = Object.entries(all.groups).filter(([, g]) => !g.clubId);
+  if (!orphans.length) return;
+  let clubId = Object.keys(all.clubs)[0];
+  if (!clubId) {
+    clubId = "societe";
+    all.clubs[clubId] = { name: "Ma société" };
+    await writeDoc(docPath("clubs", clubId), all.clubs[clubId]);
   }
-  if (!op.data || typeof op.data !== "object" || Array.isArray(op.data)) throw new HttpError(400, "bad data");
-  if (JSON.stringify(op.data).length > 200_000) throw new HttpError(413, "too large");
-  if (op.op === "set") {
-    await writeDoc(p, op.data);
-    return;
+  for (const [id, g] of orphans) {
+    all.groups[id] = { ...g, clubId };
+    await writeDoc(docPath("groups", id), all.groups[id]);
   }
-  if (op.op === "patch") {
-    // Lecture, fusion, écriture conditionnelle (ifMatch) : deux coachs qui modifient le même gymnaste ne s'écrasent pas.
-    for (let i = 0; i < 4; i++) {
-      const cur = await readDoc(p);
-      try {
-        await writeDoc(p, deepMerge(cur?.data, op.data), cur?.etag);
-        return;
-      } catch (e) {
-        const err = e as Error;
-        if (err.name !== "BlobPreconditionFailedError" && !/precondition/i.test(err.message || "")) throw e;
-      }
-    }
-    throw new HttpError(409, "conflict");
-  }
-  throw new HttpError(400, "bad op");
 }
 
-function authorized(req: Request) {
-  const code = process.env.CLUB_CODE;
-  return !!code && req.headers.get("x-club-code") === code;
+function scope(all: All, u: User) {
+  const isAdmin = u.role === "admin";
+  const clubIds = new Set(isAdmin ? Object.keys(all.clubs) : (u.clubs || []).filter((c) => all.clubs[c]));
+  const groupIds = new Set(Object.entries(all.groups).filter(([, g]) => clubIds.has(String(g.clubId))).map(([id]) => id));
+  return { isAdmin, clubIds, groupIds };
 }
 
-const json = (body: unknown, status = 200) =>
-  Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
+async function members(clubIds: Set<string>) {
+  const out: Record<string, string[]> = {};
+  const paths = await listPaths("users/");
+  const users = await Promise.all(paths.map(async (p) => (await readDoc(p))?.data as unknown as User | undefined));
+  for (const u of users) {
+    if (!u || u.status !== "active") continue;
+    const cl = u.role === "admin" ? [...clubIds] : (u.clubs || []).filter((c) => clubIds.has(c));
+    for (const c of cl) (out[c] = out[c] || []).push(u.name);
+  }
+  for (const c of Object.keys(out)) out[c].sort((a, b) => a.localeCompare(b, "fr"));
+  return out;
+}
 
 export async function GET(req: Request) {
-  if (!authorized(req)) return json({ error: "code" }, 401);
   try {
-    const { out, count } = await readAll();
-    if (count === 0) {
-      const group = { name: "Société", apps: ["sol"] };
-      const club = { coaches: ["Hippolyte"] };
-      await writeDoc(blobPath("groups", "societe"), group);
-      await writeDoc(blobPath("club", "settings"), club);
-      return json({ groups: { societe: group }, gymnasts: {}, sessions: {}, club: { settings: club } });
-    }
-    return json(out);
+    const u = await getUser(req);
+    if (!u) return json({ error: "auth" }, 401);
+    const all = await readAll();
+    if (u.role === "admin") await migrate(all);
+    const { clubIds, groupIds } = scope(all, u);
+    const pick = (col: Col, keep: (id: string, d: Doc) => boolean) =>
+      Object.fromEntries(Object.entries(all[col]).filter(([id, d]) => keep(id, d)));
+    return json({
+      me: publicUser(u),
+      clubs: pick("clubs", (id) => clubIds.has(id)),
+      groups: pick("groups", (id) => groupIds.has(id)),
+      gymnasts: pick("gymnasts", (_, d) => groupIds.has(String(d.groupId))),
+      sessions: pick("sessions", (_, d) => groupIds.has(String(d.groupId))),
+      members: await members(clubIds),
+    });
   } catch (e) {
     console.error(e);
     return json({ error: "server" }, 500);
   }
 }
 
+async function applyOp(op: Op, u: User, all: All) {
+  if (!(COLS as readonly string[]).includes(op.col) || !ID.test(String(op.id))) throw new HttpError(400, "bad path");
+  const { isAdmin, groupIds } = scope(all, u);
+  const p = docPath(op.col, op.id);
+  if ((op.col === "clubs" || op.col === "groups") && !isAdmin) throw new HttpError(403, "admin only");
+  if (op.col === "groups" && op.op !== "del" && op.data && "clubId" in op.data && !all.clubs[String(op.data.clubId)]) {
+    throw new HttpError(400, "unknown club");
+  }
+  if (op.col === "gymnasts" || op.col === "sessions") {
+    // Le document existant ET la nouvelle version doivent rester dans un groupe autorisé.
+    const cur = all[op.col][op.id];
+    if (cur && !groupIds.has(String(cur.groupId))) throw new HttpError(403, "forbidden");
+    if (op.op !== "del") {
+      const target = op.data && "groupId" in op.data ? String(op.data.groupId) : cur ? String(cur.groupId) : "";
+      if (!groupIds.has(target)) throw new HttpError(403, "forbidden");
+    }
+  }
+  if (op.op === "del") {
+    await deleteDoc(p);
+    delete all[op.col][op.id];
+    return;
+  }
+  if (!op.data || typeof op.data !== "object" || Array.isArray(op.data)) throw new HttpError(400, "bad data");
+  if (JSON.stringify(op.data).length > 200_000) throw new HttpError(413, "too large");
+  if (op.op === "set") {
+    await writeDoc(p, op.data);
+    all[op.col][op.id] = op.data;
+    return;
+  }
+  if (op.op === "patch") {
+    const next = await updateDoc(p, (cur) => deepMerge(cur || undefined, op.data as Doc));
+    if (next) all[op.col][op.id] = next;
+    return;
+  }
+  throw new HttpError(400, "bad op");
+}
+
 export async function POST(req: Request) {
-  if (!authorized(req)) return json({ error: "code" }, 401);
+  if (!csrfOk(req)) return json({ error: "csrf" }, 403);
   try {
+    const u = await getUser(req);
+    if (!u) return json({ error: "auth" }, 401);
     const body = (await req.json().catch(() => ({}))) as { ops?: Op[] };
     const ops = Array.isArray(body.ops) ? body.ops.slice(0, 100) : [];
+    const all = await readAll();
     const done: (string | null)[] = [];
+    const rejected: { qid: string | null; error: string }[] = [];
     for (const op of ops) {
-      await applyOp(op);
-      done.push(op.qid ?? null);
+      try {
+        await applyOp(op, u, all);
+        done.push(op.qid ?? null);
+      } catch (e) {
+        if (e instanceof HttpError && e.status < 500) {
+          // Opération refusée (droits, données invalides) : on la retire de la file pour ne pas bloquer les suivantes.
+          rejected.push({ qid: op.qid ?? null, error: e.message });
+          done.push(op.qid ?? null);
+        } else throw e;
+      }
     }
-    return json({ ok: true, done });
+    return json({ ok: true, done, rejected });
   } catch (e) {
     console.error(e);
-    const status = e instanceof HttpError ? e.status : 500;
-    return json({ error: (e as Error).message || "server" }, status);
+    return json({ error: "server" }, 500);
   }
 }
