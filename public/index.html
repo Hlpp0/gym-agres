@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>GETUMA Coach</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/favicon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="GETUMA">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+/* Minimal type Notion : fond blanc, texte gris foncé, séparateurs fins, une seule couleur d'accent pour les statuts. Layout mobile d'abord : contenu en colonne, barre d'onglets en bas. */
+:root{
+  --bg:#ffffff; --soft:#f7f7f5; --hover:#efefed; --ink:#37352f; --muted:#787774; --line:#e9e9e7;
+  --s1:#fbf3db; --s1i:#956400; --s2:#fdecc8; --s2i:#8a5a00; --s3:#dbeddb; --s3i:#2b593f; --s4:#2b593f; --s4i:#ffffff;
+  --font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#191919; --soft:#202020; --hover:#2a2a2a; --ink:#e6e6e4; --muted:#9b9a97; --line:#2f2f2f;
+  --s1:#3f3420; --s1i:#e0b85c; --s2:#4a3520; --s2i:#f0a860; --s3:#253a2c; --s3i:#8fd1a5; --s4:#4f9768; --s4i:#0f1a12; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#191919; --soft:#202020; --hover:#2a2a2a; --ink:#e6e6e4; --muted:#9b9a97; --line:#2f2f2f;
+  --s1:#3f3420; --s1i:#e0b85c; --s2:#4a3520; --s2i:#f0a860; --s3:#253a2c; --s3i:#8fd1a5; --s4:#4f9768; --s4i:#0f1a12; color-scheme:dark;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:700;text-wrap:balance}
+h1{font-size:26px;letter-spacing:-.01em}
+h2{font-size:18px}
+h3{font-size:15px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid #2383e2;outline-offset:2px;border-radius:4px}
+.wrap{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));display:grid;gap:20px}
+.head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.head .sub{color:var(--muted);font-size:14px}
+.muted{color:var(--muted)} .small{font-size:14px} .xs{font-size:12px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sec{display:grid;gap:4px}
+.sec>.label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:8px 4px 4px}
+.li{display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:6px;width:100%;text-align:left;min-height:48px}
+button.li:hover,button.li:active{background:var(--hover)}
+.li .grow{flex:1;min-width:0}
+.li .t{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.li .d{display:block;font-size:13px;color:var(--muted)}
+.chev{color:var(--muted)}
+.divide>*+*{border-top:1px solid var(--line)}
+.pillbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.pill{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;white-space:nowrap;color:var(--muted)}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn{border:1px solid var(--line);border-radius:6px;padding:8px 14px;font-size:15px;font-weight:500;min-height:40px;background:var(--bg)}
+.btn:active{background:var(--hover)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.link{border:0;color:var(--muted);padding:8px 4px}
+.btn.danger{color:#d44c47}
+.inp,.sel{border:1px solid var(--line);border-radius:6px;padding:9px 10px;background:var(--bg);min-height:42px;width:100%}
+textarea.inp{min-height:120px;resize:vertical}
+label.f{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+label.f>*{color:var(--ink);font-size:16px}
+.form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.box{background:var(--soft);border-radius:8px;padding:12px 14px;display:grid;gap:8px}
+.st{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;border-radius:6px;font-weight:600;font-size:14px;background:var(--soft);color:var(--muted)}
+.st1{background:var(--s1);color:var(--s1i)} .st2{background:var(--s2);color:var(--s2i)} .st3{background:var(--s3);color:var(--s3i)} .st4{background:var(--s4);color:var(--s4i)}
+.pick{display:flex;gap:4px;flex-shrink:0}
+.pick button{min-width:38px;height:38px;border-radius:6px;font-weight:600;font-size:14px;color:var(--muted);border:1px solid var(--line)}
+.pick button[aria-pressed="true"].p0{background:var(--hover);color:var(--ink);border-color:var(--muted)}
+.pick button[aria-pressed="true"].p1{background:var(--s1);color:var(--s1i);border-color:transparent}
+.pick button[aria-pressed="true"].p2{background:var(--s2);color:var(--s2i);border-color:transparent}
+.pick button[aria-pressed="true"].p3{background:var(--s3);color:var(--s3i);border-color:transparent}
+.pick button[aria-pressed="true"].p4{background:var(--s4);color:var(--s4i);border-color:transparent}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+.legend .st{min-width:22px;height:22px;font-size:12px}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.b3{background:var(--s3i)} .b4{background:var(--s4)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+.tabs a{flex:1;max-width:180px;text-align:center;padding:10px 4px 12px;color:var(--muted);text-decoration:none;font-size:12px;font-weight:600;display:grid;gap:2px;justify-items:center}
+.tabs a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tabs a[aria-current="page"]{color:var(--ink)}
+.back{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:15px;padding:6px 0}
+.empty{padding:28px 16px;text-align:center;color:var(--muted);background:var(--soft);border-radius:8px}
+.banner{background:var(--s1);color:var(--s1i);padding:8px 12px;border-radius:6px;font-size:14px}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;z-index:60;font-size:14px;white-space:nowrap}
+.modal{position:fixed;inset:0;background:rgba(15,15,15,.4);z-index:50;display:grid;place-items:center;padding:16px}
+.modal>section{background:var(--bg);border-radius:10px;padding:20px;width:min(400px,100%);display:grid;gap:14px;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+ol.steps{margin:0;padding-left:20px;display:grid;gap:4px}
+.tl{display:grid;gap:14px}
+.tl .slot{display:grid;grid-template-columns:56px 1fr;gap:10px}
+.tl time{font-weight:600;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font-size:12px;padding:1px 6px;border-radius:4px;background:var(--hover);color:var(--muted);margin-right:4px}
+svg.ch text{fill:var(--muted);font:11px var(--font)}
+.nm{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap" id="view"></main>
+<nav class="tabs" id="tabs" aria-label="Navigation">
+  <a href="#evaluer"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>Évaluer</a>
+  <a href="#groupes"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 19c0-3 2.5-5 5-5s5 2 5 5M11 19c0-3 2.5-5 5-5s5 2 5 5"/></svg>Groupes</a>
+  <a href="#seance"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Séance</a>
+  <a href="#gymnastes"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>Gymnastes</a>
+</nav>
+<script>
+"use strict";
+const RAW = [{"id":"e0","a":"ba","n":"Appui dorsal","c":["C1"],"est":"","stv":"60102","s":"","h":false},{"id":"e1","a":"ba","n":"Appui facial","c":["C1"],"est":"","stv":"60101","s":"","h":false},{"id":"e2","a":"ba","n":"De l'appui facial passer une jambe sous la prise à l'appui latéral à cheval","c":["C1"],"est":"","stv":"60505","s":"","h":false},{"id":"e3","a":"ba","n":"Balance couchée faciale horizontale à l'appui","c":["C1"],"est":"","stv":"60317","s":"","h":true},{"id":"e4","a":"ba","n":"Balance à la suspension écartée jusqu'au grand écart","c":["C1"],"est":"","stv":"60316","s":"","h":true},{"id":"e5","a":"ba","n":"Balance à la suspension écartée","c":["C1"],"est":"","stv":"60315","s":"","h":false},{"id":"e6","a":"ba","n":"Elancé en avant élancé en arrière et roulé en arrière à la station","c":["C1"],"est":"","stv":"60529","s":"","h":false},{"id":"e7","a":"ba","n":"Sauter à l'appui facial à la barre basse","c":["C1"],"est":"","stv":"60501","s":"","h":false},{"id":"e8","a":"ba","n":"Siège à cheval","c":["C1"],"est":"","stv":"60205","s":"","h":false},{"id":"e9","a":"ba","n":"Siège avec les jambes tendues levées","c":["C1"],"est":"","stv":"60202","s":"","h":false},{"id":"e10","a":"ba","n":"Siège transversal","c":["C1"],"est":"","stv":"60201","s":"","h":false},{"id":"e11","a":"ba","n":"Sortir jambes écartées par-dessus la barre haute","c":["C1"],"est":"","stv":"60521","s":"","h":false},{"id":"e12","a":"ba","n":"Sortir jambes groupées par-dessus la barre haute","c":["C1"],"est":"","stv":"60522","s":"","h":false},{"id":"e13","a":"ba","n":"Station accroupie une jambe levée horizontalement","c":["C1"],"est":"","stv":"60304","s":"","h":false},{"id":"e14","a":"ba","n":"Suspension mi-renversée carpée ou groupée","c":["C1"],"est":"","stv":"60305","s":"","h":false},{"id":"e15","a":"bp","n":"Bascule courue","c":["C1"],"est":"","stv":"50801","s":"","h":false},{"id":"e16","a":"bp","n":"Elancer en arrière à l'appui fléchi puis élancer en avant en suspension brachiale","c":["C1"],"est":"","stv":"50901","s":"","h":false},{"id":"e17","a":"bp","n":"Elancer en avant écarter la jambe rebondir sur les barres","c":["C1"],"est":"","stv":"50501","s":"","h":false},{"id":"e18","a":"bp","n":"Du minitrampoline saut à l'appui renversé sur les épaules","c":["C1"],"est":"","stv":"50208","s":"","h":true},{"id":"e19","a":"bp","n":"Siège à cheval derrière une main","c":["C1"],"est":"","stv":"50104","s":"","h":false},{"id":"e20","a":"bp","n":"Siège écarté derrière les prises","c":["C1"],"est":"","stv":"50102","s":"","h":false},{"id":"e21","a":"bp","n":"Siège écarté devant les prises","c":["C1"],"est":"","stv":"50103","s":"","h":false},{"id":"e22","a":"bp","n":"Siège transversal devant une main","c":["C1"],"est":"","stv":"50101","s":"","h":false},{"id":"e23","a":"bp","n":"Sortie faciale à la station transversale","c":["C1"],"est":"","stv":"50401","s":"","h":false},{"id":"e24","a":"bp","n":"Station accroupie derrière une main jambe levée horizontalement","c":["C1"],"est":"","stv":"50201","s":"","h":false},{"id":"e25","a":"reck","n":"Crocher le jarret et s'établir en avant","c":["C1"],"est":"","stv":"40201","s":"","h":false},{"id":"e26","a":"reck","n":"Elancé en suspension en arrière et saut à la station","c":["C1"],"est":"","stv":"40129","s":"","h":false},{"id":"e27","a":"reck","n":"Elan en suspension en avant","c":["C1"],"est":"","stv":"40128","s":"","h":false},{"id":"e28","a":"reck","n":"Elan circulaire en arrière par le jarret","c":["C1"],"est":"","stv":"40401","s":"","h":false},{"id":"e29","a":"reck","n":"Elan circulaire assis libre en arrière","c":["C1"],"est":"","stv":"40319","s":"","h":false},{"id":"e30","a":"reck","n":"Elan circulaire groupé en avant ou en arrière pieds sur la barre","c":["C1"],"est":"","stv":"40403","s":"","h":false},{"id":"e31","a":"reck","n":"Elan circulaire en avant ou en arrière par les talons","c":["C1"],"est":"","stv":"40402","s":"","h":false},{"id":"e32","a":"reck","n":"Du siège écarté transversal s'abaisser en arrière et bascule à l'appui dorsal","c":["C1"],"est":"","stv":"40321","s":"","h":false},{"id":"e33","a":"reck","n":"Du minitrampoline sauter à l'appui facial","c":["C1"],"est":"","stv":"40101","s":"","h":false},{"id":"e34","a":"reck","n":"Du siège écarté transversal s'abaisser en arrière en crochant le jarret","c":["C1"],"est":"","stv":"40202","s":"","h":false},{"id":"e35","a":"reck","n":"Du siège écarté transversal 1/2 tour à l'appui facial","c":["C1"],"est":"","stv":"40105","s":"","h":false},{"id":"e36","a":"reck","n":"Du siège écarté jambe tendue entre les prises s'abaisser en arrière","c":["C1"],"est":"","stv":"40203","s":"","h":false},{"id":"e37","a":"reck","n":"Tour d'appui en avant groupé","c":["C1"],"est":"","stv":"40207","s":"","h":false},{"id":"e38","a":"saut","n":"Saut en extension avec Booster","c":["C1"],"est":"C1-A","stv":"","s":"","h":false},{"id":"e39","a":"saut","n":"Saut roulé sur un tapis de chute (80 cm)","c":["C2"],"est":"C2-A","stv":"","s":"","h":false},{"id":"e40","a":"saut","n":"Salto 3/4 groupé en av. sur 120 cm","c":["C3"],"est":"C3-A","stv":"","s":"","h":false},{"id":"e41","a":"saut","n":"Salto en av. groupé","c":["C4"],"est":"C4-A","stv":"","s":"","h":false},{"id":"e43","a":"sol","n":"3–5 pas (élan dynamique), saut en extension","c":["C1"],"est":"C1-A","stv":"10501","s":"Les sauts","h":false},{"id":"e44","a":"sol","n":"De la position accroupie, s'élever jambes tendues à l'appui renversé","c":["C4","C5","C6"],"est":"C4-1","stv":"10607","s":"Les roulés","h":false},{"id":"e45","a":"sol","n":"De la position accroupie, s'élever à l'appui renversé jambes écartées","c":["C4","C5"],"est":"C4-1","stv":"10606","s":"Les roulés","h":false},{"id":"e46","a":"sol","n":"De la position accroupie, s'élever à l'appui renversé jambes fléchies","c":["C4","C5"],"est":"C4-1","stv":"10606","s":"Les roulés","h":false},{"id":"e47","a":"sol","n":"Souplesse en arrière","c":["C4","C5","C6"],"est":"C4-9","stv":"11007","s":"Les renversements en av. / en arr.","h":false},{"id":"e48","a":"sol","n":"Equerre écarté","c":["C4","C5"],"est":"C4-10","stv":"10209","s":"Les éléments de force","h":true},{"id":"e49","a":"sol","n":"Appui renversé repoussé et roulé en av. avec les bras tendus","c":["C3","C4"],"est":"C3-4 / C4-4","stv":"10117","s":"Les stations, positions et les appuis renversés","h":false},{"id":"e50","a":"sol","n":"S'établir à l'appui renv. et rouler en avant à la station","c":["C2","C3","C4"],"est":"C2-B / C3-B / C4-5","stv":"10106","s":"Les stations, positions et les appuis renversés","h":false},{"id":"e51","a":"sol","n":"S’établir à l’appui renversé, rouler en avant avec j. tendues à la station j. écartées (10106)","c":["C3","C4"],"est":"C3-B / C4-5","stv":"10106","s":"Les stations, positions et les appuis renversés","h":false},{"id":"e52","a":"sol","n":"S’établir à l’appui renversé, rouler en avant avec j. tendues à la station j. écartées (10107)","c":["C3","C4","C5"],"est":"C3-B / C4-5","stv":"10107","s":"Les stations, positions et les appuis renversés","h":false},{"id":"e53","a":"sol","n":"S'établir à l'appui renv. et retour à la station","c":["C1","C2","C4"],"est":"C1-3 / C2-B","stv":"10109","s":"Les stations, positions et les appuis renversés","h":false},{"id":"e54","a":"sol","n":"Bougie, rouler en avant à la station, bras en haut","c":["C1","B"],"est":"C1-1","stv":"10101","s":"Les stations, positions et les appuis renversés","h":true},{"id":"e55","a":"sol","n":"Appui renv. sur la tête","c":["C2","C3","C4"],"est":"C2-2 / C3-7","stv":"10103","s":"Les stations, positions et les appuis renversés","h":true},{"id":"e56","a":"sol","n":"Pas chassé (Pas chassé transv. en avant (pas rompu sautillé en av.))","c":["C1","B"],"est":"C1-6","stv":"10514","s":"Les sauts","h":false},{"id":"e57","a":"sol","n":"Grand écart transv.","c":["C1","C2","C3","C4","C5"],"est":"C1-8 / C2-8 / C3-9 / C4-8","stv":"10301","s":"Les positions assises ou sièges","h":true},{"id":"e58","a":"sol","n":"Roue","c":["C1","C2","B"],"est":"C1-4 / C2-3","stv":"10901","s":"Renversements latéraux / Les saltos latéraux","h":false},{"id":"e59","a":"sol","n":"Roue ¼ de tour","c":["C2","C3","B"],"est":"C2-4 / C3-A","stv":"10901","s":"Renversements latéraux / Les saltos latéraux","h":false},{"id":"e60","a":"sol","n":"Rondade et saut en extension","c":["C3","C4","C5"],"est":"C3-5 / C4-A","stv":"10908","s":"Renversements latéraux / Les saltos latéraux","h":false},{"id":"e61","a":"sol","n":"Roulé en arr. à la station","c":["C1","C2","C3","B"],"est":"C1-2 / C2-A / C3-1 / C4-2","stv":"10618","s":"Les roulés","h":false},{"id":"e62","a":"sol","n":"Roulé en arr. sur tremplin","c":["C1"],"est":"C1-2","stv":"","s":"Les roulés","h":false},{"id":"e63","a":"sol","n":"Roulé en arrière passant par l’appui renversé min. 80° (Streuli)","c":["C4","C5"],"est":"C4-3","stv":"10625","s":"Les roulés","h":false},{"id":"e64","a":"sol","n":"Roulé en arrière bras fléchis en passant par l'appui renversé (Streuli)","c":["C4"],"est":"C4-3","stv":"10624","s":"Les roulés","h":false},{"id":"e65","a":"sol","n":"Roulé en arr. jambes tendues","c":["C1","C2","C3","C4","B"],"est":"C1-2 / C2-A / C3-1 / C4-2","stv":"10618","s":"Les roulés","h":false},{"id":"e66","a":"sol","n":"Roulé en arr. jambes tendues sur tremplin","c":["C1"],"est":"C1-2","stv":"","s":"Les roulés","h":false},{"id":"e67","a":"sol","n":"Roulé en arr. avec j. et bras tendues à la station","c":["C4"],"est":"C4-2","stv":"10623","s":"Les roulés","h":false},{"id":"e68","a":"sol","n":"Roulé en av. à la station (10601)","c":["C3","B"],"est":"C3-2","stv":"10601","s":"Les roulés","h":false},{"id":"e69","a":"sol","n":"Roulé en av. (angle des hanches min. 90°)","c":["C1","C2"],"est":"C1-B / C2-1","stv":"","s":"Les roulés","h":false},{"id":"e70","a":"sol","n":"Roulé en av. à la station (10602)","c":["C3","B"],"est":"C3-2","stv":"10602","s":"Les roulés","h":false},{"id":"e71","a":"sol","n":"Saut de galop","c":["C2","C4"],"est":"C2-6","stv":"10521","s":"Les sauts","h":false},{"id":"e72","a":"sol","n":"Saut de galop avec 1/2 tour","c":["C4","C5"],"est":"C4-6","stv":"10522","s":"Les sauts","h":false},{"id":"e73","a":"sol","n":"De la position assise j. écartées, fléchir le torse en av.","c":["C1"],"est":"C1-7","stv":"","s":"Les positions assises ou sièges","h":true},{"id":"e74","a":"sol","n":"De la stat. debout bras en haut, j. serrées, s’établir à la stat.j.écartées, fléchir le torse en av.","c":["C1"],"est":"C1-7","stv":"","s":"Les positions assises ou sièges","h":true},{"id":"e75","a":"sol","n":"De la position assise j. serrées, fléchir le torse en av.","c":["C1"],"est":"C1-7","stv":"","s":"Les positions assises ou sièges","h":true},{"id":"e76","a":"sol","n":"Saut de ciseau","c":["C3","C4"],"est":"C3-6","stv":"10527","s":"Les sauts","h":false},{"id":"e77","a":"sol","n":"Grand écart lat.","c":["C1","C2","C3","C4","C5","C6"],"est":"C1-8 / C2-8 / C3-9 / C4-8","stv":"10303","s":"Les positions assises ou sièges","h":true},{"id":"e78","a":"sol","n":"Bal. une j. écartée de côté en haut","c":["C3","C4","C5","C6"],"est":"C3-8 / C4-7","stv":"10405","s":"Les balances","h":true},{"id":"e79","a":"sol","n":"Saut roulé en av. à la station","c":["C2","C3","C4","C5"],"est":"C2-9 / C3-3 / C4-B","stv":"10610","s":"Les roulés","h":false},{"id":"e80","a":"sol","n":"Bal. facial","c":["C2","C3","C4","C5"],"est":"C2-7 / C3-8 / C4-7","stv":"10401","s":"Les balances","h":true},{"id":"e81","a":"sol","n":"Saut en extension avec 1/2 tour","c":["C1","C2","B"],"est":"C1-5 / C2-5","stv":"10502","s":"Les sauts","h":false},{"id":"e82","a":"sol","n":"Equerre","c":["C4","C5"],"est":"C4-10","stv":"10208","s":"Les éléments de force","h":true},{"id":"e83","a":"anneaux","n":"Balancer 3x en susp. mi-renversée, ouvrir à la susp. renversée C+ (derrière, devant, derrière)","c":["C3"],"est":"C3-C","stv":"","s":"","h":false},{"id":"e84","a":"anneaux","n":"Balancés de départ (en arrière)","c":["C2","C3"],"est":"C2-A / C3-A","stv":"","s":"","h":false},{"id":"e85","a":"anneaux","n":"Balancés de départ (en avant)","c":["C2","C3"],"est":"C2-A / C3-A","stv":"","s":"","h":false},{"id":"e86","a":"anneaux","n":"De la pos. mi-renv., dislocation en arr. dans le bal. en arr.","c":["C4"],"est":"C4-4","stv":"","s":"","h":false},{"id":"e87","a":"anneaux","n":"Balancé en arrière et en avant à la suspension","c":["C1","C2"],"est":"C1-D / C1-E / C2-E","stv":"","s":"","h":false},{"id":"e88","a":"anneaux","n":"Balancé arrière en susp. mi-renversée","c":["C1","C2"],"est":"C1-B / C2-C","stv":"","s":"","h":false},{"id":"e89","a":"anneaux","n":"Bal. en arr, s'élever corps carpé, bras pliés à la suspension mi-renv. j. serrées","c":["C4"],"est":"C4-3","stv":"","s":"","h":false},{"id":"e90","a":"anneaux","n":"Bal. en arr, s'élever corps carpé, bras pliés à la suspension mi-renv. j. écartées","c":["C4"],"est":"C4-3","stv":"","s":"","h":false},{"id":"e91","a":"anneaux","n":"Bal. en arr, s'élever corps carpé, bras tendus à la suspension mi-renversée j. serrées","c":["C4"],"est":"C4-3","stv":"","s":"","h":false},{"id":"e93","a":"anneaux","n":"Bal. en arr, s'élever corps carpé, bras tendus, à la suspension mi-renversée j. écartées","c":["C4"],"est":"C4-3","stv":"","s":"","h":false},{"id":"e94","a":"anneaux","n":"Bal. en arr. et sauter à la stat.","c":["C1","C2","C3","B"],"est":"C1-F / C2-F / C3-E","stv":"20106","s":"","h":false},{"id":"e95","a":"anneaux","n":"Balancer en susp. mi-renversée, ouvrir à la susp. renversée C+ (C4-B)","c":["C4"],"est":"C4-B","stv":"","s":"","h":false},{"id":"e96","a":"anneaux","n":"Balancer en susp. mi-renversée, ouvrir à la susp. renversée C+ (C4-5)","c":["C4"],"est":"C4-5","stv":"","s":"","h":false},{"id":"e97","a":"anneaux","n":"S’établir à la susp. mi-renversée seul(e), pousser et lâcher en susp. mi-renversée","c":["C1"],"est":"C1-A","stv":"","s":"","h":false},{"id":"e98","a":"anneaux","n":"S’établir à la susp. mi-renversée seul(e), tirer et lâcher en susp. mi-renversée","c":["C1"],"est":"C1-A","stv":"","s":"","h":false},{"id":"e99","a":"anneaux","n":"Bal. en susp. mi-renv. en av. j. serrées et s'abaisser avec 1/2 tour à la susp.","c":["C4"],"est":"C4-2","stv":"","s":"","h":false},{"id":"e100","a":"anneaux","n":"Bal. en susp. mi-renv. en av. j. écartées et s'abaisser à la susp.","c":["C4"],"est":"C4-2","stv":"","s":"","h":false},{"id":"e101","a":"anneaux","n":"Bal. en susp. mi-renv. en av. j. écartées et s'abaisser avec 1/2 tour à la susp.","c":["C4"],"est":"C4-2","stv":"","s":"","h":false},{"id":"e102","a":"anneaux","n":"Bal. en susp. mi-renv. en av. j. serrées et s'abaisser à la susp.","c":["C1","C2","C3","C4"],"est":"C1-C / C2-D / C3-D / C4-2","stv":"20304","s":"Les balancés en suspension mi-renversée ou à l'appui","h":false},{"id":"e103","a":"anneaux","n":"Bal. en av. avec 1/2 tour","c":["C4"],"est":"C4-1","stv":"","s":"","h":false},{"id":"e104","a":"anneaux","n":"Bal. en av. avec 1/2 tour et sauter à la stat.","c":["C4"],"est":"C4-7","stv":"","s":"","h":false},{"id":"e105","a":"anneaux","n":"Bal. en av. et s'élever corps carpé à la susp. mi-renv. j serrées","c":["C2","C3"],"est":"C2-B / C3-B","stv":"","s":"","h":false},{"id":"e106","a":"anneaux","n":"Bal. en av. et s'élever corps tendu, à la susp. mi. renv.","c":["C4"],"est":"C4-A","stv":"","s":"","h":false},{"id":"e107","a":"anneaux","n":"Bal. en av. et salto en arr. groupé à la stat.","c":["C4"],"est":"C4-6","stv":"","s":"","h":false},{"id":"e108","a":"anneaux","n":"Bal. en av. et salto en arr. carpé à la station","c":["C4"],"est":"C4-6","stv":"","s":"","h":false},{"id":"e109","a":"anneaux","n":"Bal. en av. et salto en arr. td. à la stat.","c":["C4"],"est":"C4-6","stv":"","s":"","h":false}];
+/* Fondamentaux GETUMA (pédagogiques, hors EST) */
+const FUND = [
+  {id:"f1",a:"sol",n:"Fente avant, bras en haut",c:["Base"],est:"",stv:"",s:"Les stations, positions et les appuis renversés",h:true,base:true},
+  {id:"f2",a:"sol",n:"Appui renversé contre le mur",c:["Base"],est:"",stv:"",s:"Les stations, positions et les appuis renversés",h:true,base:true},
+  {id:"f3",a:"sol",n:"Pont depuis le dos",c:["Base"],est:"",stv:"",s:"Les renversements en av. / en arr.",h:true,base:true},
+  {id:"f4",a:"sol",n:"Gainage I (planche faciale)",c:["Base"],est:"",stv:"",s:"Les éléments de force",h:true,base:true}
+];
+const CATS=["C1","C2","C3","C4","C5","C6","C7"];
+const catIdx=c=>CATS.indexOf(c);
+const minCat=e=>{ if(e.base) return -1; const ix=e.c.map(catIdx).filter(i=>i>=0); return ix.length?Math.min(...ix):99; };
+const ALL=[...FUND,...RAW.filter(e=>e.a==="sol")];
+const BY=Object.fromEntries([...ALL,...RAW].map(e=>[e.id,e]));
+const FAM = {
+  "Les roulés":"Roulés",
+  "Les stations, positions et les appuis renversés":"Appuis renversés",
+  "Renversements latéraux / Les saltos latéraux":"Renversements latéraux",
+  "Les renversements en av. / en arr.":"Ponts et souplesses",
+  "Les sauts":"Sauts",
+  "Les positions assises ou sièges":"Souplesse",
+  "Les balances":"Balances",
+  "Les éléments de force":"Force et gainage"
+};
+const FAM_ORDER=["Roulés","Appuis renversés","Renversements latéraux","Ponts et souplesses","Sauts","Souplesse","Balances","Force et gainage"];
+const famOf=e=>FAM[e.s]||"Autres";
+const ST=[{l:"Non abordé",s:"–"},{l:"Découverte",s:"D"},{l:"Avec aide",s:"A"},{l:"Acquis",s:"✓"},{l:"Maîtrisé",s:"★"}];
+const PRE={
+  e58:["f1","e53"], e59:["e58"], e60:["e59","e43"], e53:["f2"], e50:["e53","e69"], e55:["e54"],
+  e61:["e62"], e66:["e62"], e65:["e66","e61"], e79:["e69"], e81:["e43"], e71:["e56"], e80:["f1"],
+  e47:["f3","e53"], e82:["f4"], e48:["f4"], e49:["e50"], e51:["e50"], e52:["e50"], e68:["e69"], e70:["e69"],
+  e64:["e65","e53"], e63:["e64"], e67:["e65"], e46:["e55","e53"], e45:["e46"], e44:["e45"], e72:["e71"], e76:["e71"], e78:["e80"]
+};
+const FICHES={e58:"https://claude.ai/artifact/K1rEro44RernaYjQLibGke"};
+const POSTES_EL={
+  e58:["Lapin latéral sur la ligne","Roue au-dessus d'un plinth bas, parade aux hanches","Roue sur plan incliné","Roue entre deux repères","Roue sur la ligne avec 4 marques","Roue des deux côtés"],
+  f1:["Fente tenue 3 s face au miroir","Fente + bascule du tronc vers l'avant","Fente des deux côtés"],
+  f2:["Monter dos au mur en marchant les pieds","Tenue 10 s, épaules poussées","Tenue 20 s, corps en I"],
+  f3:["Pont sur plan incliné","Pont tenu 5 s bras tendus","Pont avec bascule d'une jambe"],
+  f4:["Planche faciale 20 s","Planche latérale 15 s par côté","Hollow 20 s"]
+};
+const POSTES_FAM={
+  "Roulés":["Roulé sur plan incliné en descente","Roulé depuis la position assise, mains près des oreilles","Roulé sur tapis surélevé, parade nuque"],
+  "Appuis renversés":["Appui renversé dos au mur","Montée avec parade aux cuisses","Gainage I au sol puis à l'espalier"],
+  "Renversements latéraux":["Lapin latéral sur la ligne","Roue au-dessus d'un plinth bas","Roue sur la ligne avec repères"],
+  "Ponts et souplesses":["Pont depuis le dos","Souplesse sur gros tapis avec parade","Ouverture d'épaules à l'espalier"],
+  "Sauts":["Rythme d'appel sur ligne","Sauts sur petit trampoline, réception tenue 2 s","Rotation au sol puis en l'air"],
+  "Souplesse":["Souplesse active jambes levées","Écart sur tapis glissant, tenue 2 s","Flexion du torse dos plat"],
+  "Balances":["Tenue avec une main à l'espalier","Tenue libre 2 s","Renforcement de la jambe levée"],
+  "Force et gainage":["Équerre sur blocs","Compression assise","Hollow et planche"]
+};
+const postesFor=id=>POSTES_EL[id]||POSTES_FAM[famOf(BY[id])]||["Éducatif ciblé","Élément avec parade","Élément seul, 3 essais"];
+
+/* ---------- utilitaires ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const fmtDate=d=>{ try{ return new Date(d+"T12:00:00").toLocaleDateString("fr-CH",{day:"numeric",month:"short"}); }catch(e){ return d; } };
+const toMin=t=>{ const [h,m]=t.split(":").map(Number); return h*60+(m||0); };
+const toHM=m=>String(Math.floor(m/60)%24).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
+function toast(msg){ document.querySelectorAll(".toast").forEach(t=>t.remove()); const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2000); }
+function confirmBox(msg,label,fn){ const m=document.createElement("div"); m.className="modal"; m.innerHTML=`<section role="dialog" aria-modal="true"><p style="margin:0">${esc(msg)}</p><div class="row" style="justify-content:flex-end"><button class="btn" data-no>Annuler</button><button class="btn primary" data-yes>${esc(label)}</button></div></section>`; m.addEventListener("click",e=>{ if(e.target===m||e.target.closest("[data-no]")) m.remove(); if(e.target.closest("[data-yes]")){ m.remove(); fn(); } }); document.body.appendChild(m); }
+
+/* ---------- état ---------- */
+const S={groups:{},gymnasts:{},sessions:{},club:{coaches:[]},groupId:null,level:"base",fam:"Tous",maxSize:6,mode:"loading",canWrite:true,plan:null,showAll:false};
+try{ const p=JSON.parse(localStorage.getItem("getuma-ui2")||"{}"); Object.assign(S,{groupId:p.groupId||null,level:p.level||"base",maxSize:p.maxSize||6}); }catch(e){}
+const saveUi=()=>{ try{ localStorage.setItem("getuma-ui2",JSON.stringify({groupId:S.groupId,level:S.level,maxSize:S.maxSize})); }catch(e){} };
+
+/* ---------- stockage : cache local + file d'attente + API ---------- */
+const LS={get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }};
+let CODE=LS.get("getuma-code",""); let OUTBOX=LS.get("getuma-outbox",[]); let flushing=false; S.lastSync=LS.get("getuma-lastsync",null);
+function deepMerge(a,b){ const o={...(a||{})}; for(const k in b){ const v=b[k]; o[k]=(v&&typeof v==="object"&&!Array.isArray(v)&&o[k]&&typeof o[k]==="object"&&!Array.isArray(o[k]))?deepMerge(o[k],v):v; } return o; }
+function applyLocal(op){ if(op.col==="club"){ if(op.op==="del") S.club={coaches:[]}; else S.club=op.op==="patch"?deepMerge(S.club,op.data):op.data; return; } const c={...S[op.col]}; if(op.op==="del") delete c[op.id]; else c[op.id]=op.op==="patch"?deepMerge(c[op.id],op.data):op.data; S[op.col]=c; }
+const saveCache=()=>LS.set("getuma-cache",{groups:S.groups,gymnasts:S.gymnasts,sessions:S.sessions,club:S.club});
+function queue(op){ op.qid=uid(); applyLocal(op); OUTBOX.push(op); LS.set("getuma-outbox",OUTBOX); saveCache(); render(); flush(); }
+const store={ set:(col,id,data)=>queue({op:"set",col,id,data}), patch:(col,id,data)=>queue({op:"patch",col,id,data}), del:(col,id)=>queue({op:"del",col,id}) };
+async function api(method,body){ const r=await fetch("/api/db",{method,headers:{"x-club-code":CODE,"content-type":"application/json"},body:body?JSON.stringify(body):undefined,cache:"no-store"}); if(r.status===401){ CODE=""; LS.set("getuma-code",""); S.mode="login"; render(); throw new Error("code"); } if(!r.ok) throw new Error("http "+r.status); return r.json(); }
+async function flush(){ if(flushing||!OUTBOX.length||!CODE||!navigator.onLine) return; flushing=true; try{ const batch=OUTBOX.slice(0,40); const res=await api("POST",{ops:batch}); const done=new Set(res.done); OUTBOX=OUTBOX.filter(o=>!done.has(o.qid)); LS.set("getuma-outbox",OUTBOX); S.syncErr=false; }catch(e){ S.syncErr=true; } finally{ flushing=false; render(); if(OUTBOX.length&&!S.syncErr) flush(); } }
+async function pull(){ if(!CODE||!navigator.onLine) return; try{ await flush(); const d=await api("GET"); if(OUTBOX.length) return; S.groups=d.groups||{}; S.gymnasts=d.gymnasts||{}; S.sessions=d.sessions||{}; S.club=(d.club&&d.club.settings)||{coaches:[]}; S.lastSync=new Date().toISOString(); LS.set("getuma-lastsync",S.lastSync); S.syncErr=false; saveCache(); if(S.mode!=="login") S.mode="shared"; render(); }catch(e){ if(e.message!=="code"){ S.syncErr=true; if(S.mode==="loading") S.mode="shared"; render(); } } }
+/* ---------- logique ---------- */
+const gyms=()=>Object.entries(S.gymnasts).filter(([,g])=>g.groupId===S.groupId).map(([id,g])=>({id,...g})).sort((a,b)=>(a.name||"").localeCompare(b.name||"","fr"));
+const stOf=(g,eid)=>(g&&g.st&&g.st[eid]&&g.st[eid].s)||0;
+const inLevel=e=>S.level==="all"?true:(e.base||minCat(e)<=1);
+const elements=()=>ALL.filter(inLevel).sort((a,b)=>FAM_ORDER.indexOf(famOf(a))-FAM_ORDER.indexOf(famOf(b))||minCat(a)-minCat(b)||a.n.localeCompare(b.n,"fr"));
+const forGym=(e,g)=>e.base||e.c.includes(g.cat)||minCat(e)<catIdx(g.cat);
+function preOk(g,pid){ const s=stOf(g,pid); if(s>=3) return true; const p=BY[pid]; if(!p) return true; return s===0&&!p.base&&minCat(p)<catIdx(g.cat); }
+function needs(g){ const out=[]; for(const e of elements()){ if(!forGym(e,g)) continue; const s=stOf(g,e.id); if(s>=3) continue; const miss=(PRE[e.id]||[]).filter(p=>!preOk(g,p)); out.push({e,s,ready:!miss.length,miss}); } out.sort((a,b)=>(b.ready-a.ready)||((b.s>0)-(a.s>0))||(b.s-a.s)||(minCat(a.e)-minCat(b.e))); return out; }
+function progress(g){ const els=elements().filter(e=>forGym(e,g)); const done=els.filter(e=>stOf(g,e.id)>=3).length; return {done,total:els.length,pct:els.length?Math.round(done/els.length*100):0}; }
+function workGroups(list,max){ const b={},free=[]; for(const g of list){ const n=needs(g).filter(x=>x.ready); if(!n.length){ free.push(g); continue; } (b[n[0].e.id]=b[n[0].e.id]||[]).push(g); } const out=[]; for(const [eid,l] of Object.entries(b)) for(let i=0;i<l.length;i+=max) out.push({eid,gyms:l.slice(i,i+max)}); out.sort((a,b)=>b.gyms.length-a.gyms.length||minCat(BY[a.eid])-minCat(BY[b.eid])); if(free.length) out.push({eid:null,gyms:free}); return out; }
+function setStatus(gid,eid,s){ const d=today(); store.patch("gymnasts",gid,{st:{[eid]:{s,d}},log:{[Date.now().toString(36)+uid().slice(0,3)]:{e:eid,s,d}}}); }
+
+/* ---------- vues ---------- */
+const V=$("#view");
+const ROUTES=["evaluer","groupes","seance","gymnastes"];
+function parse(){ const h=location.hash.slice(1); const [r,id]=h.split("--"); return {r:ROUTES.includes(r)?r:"evaluer",id:id||null}; }
+const go=(r,id)=>{ location.hash=id?r+"--"+id:r; };
+const groupName=()=>esc(S.groups[S.groupId]?.name||"");
+const header=(title,sub)=>`<div style="display:grid;gap:6px"><h1>${title}</h1><div class="row sub">${Object.keys(S.groups).length>1?`<select class="sel" id="groupSel" style="width:auto;min-height:32px;padding:4px 8px;font-size:14px" aria-label="Groupe">${Object.entries(S.groups).sort((a,b)=>(a[1].name||"").localeCompare(b[1].name||"","fr")).map(([id,g])=>`<option value="${id}" ${id===S.groupId?"selected":""}>${esc(g.name)}</option>`).join("")}</select>`:""}<span>${sub||""}</span></div></div>`;
+const legend=()=>`<div class="legend">${ST.map((x,i)=>`<span><i class="st st${i}">${x.s}</i>${x.l}</span>`).join("")}</div>`;
+const pick=(gid,eid)=>{ const s=stOf(S.gymnasts[gid],eid); return `<div class="pick" role="group" aria-label="Statut">${ST.map((x,i)=>`<button class="p${i}" aria-pressed="${s===i}" data-set="${gid}|${eid}|${i}" title="${x.l}" aria-label="${x.l}">${x.s}</button>`).join("")}</div>`; };
+const noGyms=()=>`<div class="empty">Aucun gymnaste dans ce groupe.<br><br><a class="btn primary" href="#gymnastes--ajouter" style="text-decoration:none;display:inline-block">Ajouter des gymnastes</a></div>`;
+const banner=()=>(!navigator.onLine||S.syncErr)?`<div class="banner">Hors ligne : tes modifications sont gardées sur ce téléphone${OUTBOX.length?` (${OUTBOX.length} en attente)`:""} et partiront dès le retour du réseau.</div>`:"";
+
+function vEvaluer(id){
+  const list=gyms();
+  if(id&&BY[id]) return vElement(BY[id],list);
+  const els=elements(); const fams=["Tous",...FAM_ORDER.filter(f=>els.some(e=>famOf(e)===f))];
+  if(!fams.includes(S.fam)) S.fam="Tous";
+  const shown=els.filter(e=>S.fam==="Tous"||famOf(e)===S.fam);
+  const by={}; shown.forEach(e=>(by[famOf(e)]=by[famOf(e)]||[]).push(e));
+  return `${banner()}${header("Évaluer",`Sol · ${S.level==="all"?"tous les éléments":"bases"}`)}
+  <div class="pillbar" role="group" aria-label="Famille">${fams.map(f=>`<button class="pill" data-fam="${esc(f)}" aria-pressed="${f===S.fam}">${esc(f)}</button>`).join("")}</div>
+  ${list.length?"":noGyms()}
+  ${Object.entries(by).map(([f,arr])=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${arr.map(e=>{ const tgt=list.filter(g=>forGym(e,g)); const ok=tgt.filter(g=>stOf(g,e.id)>=3).length; const wip=tgt.filter(g=>{const s=stOf(g,e.id);return s===1||s===2;}).length; return `<button class="li" data-go="evaluer--${e.id}"><span class="grow"><span class="t">${esc(e.n)}</span><span class="d">${e.base?"Base GETUMA":esc(e.c.join(" · "))}${wip?` · ${wip} en cours`:""}</span></span><span class="nm small muted">${ok}/${tgt.length}</span><span class="chev">›</span></button>`; }).join("")}</div></div>`).join("")}`;
+}
+function vElement(e,list){
+  const tgt=S.showAll?list:list.filter(g=>forGym(e,g));
+  const pre=(PRE[e.id]||[]).map(p=>BY[p]).filter(Boolean);
+  return `<button class="back" data-go="evaluer">‹ Éléments</button>
+  <div class="head"><div style="flex:1"><h1 style="font-size:22px">${esc(e.n)}</h1><div class="sub">${e.base?"Base GETUMA":esc(e.c.join(" · "))}${e.est?` · EST ${esc(e.est)}`:""}${e.h?" · tenue exigée":""}</div></div></div>
+  ${legend()}
+  <div class="sec"><div class="label">Gymnastes (${tgt.length})</div>${tgt.length?`<div class="divide">${tgt.map(g=>`<div class="li"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${(PRE[e.id]||[]).some(p=>!preOk(g,p))&&stOf(g,e.id)<3?" · prérequis manquant":""}</span></span>${pick(g.id,e.id)}</div>`).join("")}</div>`:`<div class="empty">Aucun gymnaste concerné par cet élément.</div>`}
+  <button class="btn link" data-toggleall>${S.showAll?"Afficher seulement les catégories concernées":"Afficher tout le groupe"}</button></div>
+  <div class="box"><h3>Ateliers</h3><ol class="steps small">${postesFor(e.id).map(p=>`<li>${esc(p)}</li>`).join("")}</ol>${pre.length?`<div class="small muted">Prérequis : ${pre.map(p=>esc(p.n)).join(" · ")}</div>`:""}${FICHES[e.id]?`<a class="small" href="${FICHES[e.id]}" target="_blank" rel="noopener">Ouvrir la fiche complète</a>`:`<span class="xs muted">Fiche complète à venir</span>`}</div>`;
+}
+function vGroupes(){
+  const list=gyms(); const wg=workGroups(list,S.maxSize);
+  return `${banner()}${header("Groupes de travail",`${list.length} gymnastes`)}
+  ${list.length?`<div class="row small muted">Max par groupe <div class="pillbar">${[4,5,6,8].map(n=>`<button class="pill" data-max="${n}" aria-pressed="${n===S.maxSize}">${n}</button>`).join("")}</div></div>
+  <p class="small muted" style="margin:0">Chaque gymnaste va sur son besoin prioritaire : un élément pas encore acquis dont les prérequis sont validés, en commençant par ceux déjà en cours.</p>
+  ${wg.map((w,i)=>{ const e=w.eid&&BY[w.eid]; return `<div class="box"><div class="row"><span class="xs muted">Groupe ${i+1} · ${w.gyms.length}</span></div>${e?`<button class="li" style="padding:0;min-height:0" data-go="evaluer--${e.id}"><span class="grow"><span class="t">${esc(e.n)}</span></span><span class="chev">›</span></button>`:`<h3>Consolidation</h3><span class="small muted">Tout est acquis ou bloqué par un prérequis.</span>`}<div class="small">${w.gyms.map(g=>esc(g.name)).join(", ")}</div>${e?`<div class="xs muted">${postesFor(e.id).slice(0,3).map(esc).join(" · ")}</div>`:""}</div>`; }).join("")}`:noGyms()}`;
+}
+function vSeance(id){
+  const list=gyms();
+  if(id&&S.sessions[id]) return vPlan({...S.sessions[id],id},false);
+  if(id==="nouvelle"&&S.plan) return vPlan(S.plan,true);
+  const saved=Object.entries(S.sessions).filter(([,s])=>s.groupId===S.groupId).sort((a,b)=>(b[1].date+b[1].start).localeCompare(a[1].date+a[1].start));
+  const coaches=S.club.coaches||[];
+  return `${banner()}${header("Séance","")}
+  ${list.length?`<form id="planForm" class="form">
+   <label class="f" for="pDate">Date<input class="inp" type="date" id="pDate" value="${today()}"></label>
+   <label class="f" for="pStart">Début<input class="inp" type="time" id="pStart" value="18:00"></label>
+   <label class="f" for="pDur">Durée (min)<input class="inp" type="number" id="pDur" inputmode="numeric" min="30" max="240" step="5" value="90"></label>
+   <label class="f" for="pWarm">Échauffement<input class="inp" type="number" id="pWarm" inputmode="numeric" min="0" max="60" step="5" value="15"></label>
+   <label class="f" for="pCool">Retour au calme<input class="inp" type="number" id="pCool" inputmode="numeric" min="0" max="30" step="5" value="10"></label>
+   <label class="f" for="pRot">Changement d'atelier toutes les<select class="sel" id="pRot">${[0,10,15,20].map(n=>`<option value="${n}" ${n===15?"selected":""}>${n?n+" min":"jamais"}</option>`).join("")}</select></label>
+   <fieldset style="border:0;padding:0;margin:0;grid-column:1/-1"><legend class="xs muted">Coachs présents</legend><div class="pillbar">${coaches.length?coaches.map((c,i)=>`<label class="pill" for="pc-${i}"><input type="checkbox" id="pc-${i}" data-coach="${esc(c)}" checked> ${esc(c)}</label>`).join(""):`<span class="small muted">Ajoute les coachs dans Gymnastes › Réglages.</span>`}</div></fieldset>
+   <button class="btn primary" type="submit" style="grid-column:1/-1">Générer la séance</button></form>`:noGyms()}
+  <div class="sec"><div class="label">Séances enregistrées</div>${saved.length?`<div class="divide">${saved.slice(0,15).map(([sid,s])=>`<button class="li" data-go="seance--${sid}"><span class="grow"><span class="t">${fmtDate(s.date)} · ${esc(s.start)}</span><span class="d">${s.dur} min</span></span><span class="chev">›</span></button>`).join("")}</div>`:`<div class="small muted" style="padding:4px">Aucune pour l'instant.</div>`}</div>`;
+}
+function buildPlan(o){
+  const list=gyms(); const t0=toMin(o.start); const main=Math.max(10,o.dur-o.warm-o.cool);
+  const wg=workGroups(list,S.maxSize); const coaches=o.coaches;
+  const stations=wg.map((w,i)=>({eid:w.eid,names:w.gyms.map(g=>g.name),coach:coaches.length?coaches[i%coaches.length]:"",postes:w.eid?postesFor(w.eid):["Perfectionnement ou préparation physique"]}));
+  const blocks=[]; let t=t0;
+  if(o.warm){ blocks.push({t:toHM(t),dur:o.warm,title:"Échauffement",detail:"Mobilisation, poignets, gainage I / C+ / C−, appuis.",stations:[]}); t+=o.warm; }
+  blocks.push({t:toHM(t),dur:main,title:"Travail par groupes de besoin",detail:o.rot?`Chaque groupe enchaîne ses ateliers et change toutes les ${o.rot} min. Termine par l'élément complet.`:"Chaque groupe enchaîne ses ateliers et termine par l'élément complet.",stations}); t+=main;
+  if(o.cool) blocks.push({t:toHM(t),dur:o.cool,title:"Retour au calme",detail:"Souplesse active, bilan rapide.",stations:[]});
+  return {...o,groupId:S.groupId,apps:["sol"],blocks,created:new Date().toISOString()};
+}
+function vPlan(p,unsaved){
+  return `<button class="back" data-go="seance">‹ Séances</button>
+  <div class="head"><div style="flex:1"><h1 style="font-size:22px">${fmtDate(p.date)} · ${esc(p.start)}</h1><div class="sub">${p.dur} min · ${groupName()}</div></div></div>
+  <div class="row">${unsaved?`<button class="btn primary" id="savePlan">Enregistrer</button>`:""}<button class="btn" id="copyPlan">Copier le texte</button>${!unsaved?`<button class="btn link danger" data-delplan="${p.id}">Supprimer</button>`:""}</div>
+  <div class="tl">${p.blocks.map(b=>`<div class="slot"><time>${b.t}<div class="xs muted">${b.dur} min</div></time><div style="display:grid;gap:8px"><h3>${esc(b.title)}</h3>${b.detail?`<span class="small muted">${esc(b.detail)}</span>`:""}${(b.stations||[]).map((s,i)=>`<div class="box"><div class="xs muted">Groupe ${i+1}${s.coach?` · ${esc(s.coach)}`:""}</div><b>${s.eid?esc(BY[s.eid]?.n||""):"Consolidation"}</b><div class="small">${s.names.map(esc).join(", ")}</div><ol class="steps xs muted">${s.postes.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>`).join("")}</div></div>`).join("")}</div>`;
+}
+const planText=p=>{ const L=[`Séance ${p.date} ${p.start} (${p.dur} min)`]; for(const b of p.blocks){ L.push("",`${b.t} ${b.title} (${b.dur} min)`); (b.stations||[]).forEach((s,i)=>L.push(`Groupe ${i+1}${s.coach?" ("+s.coach+")":""} : ${s.eid?BY[s.eid]?.n:"Consolidation"} : ${s.names.join(", ")}`)); } return L.join("\n"); };
+
+function vGymnastes(id){
+  if(id==="ajouter") return vAjouter();
+  if(id==="reglages") return vReglages();
+  if(id&&S.gymnasts[id]) return vGym({id,...S.gymnasts[id]});
+  const list=gyms();
+  return `${banner()}${header("Gymnastes",`${list.length} au total`)}
+  <div class="row"><button class="btn primary" data-go="gymnastes--ajouter">Ajouter</button><button class="btn" data-go="gymnastes--reglages">Réglages</button></div>
+  ${list.length?`<div class="divide">${list.map(g=>{ const p=progress(g); return `<button class="li" data-go="gymnastes--${g.id}"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat} · ${p.done}/${p.total} acquis</span><span class="bar" style="margin-top:6px;max-width:220px"><i class="b3" style="width:${p.pct}%"></i></span></span><span class="chev">›</span></button>`; }).join("")}</div>`:`<div class="empty">Aucun gymnaste dans ce groupe.</div>`}`;
+}
+function vGym(g){
+  const els=elements().filter(e=>forGym(e,g)); const by={}; els.forEach(e=>(by[famOf(e)]=by[famOf(e)]||[]).push(e));
+  const n=needs(g).filter(x=>x.ready).slice(0,3); const p=progress(g);
+  return `<button class="back" data-go="gymnastes">‹ Gymnastes</button>
+  <div class="head"><div style="flex:1"><h1 style="font-size:24px">${esc(g.name)}</h1><div class="sub">${p.done}/${p.total} éléments acquis</div></div>
+   <select class="sel" data-cat="${g.id}" style="width:auto" aria-label="Catégorie">${CATS.map(c=>`<option ${c===g.cat?"selected":""}>${c}</option>`).join("")}</select></div>
+  <div class="box"><h3>À travailler</h3>${n.length?`<ol class="steps small">${n.map(x=>`<li>${esc(x.e.n)}${x.s?` <span class="tag">${ST[x.s].l}</span>`:""}</li>`).join("")}</ol>`:`<span class="small muted">Rien de prêt : tout est acquis ou des prérequis manquent.</span>`}</div>
+  ${chart(g)}
+  <label class="f" for="gNote">Note<textarea class="inp" id="gNote" data-note="${g.id}" style="min-height:70px" placeholder="Blessure, objectif, remarque">${esc(g.note||"")}</textarea></label>
+  ${legend()}
+  ${Object.entries(by).map(([f,arr])=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${arr.map(e=>`<div class="li"><span class="grow"><span class="t small" style="white-space:normal">${esc(e.n)}</span></span>${pick(g.id,e.id)}</div>`).join("")}</div></div>`).join("")}
+  <div class="row"><select class="sel" data-move="${g.id}" style="width:auto" aria-label="Changer de groupe">${Object.entries(S.groups).map(([gid,gr])=>`<option value="${gid}" ${gid===g.groupId?"selected":""}>${esc(gr.name)}</option>`).join("")}</select><button class="btn link danger" data-delgym="${g.id}">Retirer ce gymnaste</button></div>`;
+}
+function chart(g){
+  const log=Object.entries(g.log||{}).map(([k,v])=>({k,...v})).filter(l=>BY[l.e]&&BY[l.e].a==="sol").sort((a,b)=>(a.d+a.k).localeCompare(b.d+b.k));
+  if(log.length<2) return "";
+  const cur={},pts=[]; for(const l of log){ cur[l.e]=l.s; const n=Object.values(cur).filter(s=>s>=3).length; const last=pts[pts.length-1]; if(last&&last.d===l.d) last.n=n; else pts.push({d:l.d,n}); }
+  if(pts.length<2) return "";
+  const W=600,H=120,P=24,max=Math.max(3,...pts.map(p=>p.n)); const x=i=>P+i*(W-2*P)/(pts.length-1), y=v=>H-P-(v/max)*(H-2*P);
+  const line=pts.map((p,i)=>`${i?"L":"M"}${x(i).toFixed(1)},${y(p.n).toFixed(1)}`).join(" ");
+  return `<div class="sec"><div class="label">Éléments acquis dans le temps</div><svg class="ch" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Progression"><line x1="${P}" x2="${W-P}" y1="${H-P}" y2="${H-P}" stroke="var(--line)"/><path d="${line} L${x(pts.length-1)},${H-P} L${x(0)},${H-P} Z" fill="var(--s3)" opacity=".6"/><path d="${line}" fill="none" stroke="var(--s3i)" stroke-width="2"/><circle cx="${x(pts.length-1)}" cy="${y(pts[pts.length-1].n)}" r="4" fill="var(--s3i)"/><text x="${P}" y="${H-6}">${fmtDate(pts[0].d)}</text><text x="${W-P}" y="${H-6}" text-anchor="end">${fmtDate(pts[pts.length-1].d)} · ${pts[pts.length-1].n}</text></svg></div>`;
+}
+function vAjouter(){
+  return `<button class="back" data-go="gymnastes">‹ Gymnastes</button><h1 style="font-size:22px">Ajouter des gymnastes</h1>
+  <form id="bulkForm" style="display:grid;gap:12px"><label class="f" for="bulkIn">Un nom par ligne (prénom et initiale suffisent)<textarea class="inp" id="bulkIn" placeholder="Léa M.&#10;Noah B.&#10;Zoé R."></textarea></label>
+  <label class="f" for="bulkCat">Catégorie<select class="sel" id="bulkCat">${CATS.map(c=>`<option>${c}</option>`).join("")}</select></label>
+  <button class="btn primary">Ajouter à ${groupName()}</button></form><p class="xs muted">Données de mineurs : garde le minimum. Seules les personnes à qui tu partages la page en Contributeur voient les données.</p>`;
+}
+function vReglages(){
+  const g=S.groups[S.groupId];
+  return `<button class="back" data-go="gymnastes">‹ Gymnastes</button><h1 style="font-size:22px">Réglages</h1>
+  <div class="sec"><div class="label">Éléments affichés</div><div class="pillbar"><button class="pill" data-level="base" aria-pressed="${S.level==="base"}">Bases du sol (C1, C2)</button><button class="pill" data-level="all" aria-pressed="${S.level==="all"}">Tout le sol</button></div></div>
+  ${g?`<div class="sec"><div class="label">Groupe</div><label class="f" for="gName">Nom<input class="inp" id="gName" value="${esc(g.name)}"></label></div>`:""}
+  <div class="row"><button class="btn" id="newGroup">Nouveau groupe</button>${g?`<button class="btn link danger" id="delGroup">Supprimer ce groupe</button>`:""}</div>
+  <div class="sec"><div class="label">Coachs</div><div class="divide">${(S.club.coaches||[]).map((c,i)=>`<div class="li"><span class="grow">${esc(c)}</span><button class="btn link" data-delcoach="${i}">Retirer</button></div>`).join("")}</div>
+  <form id="coachForm" class="row" style="flex-wrap:nowrap"><input class="inp" id="coachIn" placeholder="Prénom du coach" aria-label="Prénom du coach"><button class="btn">Ajouter</button></form></div>
+  <div class="sec"><div class="label">Synchronisation</div><p class="small muted" style="margin:4px">${S.lastSync?`Dernière synchro : ${new Date(S.lastSync).toLocaleString("fr-CH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}`:"Pas encore synchronisé"}${OUTBOX.length?` · ${OUTBOX.length} modification(s) en attente`:""}</p><div class="row"><button class="btn" id="syncNow">Synchroniser</button><button class="btn link danger" id="logout">Se déconnecter</button></div></div>
+  <div class="sec"><div class="label">Installer sur le téléphone</div><p class="small muted" style="margin:4px">iPhone : dans Safari, Partager puis « Sur l'écran d'accueil ». Android : dans Chrome, menu ⋮ puis « Installer l'application ».</p></div>`;
+}
+
+function render(){
+  const entries=Object.entries(S.groups);
+  if(!S.groups[S.groupId]) S.groupId=(entries.find(([id])=>Object.values(S.gymnasts).some(g=>g.groupId===id))||entries[0]||[null])[0];
+  const {r,id}=parse();
+  document.querySelectorAll("#tabs a").forEach(a=>a.setAttribute("aria-current",a.getAttribute("href")==="#"+r?"page":"false"));
+  if(S.mode==="login"){ document.getElementById("tabs").hidden=true; V.innerHTML=`<h1>GETUMA Coach</h1><p class="muted">Entre le code du club pour accéder aux données de l'équipe.</p><form id="loginForm" style="display:grid;gap:12px"><label class="f" for="codeIn">Code du club<input class="inp" id="codeIn" autocomplete="off" autocapitalize="off" spellcheck="false"></label><button class="btn primary">Entrer</button></form>${S.badCode?`<p class="small" style="color:#d44c47">Code incorrect.</p>`:""}`; return; }
+  document.getElementById("tabs").hidden=false;
+  if(S.mode==="loading"){ V.innerHTML=`<div class="empty">Chargement…</div>`; return; }
+  if(!entries.length){ V.innerHTML=`${banner()}<h1>GETUMA Coach</h1><div class="empty">Commence par créer ton groupe.<br><br><button class="btn primary" id="newGroup">Créer un groupe</button></div>`; return; }
+  const ae=document.activeElement, aid=ae&&ae.id, sy=window.scrollY;
+  if(aid==="gNote"||aid==="bulkIn"||aid==="coachIn"||aid==="gName"||aid==="codeIn") return; /* ne pas écraser une saisie en cours */
+  V.innerHTML=({evaluer:vEvaluer,groupes:vGroupes,seance:vSeance,gymnastes:vGymnastes})[r](id);
+  window.scrollTo(0,sy);
+}
+
+/* ---------- interactions ---------- */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  if(t.dataset.set){ const [gid,eid,s]=t.dataset.set.split("|"); const cur=stOf(S.gymnasts[gid],eid); if(+s!==cur) setStatus(gid,eid,+s); return; }
+  if(t.id==="syncNow"){ pull().then(()=>toast(S.syncErr?"Pas de réseau":"Synchronisé")); return; }
+  if(t.id==="logout"){ confirmBox(OUTBOX.length?"Des modifications ne sont pas encore envoyées. Se déconnecter quand même ?":"Se déconnecter de ce téléphone ?","Se déconnecter",()=>{ CODE=""; OUTBOX=[]; ["getuma-code","getuma-outbox","getuma-cache"].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); S.groups={}; S.gymnasts={}; S.sessions={}; S.mode="login"; render(); }); return; }
+  if(t.dataset.go){ go(...t.dataset.go.split("--")); return; }
+  if(t.dataset.fam){ S.fam=t.dataset.fam; render(); return; }
+  if(t.dataset.max){ S.maxSize=+t.dataset.max; saveUi(); render(); return; }
+  if(t.dataset.level){ S.level=t.dataset.level; saveUi(); render(); return; }
+  if(t.hasAttribute("data-toggleall")){ S.showAll=!S.showAll; render(); return; }
+  if(t.id==="newGroup"){ const gid=uid(); store.set("groups",gid,{name:"Nouveau groupe",apps:["sol"]}); S.groupId=gid; saveUi(); go("gymnastes","reglages"); return; }
+  if(t.id==="delGroup"){ confirmBox("Supprimer ce groupe ? Les gymnastes restent dans la base.","Supprimer",()=>{ store.del("groups",S.groupId); S.groupId=null; go("gymnastes"); }); return; }
+  if(t.dataset.delgym){ const g=S.gymnasts[t.dataset.delgym]; confirmBox(`Retirer ${g.name} et son historique ?`,"Retirer",()=>{ store.del("gymnasts",t.dataset.delgym); go("gymnastes"); }); return; }
+  if(t.dataset.delcoach!==undefined){ const c=[...(S.club.coaches||[])]; c.splice(+t.dataset.delcoach,1); store.set("club","settings",{...S.club,coaches:c}); return; }
+  if(t.id==="savePlan"&&S.plan){ const pid=uid(); const p={...S.plan,id:pid}; S.plan=null; store.set("sessions",pid,p); toast("Séance enregistrée"); go("seance",pid); return; }
+  if(t.id==="copyPlan"){ const {id}=parse(); const p=id==="nouvelle"?S.plan:S.sessions[id]; if(p) navigator.clipboard.writeText(planText(p)).then(()=>toast("Texte copié"),()=>toast("Copie refusée")); return; }
+  if(t.dataset.delplan){ confirmBox("Supprimer cette séance ?","Supprimer",()=>{ store.del("sessions",t.dataset.delplan); go("seance"); }); return; }
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.id==="groupSel"){ S.groupId=t.value; saveUi(); render(); }
+  else if(t.dataset.cat){ store.patch("gymnasts",t.dataset.cat,{cat:t.value}); }
+  else if(t.dataset.move){ store.patch("gymnasts",t.dataset.move,{groupId:t.value}); }
+  else if(t.dataset.note){ const v=t.value.slice(0,500); t.blur(); store.patch("gymnasts",t.dataset.note,{note:v}); }
+  else if(t.id==="gName"){ const v=t.value.trim().slice(0,60)||"Groupe"; t.blur(); store.patch("groups",S.groupId,{name:v}); }
+});
+document.addEventListener("submit",e=>{
+  e.preventDefault(); const f=e.target;
+  if(f.id==="bulkForm"){ const names=$("#bulkIn").value.split(/\n|,/).map(s=>s.trim()).filter(Boolean).slice(0,60); const cat=$("#bulkCat").value; $("#bulkIn").blur(); (async()=>{ for(const n of names) await store.set("gymnasts",uid(),{name:n.slice(0,40),cat,groupId:S.groupId,st:{},log:{},created:today()}); })(); toast(`${names.length} ajouté${names.length>1?"s":""}`); go("gymnastes"); }
+  if(f.id==="loginForm"){ const v=$("#codeIn").value.trim(); $("#codeIn").blur(); if(!v) return; CODE=v; LS.set("getuma-code",v); S.mode="loading"; S.badCode=false; render(); api("GET").then(()=>pull()).catch(e=>{ if(e.message==="code"){ S.badCode=true; render(); } else { S.mode="shared"; render(); } }); return; }
+  if(f.id==="coachForm"){ const v=$("#coachIn").value.trim(); $("#coachIn").blur(); if(v) store.set("club","settings",{...S.club,coaches:[...(S.club.coaches||[]),v.slice(0,30)]}); }
+  if(f.id==="planForm"){ S.plan=buildPlan({date:$("#pDate").value,start:$("#pStart").value||"18:00",dur:+$("#pDur").value||90,warm:+$("#pWarm").value||0,cool:+$("#pCool").value||0,rot:+$("#pRot").value||0,coaches:[...document.querySelectorAll("[data-coach]")].filter(x=>x.checked).map(x=>x.dataset.coach)}); go("seance","nouvelle"); }
+});
+window.addEventListener("hashchange",()=>{ window.scrollTo(0,0); render(); });
+
+/* ---------- démarrage ---------- */
+(()=>{ const c=LS.get("getuma-cache",null); if(c){ Object.assign(S,{groups:c.groups||{},gymnasts:c.gymnasts||{},sessions:c.sessions||{},club:c.club||{coaches:[]}}); S.mode="shared"; } for(const op of OUTBOX) applyLocal(op); })();
+if(!CODE) S.mode="login";
+render();
+if(CODE) pull();
+setInterval(()=>{ if(document.visibilityState==="visible") pull(); },20000);
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") pull(); });
+window.addEventListener("online",()=>{ render(); pull(); });
+window.addEventListener("offline",render);
+if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+</script>
+</body>
+</html>
