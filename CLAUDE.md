@@ -112,6 +112,10 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   servis seulement aux comptes actifs, avec lecture par plages (vidéo iPhone). Seuls les liens https:// ou /api/media sont acceptés.
 
 ## Boucle de relecture (fiches)
+- Relecture du jour (Biblio, admin) : `reviewQueue()` = fiches de FICHE_DEF (ordre des codes) suivies de leurs postes détaillés.
+  « Relue ✓ » écrit `ok: AAAA-MM-JJ` dans le doc content de la fiche ; « Une autre » saute la fiche pour la journée (localStorage
+  `getuma-revskip`). Pastille orange sur l'onglet Biblio tant qu'aucune fiche n'a été relue aujourd'hui. Bandeau « Pas encore relue »
+  sur les fiches de la file. Les nouvelles fiches ajoutées à FICHE_DEF entrent automatiquement dans la file.
 - Chaque fiche (élément, poste, exercice) a un champ admin `rev` « Remarques de relecture » dans l'éditeur.
 - Biblio (admin) › « Mes corrections » : télécharge ou copie un JSON {fiches: {clé: {nom, modifie, origine}}}.
   Hippolyte l'envoie à Claude, qui : 1) intègre les fiches corrigées dans FICHE_DEF/POSTE_INFO (elles deviennent la version
