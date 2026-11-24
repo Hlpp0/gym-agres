@@ -48,7 +48,7 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 
 ## Fonctionnement côté app
 - Cache local (localStorage) + file d'attente des modifications (`getuma-outbox`) : on évalue hors-ligne, l'envoi part au retour du réseau.
-- Synchronisation : pull toutes les 20 s quand l'app est visible, et au retour en ligne. Les opérations refusées par le serveur (droits) sont retirées de la file.
+- Synchronisation : pull toutes les 60 s quand l'app est visible, et au retour en ligne. Les opérations refusées par le serveur (droits) sont retirées de la file.
 - Catalogue : programme (RAW, fichier GETUMA_elements.xlsx, catégories C1-C3 exigées) + 4 fondamentaux GETUMA
   + catalogue complet EST (`EST`, 709 éléments extraits le 24.11.2026 des tableaux d'évaluation : Sol 2025-09, Anneaux 2025-09,
   Saut 2025-01, Reck 2025-01, Barres parallèles 2025-01, Barres asymétriques scolaires 2018-04 ; script /tmp/est/parse.py, pdfplumber).
@@ -86,6 +86,10 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   Fiches intégrées (24.11.2026) : Roue e58 + 10 bases du Sol : f1 fente, f2 appui renversé contre le mur, e53 s'établir à l'appui renversé,
   e54 bougie et roulé avant, e69 roulé avant, e68 roulé avant à la station, e61 roulé arrière, e65 roulé arrière jambes tendues,
   e59 roue ¼ de tour, e60 rondade et saut en extension. Leurs postes sont dans POSTES_EL (+ détail dans POSTE_INFO).
+  Programme complet (24.11.2026) : `public/data/fiches.json` {el, postes, postesEl} chargé au démarrage par `loadFiches()`
+  (mis en cache hors-ligne par sw.js) : 101 fiches (tout le programme Sol, Anneaux, Reck, Barres parallèles, Barres asymétriques, Saut,
+  + f3 pont, f4 gainage). Générées par /tmp/fiches/*.py (helper lib.py : fiche(), P()). Les fiches inline (FICHE_DEF) restent prioritaires.
+  Fiches hors Sol plus compactes ; plusieurs descriptions d'éléments de barres ou d'anneaux sont à valider par Hippolyte (relecture du jour).
   Détail des postes d'origine : `POSTE_INFO` (par nom). « Version d'origine » = FICHE_DEF + catalogue ; le doc `content` surcharge.
 - Arbre de progression (Biblio › Arbre) : étapes calculées par profondeur des prérequis, liens SVG ; admin : « Modifier les liens »,
   toucher un élément puis un autre ajoute/retire un lien (prérequis ou suivant), boucles refusées.

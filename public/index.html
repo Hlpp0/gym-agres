@@ -589,6 +589,18 @@ const exLi=x0=>{ const x=exOf(x0.id)||x0; return `<button class="li rowthumb" da
 const poLi=(pid,i,used)=>{ const p=posteOf(pid); if(!p) return ""; return `<button class="li rowthumb" data-go="biblio--po-${pid}">${i!=null?`<span class="num">${i+1}</span>`:""}${thumbHTML(p.media)}<span class="grow"><span class="t">${esc(p.n)}</span>${p.desc||used?`<span class="d">${esc(used||p.desc)}</span>`:""}</span><span class="chev">›</span></button>`; };
 
 /* ---------- relecture du jour (admin) : une fiche proposée chaque jour ---------- */
+/* fiches supplémentaires (programme complet) : chargées à part pour garder l'app légère, gardées hors-ligne par le service worker */
+let FICHES_OK=false;
+function loadFiches(){ if(FICHES_OK) return; FICHES_OK=true;
+  fetch("/data/fiches.json").then(r=>r.json()).then(d=>{
+    Object.assign(POSTE_INFO,d.postes||{});
+    Object.entries(d.el||{}).forEach(([id,f])=>{ if(!FICHE_DEF[id]) FICHE_DEF[id]=f; });
+    Object.entries(d.postesEl||{}).forEach(([id,arr])=>{ if(!POSTES_EL[id]) POSTES_EL[id]=arr; });
+    Object.values(d.postesEl||{}).flat().forEach(n=>{ const id=hashId(n); POSTE_DEF[id]={n,...(POSTE_INFO[n]||{})}; });
+    render();
+  }).catch(()=>{ FICHES_OK=false; });
+}
+loadFiches();
 function reviewQueue(){
   const els=Object.keys(FICHE_DEF).filter(id=>BY[id]).sort((a,b)=>famRank(famOf(BY[a]))-famRank(famOf(BY[b]))||codeOf(BY[a])-codeOf(BY[b])).map(id=>({k:"el_"+id,kind:"el",id,n:BY[id].n,t:"Fiche technique"}));
   const pos=[]; els.forEach(e=>postesIds(e.id).forEach(pid=>{ const p=posteOf(pid); if(p&&(p.desc||p.steps)&&!pos.some(x=>x.id===pid)) pos.push({k:"po_"+pid,kind:"po",id:pid,n:p.n,t:"Poste d'apprentissage"}); }));
