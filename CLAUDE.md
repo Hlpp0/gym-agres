@@ -85,11 +85,15 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - Terminologie : "appui renversé" (jamais ATR ou Handstand).
 - Niveaux de compétition : C1 à C7 (jamais K1/K2 ou "catégorie 3").
 - Le symbole `--` dans un nom d'élément = tenue 2 secondes obligatoire (champ `h` dans le catalogue).
-- Données des gymnastes (mineurs) : prénom, nom, date de naissance, niveau, N° FSG, N° BDNS, adresse, téléphones des parents.
-  Champs `prenom`, `nom`, `naissance` (AAAA-MM-JJ), `cat`, `fsg`, `bdns`, `adresse`, `tel1`, `tel2` ; `name` = prénom + nom (affichage).
+- Données des gymnastes (mineurs) : décision du 24.11.2026, données MINIMALES (Hippolyte n'utilise que le prénom + l'année de naissance).
+  Champs de base : `prenom`, `nom` (facultatif), `annee` (AAAA, sert à voir quand un gymnaste change de groupe), `cat`, `fsg`.
+  Champs étendus masqués par défaut (Réglages › Champs étendus, localStorage `getuma-extra`) : `naissance` (AAAA-MM-JJ), `bdns`,
+  `adresse`, `tel1`, `tel2`, et l'export BDNS. `yearOf(g)` lit `annee` sinon l'année de `naissance`. `name` = prénom + nom (affichage).
   Visibles uniquement par les coachs des sociétés du gymnaste. Ne rien ajouter de plus sans besoin réel (nLPD).
+- BDNS mis de côté pour l'instant (24.11.2026) ; excuses, retards et départs anticipés dans Présences restent utilisés.
 - Tableau des infos (Gymnastes › Tableau des infos) : édition en ligne cellule par cellule + import par copier-coller depuis Excel.
-- Tri des gymnastes (liste et tableau) : prénom, nom, âge, niveau, progression, besoins ; 2e clic = sens inverse ; filtre par niveau.
+- Tri des gymnastes (liste et tableau) : prénom, nom, âge (date ou année), niveau, progression, besoins ; 2e clic = sens inverse ;
+  filtres par niveau et par année de naissance. Import collé : Prénom, Nom, Année (ou date), Niveau, N° FSG (+ champs étendus si activés).
   Choix gardé dans localStorage `getuma-sort`. Valeurs vides toujours en fin de liste. Dans le tableau, l'ordre est figé pendant la saisie
   (recalculé seulement quand le tri change ou à l'ouverture du tableau).
 
