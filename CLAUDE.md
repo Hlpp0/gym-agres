@@ -54,7 +54,10 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - Terminologie : "appui renversé" (jamais ATR ou Handstand).
 - Niveaux de compétition : C1 à C7 (jamais K1/K2 ou "catégorie 3").
 - Le symbole `--` dans un nom d'élément = tenue 2 secondes obligatoire (champ `h` dans le catalogue).
-- Données de mineurs : prénom + initiale du nom, catégorie, et N° BDNS si nécessaire pour J+S. Rien d'autre.
+- Données des gymnastes (mineurs) : prénom, nom, date de naissance, niveau, N° FSG, N° BDNS, adresse, téléphones des parents.
+  Champs `prenom`, `nom`, `naissance` (AAAA-MM-JJ), `cat`, `fsg`, `bdns`, `adresse`, `tel1`, `tel2` ; `name` = prénom + nom (affichage).
+  Visibles uniquement par les coachs des sociétés du gymnaste. Ne rien ajouter de plus sans besoin réel (nLPD).
+- Tableau des infos (Gymnastes › Tableau des infos) : édition en ligne cellule par cellule + import par copier-coller depuis Excel.
 
 ## Mémoire continue
 À chaque session, si une décision technique est prise, une convention est établie,

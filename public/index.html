@@ -37,6 +37,15 @@ h3{font-size:15px}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
 :focus-visible{outline:2px solid #2383e2;outline-offset:2px;border-radius:4px}
+.wrap.wide{max-width:1280px}
+.tbl{border-collapse:separate;border-spacing:0;font-size:14px;min-width:100%}
+.tbl th{position:sticky;top:0;background:var(--soft);text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:8px 6px;white-space:nowrap;z-index:2;border-bottom:1px solid var(--line)}
+.tbl td{border-bottom:1px solid var(--line);padding:0}
+.tbl td input,.tbl td select{border:0;background:transparent;padding:10px 6px;width:100%;min-width:var(--w,120px);font-size:14px;border-radius:0}
+.tbl td input:focus,.tbl td select:focus{background:var(--hover);outline:2px solid #2383e2;outline-offset:-2px}
+.tbl .stick{position:sticky;left:0;background:var(--bg);z-index:1;border-right:1px solid var(--line)}
+.tbl th.stick{z-index:3;background:var(--soft)}
+.tscroll{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:70vh}
 .wrap{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));display:grid;gap:20px}
 .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .head .sub{color:var(--muted);font-size:14px}
@@ -322,14 +331,37 @@ function exportBdns(){
   try{ const b=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"}); const u=URL.createObjectURL(b); const l=document.createElement("a"); l.href=u; l.download=`presences-${(gr.name||"groupe").replace(/[^\w-]+/g,"_")}-${month}.csv`; document.body.appendChild(l); l.click(); l.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); }catch(e){}
   render();
 }
+/* ---------- tableau des infos gymnastes ---------- */
+const COLS_T=[
+  {f:"prenom",l:"Prénom",w:120},{f:"nom",l:"Nom",w:130},{f:"naissance",l:"Naissance",w:140,type:"date"},{f:"cat",l:"Niveau",w:80,type:"cat"},
+  {f:"fsg",l:"N° FSG",w:110,num:1},{f:"bdns",l:"N° BDNS",w:110,num:1},{f:"adresse",l:"Adresse",w:220},{f:"tel1",l:"Tél. parent 1",w:140,type:"tel"},{f:"tel2",l:"Tél. parent 2",w:140,type:"tel"}
+];
+function toIsoDate(s){ s=String(s||"").trim(); let m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/); if(m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`; m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); return m?s:""; }
+function splitName(g){ if(g.prenom||g.nom) return [g.prenom||"",g.nom||""]; const p=String(g.name||"").split(" "); return [p.shift()||"",p.join(" ")]; }
+function vTableau(){
+  const list=gyms();
+  const cell=(g,c)=>{ const [pr,nm]=splitName(g); const v=c.f==="prenom"?pr:c.f==="nom"?nm:(g[c.f]||""); const k=`${g.id}|${c.f}`;
+    if(c.type==="cat") return `<select data-cell="${k}" aria-label="${c.l} de ${esc(g.name)}" style="--w:${c.w}px">${CATS.map(x=>`<option ${x===g.cat?"selected":""}>${x}</option>`).join("")}</select>`;
+    return `<input data-cell="${k}" value="${esc(v)}" aria-label="${c.l} de ${esc(g.name)}" style="--w:${c.w}px" ${c.type==="date"?'type="date"':c.type==="tel"?'type="tel" inputmode="tel"':c.num?'inputmode="numeric"':'type="text"'} autocomplete="off">`; };
+  return `<button class="back" data-go="gymnastes">‹ Gymnastes</button>
+  ${header("Tableau des gymnastes",`${list.length} · ${groupName()}`)}
+  <p class="small muted" style="margin:0">Touche une case pour la modifier, c'est enregistré dès que tu passes à la suivante. Données personnelles de mineurs : visibles seulement par les coachs de ta société.</p>
+  <div class="tscroll"><table class="tbl"><thead><tr>${COLS_T.map((c,i)=>`<th class="${i===0?"stick":""}">${c.l}</th>`).join("")}<th></th></tr></thead>
+  <tbody>${list.map(g=>`<tr>${COLS_T.map((c,i)=>`<td class="${i===0?"stick":""}">${cell(g,c)}</td>`).join("")}<td><button class="btn link" data-go="gymnastes--${g.id}" aria-label="Fiche de ${esc(g.name)}">›</button></td></tr>`).join("")}</tbody></table></div>
+  <div class="row"><button class="btn" id="addRow">+ Ajouter une ligne</button></div>
+  <details class="box"><summary><b>Coller une liste depuis Excel</b></summary>
+   <form id="pasteForm" style="display:grid;gap:8px;margin-top:8px"><span class="small muted">Une ligne par gymnaste, colonnes dans cet ordre (séparées par tabulation ou point-virgule) : Prénom, Nom, Naissance (jj.mm.aaaa), Niveau (C1 à C7), N° FSG, N° BDNS, Adresse, Tél. parent 1, Tél. parent 2. Une ligne d'en-tête est ignorée.</span>
+   <textarea class="inp" id="pasteIn" placeholder="Léa&#9;Martin&#9;12.03.2015&#9;C2&#9;12345&#9;&#9;Rue du Lac 1, 1800 Vevey&#9;079 123 45 67"></textarea><button class="btn primary">Importer dans ${groupName()}</button></form></details>`;
+}
 function vGymnastes(id){
   if(id==="ajouter") return vAjouter();
+  if(id==="tableau") return vTableau();
   if(id==="reglages") return vReglages();
   if(id==="admin"){ if(isAdmin()&&!S.admin&&navigator.onLine){ S.admin={users:null}; loadAdmin(); } return vAdmin(); }
   if(id&&S.gymnasts[id]) return vGym({id,...S.gymnasts[id]});
   const list=gyms();
   return `${banner()}${header("Gymnastes",`${list.length} au total`)}
-  <div class="row"><button class="btn primary" data-go="gymnastes--ajouter">Ajouter</button><button class="btn" data-go="gymnastes--reglages">Réglages</button></div>
+  <div class="row"><button class="btn primary" data-go="gymnastes--tableau">Tableau des infos</button><button class="btn" data-go="gymnastes--ajouter">Ajouter</button><button class="btn" data-go="gymnastes--reglages">Réglages</button></div>
   ${list.length?`<div class="divide">${list.map(g=>{ const p=progress(g); return `<button class="li" data-go="gymnastes--${g.id}"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat} · ${p.done}/${p.total} acquis</span><span class="bar" style="margin-top:6px;max-width:220px"><i class="b3" style="width:${p.pct}%"></i></span></span><span class="chev">›</span></button>`; }).join("")}</div>`:`<div class="empty">Aucun gymnaste dans ce groupe.</div>`}`;
 }
 function vGym(g){
@@ -411,7 +443,8 @@ function render(){
   if(S.mode==="loading"){ V.innerHTML=`<div class="empty">Chargement…</div>`; return; }
   if(!entries.length&&!(r==="gymnastes"&&(id==="admin"||id==="reglages"))){ V.innerHTML=`${banner()}<h1>GETUMA Coach</h1><div class="empty">${isAdmin()?`Commence par créer une société et un groupe.<br><br><button class="btn primary" data-go="gymnastes--admin">Ouvrir l'administration</button>`:`Ton compte n'est rattaché à aucun groupe pour l'instant. Demande à l'administrateur de t'ajouter à ta société.<br><br><button class="btn" data-go="gymnastes--reglages">Mon compte</button>`}</div>`; return; }
   const ae=document.activeElement, aid=ae&&ae.id, sy=window.scrollY;
-  const typing=ae&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")&&ae.type!=="checkbox"; if(typing&&(aid==="gNote"||aid==="bulkIn"||aid==="gBdns"||aid==="pfBdns"||aid==="presLieu"||aid==="gName"||aid==="newClubIn"||aid==="pwCur"||aid==="pwNew"||ae.closest("form[data-newgroup]")||ae.dataset.clubname)) return; /* ne pas écraser une saisie en cours */
+  const typing=ae&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")&&ae.type!=="checkbox"; if(typing&&(ae.closest(".tbl")||ae.id==="pasteIn"||aid==="gNote"||aid==="bulkIn"||aid==="gBdns"||aid==="pfBdns"||aid==="presLieu"||aid==="gName"||aid==="newClubIn"||aid==="pwCur"||aid==="pwNew"||ae.closest("form[data-newgroup]")||ae.dataset.clubname)) return; /* ne pas écraser une saisie en cours */
+  V.classList.toggle("wide",r==="gymnastes"&&id==="tableau");
   V.innerHTML=({evaluer:vEvaluer,groupes:vGroupes,seance:vSeance,presences:vPresences,gymnastes:vGymnastes})[r](id);
   window.scrollTo(0,sy);
 }
@@ -439,6 +472,7 @@ document.addEventListener("click",e=>{
   if(t.dataset.level){ S.level=t.dataset.level; saveUi(); render(); return; }
   if(t.hasAttribute("data-toggleall")){ S.showAll=!S.showAll; render(); return; }
   if(t.dataset.unlink){ const gid=t.dataset.unlink; const g=S.gymnasts[gid]; const next=gGroups(g).filter(x=>x!==S.groupId); if(!next.length){ confirmBox(`Retirer ${g.name} de ${S.groups[S.groupId]?.name||"ce groupe"} ? S'il n'est inscrit dans aucun autre groupe, son suivi sera supprimé.`,"Retirer",()=>{ store.del("gymnasts",gid); go("gymnastes"); }); } else { store.patch("gymnasts",gid,{groupIds:next}); go("gymnastes"); } return; }
+  if(t.id==="addRow"){ const gid=uid(); store.set("gymnasts",gid,{name:"Nouveau",prenom:"",nom:"",cat:"C1",groupIds:[S.groupId],groupId:S.groupId,st:{},log:{},created:today()}); setTimeout(()=>{ const el=document.querySelector(`[data-cell="${gid}|prenom"]`); if(el){ el.focus(); el.scrollIntoView({block:"center"}); } },50); return; }
   if(t.id==="presAll"){ const key=presKey(); ensurePres(key); const all={}; gyms().forEach(g=>all[g.id]=1); store.patch("attendance",key,{present:all}); return; }
   if(t.id==="presExport"){ exportBdns(); return; }
   if(t.id==="presCopy"){ navigator.clipboard.writeText(S.lastCsv||"").then(()=>toast("CSV copié"),()=>toast("Copie refusée")); return; }
@@ -451,6 +485,7 @@ document.addEventListener("change",e=>{
   const t=e.target;
   if(t.id==="groupSel"){ S.groupId=t.value; saveUi(); render(); }
   else if(t.dataset.cat){ store.patch("gymnasts",t.dataset.cat,{cat:t.value}); }
+  else if(t.dataset.cell){ const [gid,f]=t.dataset.cell.split("|"); let v=t.value.trim(); if(f==="bdns"||f==="fsg") v=v.replace(/[^\d]/g,"").slice(0,12); else v=v.slice(0,f==="adresse"?120:60); const g=S.gymnasts[gid]; if(!g||(g[f]||"")===v) return; const patch={[f]:v}; if(f==="prenom"||f==="nom"){ const [p0,n0]=splitName(g); const pr=f==="prenom"?v:p0, nm=f==="nom"?v:n0; patch.prenom=pr; patch.nom=nm; const full=`${pr} ${nm}`.trim(); if(full) patch.name=full; } store.patch("gymnasts",gid,patch); }
   else if(t.dataset.gymgroup){ const [gid,grp]=t.dataset.gymgroup.split("|"); const cur=gGroups(S.gymnasts[gid]); const next=t.checked?[...new Set([...cur,grp])]:cur.filter(x=>x!==grp); if(!next.length){ t.checked=true; toast("Un gymnaste doit rester dans au moins un groupe"); return; } store.patch("gymnasts",gid,{groupIds:next}); }
   else if(t.dataset.bdns){ const v=t.value.replace(/\D/g,"").slice(0,12); t.blur(); store.patch("gymnasts",t.dataset.bdns,{bdns:v}); }
   else if(t.dataset.pres){ const [key,gid]=t.dataset.pres.split("|"); togglePresence(key,gid,t.checked); }
@@ -467,6 +502,7 @@ document.addEventListener("submit",e=>{
   if(f.id==="bulkForm"){ const names=$("#bulkIn").value.split(/\n|,/).map(s=>s.trim()).filter(Boolean).slice(0,60); const cat=$("#bulkCat").value; $("#bulkIn").blur(); (async()=>{ for(const n of names) await store.set("gymnasts",uid(),{name:n.slice(0,40),cat,groupIds:[S.groupId],groupId:S.groupId,st:{},log:{},created:today()}); })(); toast(`${names.length} ajouté${names.length>1?"s":""}`); go("gymnastes"); }
   if(f.id==="loginForm"){ const email=$("#liEmail").value.trim(), password=$("#liPw").value; document.activeElement.blur(); S.authErr=""; call("/api/auth/login","POST",{email,password}).then(r=>{ if(r.ok){ wipeLocal(); S.me=r.d.user; S.mode="loading"; saveCache(); render(); pull(); } else { S.authErr=r.d.error==="pending"?"":r.d.error==="locked"?"Trop d'essais. Réessaie dans 15 minutes.":r.d.error==="disabled"?"Ce compte est désactivé.":"E-mail ou mot de passe incorrect."; if(r.d.error==="pending") S.authView="pending"; render(); } }).catch(()=>{ S.authErr="Pas de réseau."; render(); }); return; }
   if(f.id==="signupForm"){ const name=$("#suName").value.trim(), email=$("#suEmail").value.trim(), password=$("#suPw").value; document.activeElement.blur(); S.authErr=""; call("/api/auth/signup","POST",{name,email,password}).then(r=>{ if(r.ok){ if(r.d.user.status==="active"){ wipeLocal(); S.me=r.d.user; S.mode="loading"; saveCache(); render(); pull(); } else { S.authView="pending"; render(); } } else { S.authErr=r.d.error==="exists"?"Un compte existe déjà avec cet e-mail.":r.d.error==="password"?"Le mot de passe doit faire au moins 10 caractères.":r.d.error==="email"?"E-mail invalide.":"Création impossible pour le moment."; render(); } }).catch(()=>{ S.authErr="Pas de réseau."; render(); }); return; }
+  if(f.id==="pasteForm"){ const rows=$("#pasteIn").value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean); $("#pasteIn").blur(); let n=0; (async()=>{ for(const l of rows.slice(0,100)){ const c=l.split(/\t|;/).map(x=>x.trim()); if(!c[0]&&!c[1]) continue; if(/pr[ée]nom/i.test(c[0])) continue; const [prenom="",nom="",naiss="",cat="",fsg="",bdns="",adresse="",tel1="",tel2=""]=c; const catOk=/^C[1-7]$/i.test(cat)?cat.toUpperCase():"C1"; await store.set("gymnasts",uid(),{name:`${prenom} ${nom}`.trim().slice(0,60)||"Sans nom",prenom:prenom.slice(0,60),nom:nom.slice(0,60),naissance:toIsoDate(naiss),cat:catOk,fsg:fsg.replace(/\D/g,"").slice(0,12),bdns:bdns.replace(/\D/g,"").slice(0,12),adresse:adresse.slice(0,120),tel1:tel1.slice(0,30),tel2:tel2.slice(0,30),groupIds:[S.groupId],groupId:S.groupId,st:{},log:{},created:today()}); n++; } toast(`${n} gymnaste(s) importé(s)`); })(); return; }
   if(f.id==="linkForm"){ const gid=$("#linkSel").value; const cur=gGroups(S.gymnasts[gid]); store.patch("gymnasts",gid,{groupIds:[...new Set([...cur,S.groupId])]}); toast("Gymnaste ajouté au groupe"); go("gymnastes"); return; }
   if(f.id==="profileForm"){ const bdns=$("#pfBdns").value.replace(/\D/g,"").slice(0,12); document.activeElement.blur(); call("/api/auth/profile","POST",{bdns}).then(r=>{ if(r.ok){ S.me=r.d.user; saveCache(); toast("Profil enregistré"); render(); pull(); } else toast("Enregistrement impossible"); }); return; }
   if(f.id==="pwForm"){ const current=$("#pwCur").value, next=$("#pwNew").value; document.activeElement.blur(); call("/api/auth/password","POST",{current,next}).then(r=>{ toast(r.ok?"Mot de passe modifié":r.d.error==="invalid"?"Mot de passe actuel incorrect":"Le nouveau mot de passe doit faire 10 caractères minimum"); if(r.ok) render(); }); return; }
