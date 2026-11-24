@@ -49,6 +49,16 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - Statuts : 0 non abordé, 1 découverte, 2 avec aide, 3 acquis, 4 maîtrisé.
 - Besoin prioritaire = élément de la catégorie pas encore acquis dont les prérequis (table PRE) sont validés.
 
+## Bibliothèque (onglet Biblio)
+- Éléments : fiche par élément du catalogue (codes, famille, prérequis, éléments suivants, ateliers, renforcement conseillé).
+  Lien vers la fiche technique complète quand elle existe (table FICHES).
+- Exercices d'apprentissage : ateliers par famille (POSTES_FAM) et par élément (POSTES_EL).
+- Renforcement et mobilité : `public/data/exercices.json` (172 exercices), généré depuis la bibliothèque Obsidian
+  d'Hippolyte (iCloud « 21 Bibliothèque d'exercices », textes reformulés, source @get.gymnast.fit créditée et liée).
+  Les captures d'écran des vidéos ne sont PAS reprises (droits de l'auteur). Champs : id, n, orig, type, zone, niv (1-3),
+  mat, dos, exec, keys, bio, var, rel {easier, same, harder}, routines, src, auteur. « ATR » remplacé par « appui renversé ».
+- Renforcement conseillé pour un élément : correspondance famille → zones (FAM_ZONES), niveaux 1-2.
+
 ## Conventions importantes
 - Langue : tout en français. Jamais de tiret long (em dash) dans les textes.
 - Terminologie : "appui renversé" (jamais ATR ou Handstand).

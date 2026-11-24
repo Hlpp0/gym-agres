@@ -90,7 +90,7 @@ label.f>*{color:var(--ink);font-size:16px}
 .bar i{display:block;height:100%}
 .b3{background:var(--s3i)} .b4{background:var(--s4)}
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
-.tabs a{flex:1;max-width:180px;text-align:center;padding:10px 4px 12px;color:var(--muted);text-decoration:none;font-size:12px;font-weight:600;display:grid;gap:2px;justify-items:center}
+.tabs a{flex:1;max-width:180px;text-align:center;padding:10px 2px 12px;color:var(--muted);text-decoration:none;font-size:11px;font-weight:600;display:grid;gap:2px;justify-items:center}
 .tabs a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
 .tabs a[aria-current="page"]{color:var(--ink)}
 .back{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:15px;padding:6px 0}
@@ -116,6 +116,7 @@ svg.ch text{fill:var(--muted);font:11px var(--font)}
   <a href="#groupes"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 19c0-3 2.5-5 5-5s5 2 5 5M11 19c0-3 2.5-5 5-5s5 2 5 5"/></svg>Groupes</a>
   <a href="#seance"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Séance</a>
   <a href="#presences"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12l2 2 4-4"/></svg>Présences</a>
+  <a href="#biblio"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13"/></svg>Biblio</a>
   <a href="#gymnastes"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>Gymnastes</a>
 </nav>
 <script>
@@ -218,7 +219,7 @@ function setStatus(gid,eid,s){ const d=today(); store.patch("gymnasts",gid,{st:{
 
 /* ---------- vues ---------- */
 const V=$("#view");
-const ROUTES=["evaluer","groupes","seance","presences","gymnastes"];
+const ROUTES=["evaluer","groupes","seance","presences","biblio","gymnastes"];
 function parse(){ const h=location.hash.slice(1); const [r,id]=h.split("--"); return {r:ROUTES.includes(r)?r:"evaluer",id:id||null}; }
 const go=(r,id)=>{ location.hash=id?r+"--"+id:r; };
 const groupName=()=>esc(S.groups[S.groupId]?.name||"");
@@ -249,7 +250,7 @@ function vElement(e,list){
   ${legend()}
   <div class="sec"><div class="label">Gymnastes (${tgt.length})</div>${tgt.length?`<div class="divide">${tgt.map(g=>`<div class="li"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${(PRE[e.id]||[]).some(p=>!preOk(g,p))&&stOf(g,e.id)<3?" · prérequis manquant":""}</span></span>${pick(g.id,e.id)}</div>`).join("")}</div>`:`<div class="empty">Aucun gymnaste concerné par cet élément.</div>`}
   <button class="btn link" data-toggleall>${S.showAll?"Afficher seulement les catégories concernées":"Afficher tout le groupe"}</button></div>
-  <div class="box"><h3>Ateliers</h3><ol class="steps small">${postesFor(e.id).map(p=>`<li>${esc(p)}</li>`).join("")}</ol>${pre.length?`<div class="small muted">Prérequis : ${pre.map(p=>esc(p.n)).join(" · ")}</div>`:""}${FICHES[e.id]?`<a class="small" href="${FICHES[e.id]}" target="_blank" rel="noopener">Ouvrir la fiche complète</a>`:`<span class="xs muted">Fiche complète à venir</span>`}</div>`;
+  <div class="box"><h3>Ateliers</h3><ol class="steps small">${postesFor(e.id).map(p=>`<li>${esc(p)}</li>`).join("")}</ol>${pre.length?`<div class="small muted">Prérequis : ${pre.map(p=>esc(p.n)).join(" · ")}</div>`:""}<a class="small" href="#biblio--el-${e.id}">Fiche technique et renforcement</a></div>`;
 }
 function vGroupes(){
   const list=gyms(); const wg=workGroups(list,S.maxSize);
@@ -353,6 +354,77 @@ function vTableau(){
    <form id="pasteForm" style="display:grid;gap:8px;margin-top:8px"><span class="small muted">Une ligne par gymnaste, colonnes dans cet ordre (séparées par tabulation ou point-virgule) : Prénom, Nom, Naissance (jj.mm.aaaa), Niveau (C1 à C7), N° FSG, N° BDNS, Adresse, Tél. parent 1, Tél. parent 2. Une ligne d'en-tête est ignorée.</span>
    <textarea class="inp" id="pasteIn" placeholder="Léa&#9;Martin&#9;12.03.2015&#9;C2&#9;12345&#9;&#9;Rue du Lac 1, 1800 Vevey&#9;079 123 45 67"></textarea><button class="btn primary">Importer dans ${groupName()}</button></form></details>`;
 }
+/* ---------- bibliothèque : éléments, apprentissage, renforcement ---------- */
+let EX=null, EXBY={}, exLoading=false;
+function loadEx(){ if(EX||exLoading) return; exLoading=true; fetch("/data/exercices.json").then(r=>r.json()).then(d=>{ EX=d; EXBY=Object.fromEntries(d.map(x=>[x.id,x])); exLoading=false; render(); }).catch(()=>{ exLoading=false; S.exErr=true; render(); }); }
+const NIV=["","Débutant","Intermédiaire","Avancé"];
+const FAM_ZONES={"Roulés":["Tronc (gainage)","Colonne & dos","Cou"],"Appuis renversés":["Épaules","Poignets & mains","Tronc (gainage)"],"Renversements latéraux":["Épaules","Hanches","Tronc (gainage)"],"Ponts et souplesses":["Colonne & dos","Épaules"],"Sauts":["Jambes","Pieds & chevilles"],"Souplesse":["Hanches"],"Balances":["Hanches","Jambes","Pieds & chevilles"],"Force et gainage":["Tronc (gainage)","Hanches"]};
+const norm=s=>String(s||"").normalize("NFD").replace(/\p{M}/gu,"").toLowerCase();
+function suggestEx(e,n=6){ if(!EX) return []; const z=FAM_ZONES[famOf(e)]||[]; const wantSoup=famOf(e)==="Souplesse"||famOf(e)==="Ponts et souplesses"; return EX.filter(x=>x.zone.some(v=>z.includes(v))&&x.niv<=2).map(x=>({x,s:x.zone.reduce((s,v,i)=>s+(z.includes(v)?(3-z.indexOf(v))*(i===0?2:1):0),0)+(wantSoup&&x.type.includes("Souplesse")?2:0)+(x.type.includes("Force")&&!wantSoup?1:0)-x.niv})).sort((a,b)=>b.s-a.s).slice(0,n).map(o=>o.x); }
+const nextOf=id=>Object.entries(PRE).filter(([,arr])=>arr.includes(id)).map(([k])=>BY[k]).filter(Boolean);
+const exLi=x=>`<button class="li" data-go="biblio--ex-${x.id}"><span class="grow"><span class="t">${esc(x.n)}</span><span class="d">${esc(x.type.join(", "))} · ${esc(x.zone.join(", "))} · ${NIV[x.niv]||""}</span></span><span class="chev">›</span></button>`;
+function vBiblio(id){
+  if(id&&id.startsWith("el-")&&BY[id.slice(3)]) return vFicheEl(BY[id.slice(3)]);
+  if(id&&id.startsWith("ex-")){ loadEx(); return EX?(EXBY[id.slice(3)]?vFicheEx(EXBY[id.slice(3)]):`<button class="back" data-go="biblio--renfo">‹ Renforcement</button><div class="empty">Exercice introuvable.</div>`):`<div class="empty">Chargement…</div>`; }
+  if(id==="elements") return vBibElements();
+  if(id==="appr") return vBibAppr();
+  if(id==="renfo") return vBibRenfo();
+  return `${header("Bibliothèque","Fiches et exercices")}
+  <div class="divide">
+   <button class="li" data-go="biblio--elements"><span class="grow"><span class="t">Éléments</span><span class="d">Fiches techniques du Sol : codes EST, prérequis, éléments suivants</span></span><span class="chev">›</span></button>
+   <button class="li" data-go="biblio--appr"><span class="grow"><span class="t">Exercices d'apprentissage</span><span class="d">Ateliers et éducatifs par famille d'éléments</span></span><span class="chev">›</span></button>
+   <button class="li" data-go="biblio--renfo"><span class="grow"><span class="t">Renforcement et mobilité</span><span class="d">172 exercices de préparation physique spécifique</span></span><span class="chev">›</span></button>
+  </div>`;
+}
+function vBibElements(){
+  const q=norm(S.bibQ); const els=ALL.filter(e=>!q||norm(e.n).includes(q)).sort((a,b)=>FAM_ORDER.indexOf(famOf(a))-FAM_ORDER.indexOf(famOf(b))||minCat(a)-minCat(b)||a.n.localeCompare(b.n,"fr"));
+  const by={}; els.forEach(e=>(by[famOf(e)]=by[famOf(e)]||[]).push(e));
+  return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Éléments du Sol</h1>
+  <input class="inp" id="bibQ" type="search" placeholder="Rechercher un élément" value="${esc(S.bibQ||"")}" aria-label="Rechercher un élément">
+  ${Object.entries(by).map(([f,arr])=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${arr.map(e=>`<button class="li" data-go="biblio--el-${e.id}"><span class="grow"><span class="t">${esc(e.n)}</span><span class="d">${e.base?"Base GETUMA":esc(e.c.join(" · "))}${FICHES[e.id]?" · fiche complète":""}</span></span><span class="chev">›</span></button>`).join("")}</div></div>`).join("")||`<div class="empty">Aucun élément trouvé.</div>`}`;
+}
+function vFicheEl(e){
+  loadEx(); const pre=(PRE[e.id]||[]).map(p=>BY[p]).filter(Boolean); const nx=nextOf(e.id); const sug=suggestEx(e);
+  return `<button class="back" data-go="biblio--elements">‹ Éléments</button>
+  <div style="display:grid;gap:6px"><h1 style="font-size:22px">${esc(e.n)}</h1><div class="row">${(e.base?["Base GETUMA"]:e.c).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${e.h?`<span class="tag">Tenue 2 s</span>`:""}</div></div>
+  <div class="box small"><div><b>Famille :</b> ${esc(famOf(e))}</div>${e.s?`<div><b>Structure de mouvement :</b> ${esc(e.s)}</div>`:""}${e.est?`<div><b>Code EST :</b> ${esc(e.est)}</div>`:""}${e.stv?`<div><b>Code STV :</b> ${esc(e.stv)}</div>`:""}</div>
+  ${FICHES[e.id]?`<a class="btn primary" style="text-decoration:none;text-align:center" href="${FICHES[e.id]}" target="_blank" rel="noopener">Ouvrir la fiche technique complète</a>`:`<p class="small muted" style="margin:0">Fiche technique complète (phases, erreurs, parade) en cours de rédaction.</p>`}
+  ${pre.length?`<div class="sec"><div class="label">Prérequis</div><div class="divide">${pre.map(p=>`<button class="li" data-go="biblio--el-${p.id}"><span class="grow"><span class="t">${esc(p.n)}</span></span><span class="chev">›</span></button>`).join("")}</div></div>`:""}
+  ${nx.length?`<div class="sec"><div class="label">Éléments suivants</div><div class="divide">${nx.map(p=>`<button class="li" data-go="biblio--el-${p.id}"><span class="grow"><span class="t">${esc(p.n)}</span></span><span class="chev">›</span></button>`).join("")}</div></div>`:""}
+  <div class="sec"><div class="label">Exercices d'apprentissage</div><ol class="steps small" style="padding:4px 4px 4px 24px">${postesFor(e.id).map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>
+  <div class="sec"><div class="label">Renforcement conseillé</div>${EX?`<div class="divide">${sug.map(exLi).join("")||`<span class="small muted">Aucune suggestion.</span>`}</div>`:`<div class="small muted">Chargement…</div>`}</div>
+  <button class="btn" data-go="evaluer--${e.id}">Évaluer le groupe sur cet élément</button>`;
+}
+function vBibAppr(){
+  return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Exercices d'apprentissage</h1>
+  <p class="small muted" style="margin:0">Ateliers par famille. Les fiches complètes ajouteront des ateliers propres à chaque élément.</p>
+  ${FAM_ORDER.filter(f=>POSTES_FAM[f]).map(f=>`<div class="sec"><div class="label">${esc(f)}</div><div class="box"><ol class="steps small">${POSTES_FAM[f].map(x=>`<li>${esc(x)}</li>`).join("")}</ol><div class="xs muted">Éléments : ${ALL.filter(e=>famOf(e)===f&&(e.base||minCat(e)<=1)).slice(0,6).map(e=>esc(e.n)).join(" · ")}</div></div></div>`).join("")}
+  ${Object.entries(POSTES_EL).map(([id,arr])=>BY[id]?`<div class="sec"><div class="label">${esc(BY[id].n)}</div><div class="box"><ol class="steps small">${arr.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div></div>`:"").join("")}`;
+}
+function vBibRenfo(){
+  loadEx(); if(!EX) return `<button class="back" data-go="biblio">‹ Bibliothèque</button>${S.exErr?`<div class="empty">Impossible de charger les exercices. Vérifie le réseau.</div>`:`<div class="empty">Chargement des exercices…</div>`}`;
+  const f=S.bib||{}; const q=norm(S.bibQ);
+  const list=EX.filter(x=>(!f.type||x.type.includes(f.type))&&(!f.zone||x.zone.includes(f.zone))&&(!f.niv||String(x.niv)===f.niv)&&(!q||norm(x.n+" "+x.orig).includes(q))).sort((a,b)=>a.niv-b.niv||a.n.localeCompare(b.n,"fr"));
+  const zones=[...new Set(EX.flatMap(x=>x.zone))].sort((a,b)=>a.localeCompare(b,"fr"));
+  const pills=(k,vals,lab=v=>v)=>`<div class="pillbar">${vals.map(v=>`<button class="pill" data-bf="${k}|${esc(v)}" aria-pressed="${f[k]===String(v)}">${esc(lab(v))}</button>`).join("")}</div>`;
+  return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Renforcement et mobilité</h1>
+  <input class="inp" id="bibQ" type="search" placeholder="Rechercher (hollow, appui renversé, pont…)" value="${esc(S.bibQ||"")}" aria-label="Rechercher un exercice">
+  ${pills("type",["Force","Mobilité","Souplesse"])}${pills("niv",["1","2","3"],v=>NIV[v])}${pills("zone",zones)}
+  <div class="small muted">${list.length} exercice${list.length>1?"s":""}</div>
+  <div class="divide">${list.map(exLi).join("")||`<div class="empty">Aucun exercice pour ces filtres.</div>`}</div>`;
+}
+function vFicheEx(x){
+  const rel=(k,l)=>x.rel[k]&&x.rel[k].length?`<div class="sec"><div class="label">${l}</div><div class="divide">${x.rel[k].map(i=>EXBY[i]).filter(Boolean).map(exLi).join("")}</div></div>`:"";
+  return `<button class="back" data-go="biblio--renfo">‹ Renforcement</button>
+  <div style="display:grid;gap:6px"><h1 style="font-size:22px">${esc(x.n)}</h1><div class="row">${x.type.map(v=>`<span class="tag">${esc(v)}</span>`).join("")}<span class="tag">${NIV[x.niv]||""}</span></div></div>
+  <div class="box small"><div><b>Zone :</b> ${esc(x.zone.join(", "))}</div><div><b>Dosage :</b> ${esc(x.dos||"à adapter")}</div>${x.mat.length?`<div><b>Matériel :</b> ${esc(x.mat.join(", "))}</div>`:""}</div>
+  ${x.exec.length?`<div class="sec"><div class="label">Exécution</div><ol class="steps" style="padding:4px 4px 4px 24px">${x.exec.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div>`:""}
+  ${x.keys.length?`<div class="sec"><div class="label">Points clés et erreurs</div><ul style="margin:0;padding:4px 4px 4px 24px;display:grid;gap:4px">${x.keys.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>`:""}
+  ${x.var.length?`<div class="sec"><div class="label">Variantes</div><ul style="margin:0;padding:4px 4px 4px 24px">${x.var.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>`:""}
+  ${x.bio?`<div class="sec"><div class="label">Pourquoi ça marche</div><p style="margin:4px">${esc(x.bio)}</p></div>`:""}
+  ${rel("easier","Plus facile")}${rel("same","Même niveau")}${rel("harder","Plus difficile")}
+  <p class="xs muted" style="margin:0">Exercice repris de ${esc(x.auteur||"la source")}${x.orig?` (« ${esc(x.orig)} »)`:""}, reformulé en français. ${x.src.slice(0,2).map((u,i)=>`<a href="${esc(u)}" target="_blank" rel="noopener">Vidéo ${i+1}</a>`).join(" · ")}</p>`;
+}
 function vGymnastes(id){
   if(id==="ajouter") return vAjouter();
   if(id==="tableau") return vTableau();
@@ -443,9 +515,9 @@ function render(){
   if(S.mode==="loading"){ V.innerHTML=`<div class="empty">Chargement…</div>`; return; }
   if(!entries.length&&!(r==="gymnastes"&&(id==="admin"||id==="reglages"))){ V.innerHTML=`${banner()}<h1>GETUMA Coach</h1><div class="empty">${isAdmin()?`Commence par créer une société et un groupe.<br><br><button class="btn primary" data-go="gymnastes--admin">Ouvrir l'administration</button>`:`Ton compte n'est rattaché à aucun groupe pour l'instant. Demande à l'administrateur de t'ajouter à ta société.<br><br><button class="btn" data-go="gymnastes--reglages">Mon compte</button>`}</div>`; return; }
   const ae=document.activeElement, aid=ae&&ae.id, sy=window.scrollY;
-  const typing=ae&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")&&ae.type!=="checkbox"; if(typing&&(ae.closest(".tbl")||ae.id==="pasteIn"||aid==="gNote"||aid==="bulkIn"||aid==="gBdns"||aid==="pfBdns"||aid==="presLieu"||aid==="gName"||aid==="newClubIn"||aid==="pwCur"||aid==="pwNew"||ae.closest("form[data-newgroup]")||ae.dataset.clubname)) return; /* ne pas écraser une saisie en cours */
+  const typing=ae&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")&&ae.type!=="checkbox"; if(typing&&(aid==="bibQ"||ae.closest(".tbl")||ae.id==="pasteIn"||aid==="gNote"||aid==="bulkIn"||aid==="gBdns"||aid==="pfBdns"||aid==="presLieu"||aid==="gName"||aid==="newClubIn"||aid==="pwCur"||aid==="pwNew"||ae.closest("form[data-newgroup]")||ae.dataset.clubname)) return; /* ne pas écraser une saisie en cours */
   V.classList.toggle("wide",r==="gymnastes"&&id==="tableau");
-  V.innerHTML=({evaluer:vEvaluer,groupes:vGroupes,seance:vSeance,presences:vPresences,gymnastes:vGymnastes})[r](id);
+  V.innerHTML=({evaluer:vEvaluer,groupes:vGroupes,seance:vSeance,presences:vPresences,biblio:vBiblio,gymnastes:vGymnastes})[r](id);
   window.scrollTo(0,sy);
 }
 
@@ -467,6 +539,7 @@ document.addEventListener("click",e=>{
     else if(act==="delete") confirmBox(`Supprimer le compte de ${usr.name} ?`,"Supprimer",()=>adminAction({action:"delete",uid:u},"Compte supprimé"));
     return; }
   if(t.dataset.go){ go(...t.dataset.go.split("--")); return; }
+  if(t.dataset.bf){ const [k,v]=t.dataset.bf.split("|"); S.bib=S.bib||{}; S.bib[k]=S.bib[k]===v?"":v; render(); return; }
   if(t.dataset.fam){ S.fam=t.dataset.fam; render(); return; }
   if(t.dataset.max){ S.maxSize=+t.dataset.max; saveUi(); render(); return; }
   if(t.dataset.level){ S.level=t.dataset.level; saveUi(); render(); return; }
@@ -510,6 +583,7 @@ document.addEventListener("submit",e=>{
   if(f.dataset.newgroup){ const inp=f.querySelector("input"); const v=inp.value.trim().slice(0,60); inp.blur(); if(v){ const gid=uid(); store.set("groups",gid,{name:v,clubId:f.dataset.newgroup,apps:["sol"]}); toast("Groupe créé"); } return; }
   if(f.id==="planForm"){ S.plan=buildPlan({date:$("#pDate").value,start:$("#pStart").value||"18:00",dur:+$("#pDur").value||90,warm:+$("#pWarm").value||0,cool:+$("#pCool").value||0,rot:+$("#pRot").value||0,coaches:[...document.querySelectorAll("[data-coach]")].filter(x=>x.checked).map(x=>x.dataset.coach)}); go("seance","nouvelle"); }
 });
+document.addEventListener("input",e=>{ if(e.target.id==="bibQ"){ S.bibQ=e.target.value; clearTimeout(S._qt); S._qt=setTimeout(()=>{ const pos=e.target.selectionStart; const keep=document.activeElement===e.target; e.target.blur(); render(); const el=$("#bibQ"); if(el&&keep){ el.focus(); try{ el.setSelectionRange(pos,pos); }catch(x){} } },250); } });
 window.addEventListener("hashchange",()=>{ window.scrollTo(0,0); if(location.hash==="#gymnastes--admin") S.admin=null; render(); });
 
 /* ---------- démarrage ---------- */
