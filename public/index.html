@@ -44,6 +44,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .tbl td input,.tbl td select{border:0;background:transparent;padding:10px 6px;width:100%;min-width:var(--w,120px);font-size:14px;border-radius:0}
 .tbl td input:focus,.tbl td select:focus{background:var(--hover);outline:2px solid #2383e2;outline-offset:-2px}
 .tbl .stick{position:sticky;left:0;background:var(--bg);z-index:1;border-right:1px solid var(--line)}
+.thsort{all:unset;cursor:pointer}.thsort[aria-pressed="true"]{color:var(--ink)}
 .tbl th.stick{z-index:3;background:var(--soft)}
 .tscroll{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:70vh}
 .wrap{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));display:grid;gap:20px}
@@ -337,17 +338,46 @@ const COLS_T=[
   {f:"prenom",l:"Prénom",w:120},{f:"nom",l:"Nom",w:130},{f:"naissance",l:"Naissance",w:140,type:"date"},{f:"cat",l:"Niveau",w:80,type:"cat"},
   {f:"fsg",l:"N° FSG",w:110,num:1},{f:"bdns",l:"N° BDNS",w:110,num:1},{f:"adresse",l:"Adresse",w:220},{f:"tel1",l:"Tél. parent 1",w:140,type:"tel"},{f:"tel2",l:"Tél. parent 2",w:140,type:"tel"}
 ];
+/* tri et filtre des gymnastes (choix gardé sur ce téléphone) */
+const SORTS=[["prenom","Prénom"],["nom","Nom"],["age","Âge"],["cat","Niveau"],["prog","Progression"],["besoin","Besoins"]];
+try{ S.gsort=JSON.parse(localStorage.getItem("getuma-sort"))||{k:"prenom",d:1,cat:""}; }catch(e){ S.gsort={k:"prenom",d:1,cat:""}; }
+const saveSort=()=>{ try{ localStorage.setItem("getuma-sort",JSON.stringify(S.gsort)); }catch(e){} };
+function ageOf(g){ const m=String(g.naissance||"").match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m) return null; const n=new Date(), b=new Date(+m[1],+m[2]-1,+m[3]); let a=n.getFullYear()-b.getFullYear(); if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate())) a--; return a; }
+function sortVal(g,k){
+  const [pr,nm]=splitName(g);
+  if(k==="prenom") return norm(pr+" "+nm); if(k==="nom") return norm((nm||"~")+" "+pr);
+  if(k==="age"||k==="naissance") return g.naissance?-Date.parse(g.naissance):null; /* plus jeune = plus petit âge */
+  if(k==="cat") return CATS.indexOf(g.cat); if(k==="prog") return progress(g).pct;
+  if(k==="besoin") return needs(g).filter(x=>x.ready).length;
+  return norm(g[k]||"")||null;
+}
+function sortGyms(list,k=S.gsort.k,d=S.gsort.d){
+  return list.map(g=>({g,v:sortVal(g,k),t:norm(splitName(g).join(" "))})).sort((a,b)=>{
+    if(a.v===null&&b.v!==null) return 1; if(b.v===null&&a.v!==null) return -1; /* vides toujours à la fin */
+    const c=typeof a.v==="number"?a.v-b.v:String(a.v||"").localeCompare(String(b.v||""),"fr",{numeric:true});
+    return c*d||a.t.localeCompare(b.t,"fr"); }).map(o=>o.g);
+}
+const catFilter=list=>S.gsort.cat?list.filter(g=>g.cat===S.gsort.cat):list;
+function sortBar(list){
+  const cats=CATS.filter(c=>list.some(g=>g.cat===c));
+  return `<div style="display:grid;gap:6px"><div class="pillbar" role="group" aria-label="Trier par"><span class="xs muted" style="align-self:center">Trier</span>${SORTS.map(([k,l])=>`<button class="pill" data-gs="${k}" aria-pressed="${S.gsort.k===k}">${l}${S.gsort.k===k?(S.gsort.d>0?" ↑":" ↓"):""}</button>`).join("")}</div>
+  ${cats.length>1?`<div class="pillbar" role="group" aria-label="Filtrer par niveau"><span class="xs muted" style="align-self:center">Niveau</span><button class="pill" data-gc="" aria-pressed="${!S.gsort.cat}">Tous</button>${cats.map(c=>`<button class="pill" data-gc="${c}" aria-pressed="${S.gsort.cat===c}">${c} · ${list.filter(g=>g.cat===c).length}</button>`).join("")}</div>`:""}</div>`;
+}
 function toIsoDate(s){ s=String(s||"").trim(); let m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/); if(m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`; m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); return m?s:""; }
 function splitName(g){ if(g.prenom||g.nom) return [g.prenom||"",g.nom||""]; const p=String(g.name||"").split(" "); return [p.shift()||"",p.join(" ")]; }
 function vTableau(){
-  const list=gyms();
+  const all=gyms(); const key=`${S.gsort.k}|${S.gsort.d}|${S.gsort.cat}`;
+  if(!S.tOrd||S.tOrd.key!==key) S.tOrd={key,ids:sortGyms(catFilter(all)).map(g=>g.id)}; /* ordre figé pendant la saisie */
+  const pos=id=>{ const i=S.tOrd.ids.indexOf(id); return i<0?1e9:i; };
+  const list=catFilter(all).sort((a,b)=>pos(a.id)-pos(b.id));
   const cell=(g,c)=>{ const [pr,nm]=splitName(g); const v=c.f==="prenom"?pr:c.f==="nom"?nm:(g[c.f]||""); const k=`${g.id}|${c.f}`;
     if(c.type==="cat") return `<select data-cell="${k}" aria-label="${c.l} de ${esc(g.name)}" style="--w:${c.w}px">${CATS.map(x=>`<option ${x===g.cat?"selected":""}>${x}</option>`).join("")}</select>`;
     return `<input data-cell="${k}" value="${esc(v)}" aria-label="${c.l} de ${esc(g.name)}" style="--w:${c.w}px" ${c.type==="date"?'type="date"':c.type==="tel"?'type="tel" inputmode="tel"':c.num?'inputmode="numeric"':'type="text"'} autocomplete="off">`; };
   return `<button class="back" data-go="gymnastes">‹ Gymnastes</button>
   ${header("Tableau des gymnastes",`${list.length} · ${groupName()}`)}
+  ${all.length>1?sortBar(all):""}
   <p class="small muted" style="margin:0">Touche une case pour la modifier, c'est enregistré dès que tu passes à la suivante. Données personnelles de mineurs : visibles seulement par les coachs de ta société.</p>
-  <div class="tscroll"><table class="tbl"><thead><tr>${COLS_T.map((c,i)=>`<th class="${i===0?"stick":""}">${c.l}</th>`).join("")}<th></th></tr></thead>
+  <div class="tscroll"><table class="tbl"><thead><tr>${COLS_T.map((c,i)=>{ const k=c.f==="naissance"?"age":c.f; const on=S.gsort.k===k; return `<th class="${i===0?"stick":""}"><button class="thsort" data-gs="${k}" aria-pressed="${on}">${c.l}${on?(S.gsort.d>0?" ↑":" ↓"):""}</button></th>`; }).join("")}<th></th></tr></thead>
   <tbody>${list.map(g=>`<tr>${COLS_T.map((c,i)=>`<td class="${i===0?"stick":""}">${cell(g,c)}</td>`).join("")}<td><button class="btn link" data-go="gymnastes--${g.id}" aria-label="Fiche de ${esc(g.name)}">›</button></td></tr>`).join("")}</tbody></table></div>
   <div class="row"><button class="btn" id="addRow">+ Ajouter une ligne</button></div>
   <details class="box"><summary><b>Coller une liste depuis Excel</b></summary>
@@ -431,10 +461,11 @@ function vGymnastes(id){
   if(id==="reglages") return vReglages();
   if(id==="admin"){ if(isAdmin()&&!S.admin&&navigator.onLine){ S.admin={users:null}; loadAdmin(); } return vAdmin(); }
   if(id&&S.gymnasts[id]) return vGym({id,...S.gymnasts[id]});
-  const list=gyms();
-  return `${banner()}${header("Gymnastes",`${list.length} au total`)}
+  const all=gyms(); if(S.gsort.cat&&!all.some(g=>g.cat===S.gsort.cat)) S.gsort.cat=""; const list=sortGyms(catFilter(all));
+  return `${banner()}${header("Gymnastes",`${S.gsort.cat?`${list.length} en ${S.gsort.cat} sur ${all.length}`:`${all.length} au total`}`)}
   <div class="row"><button class="btn primary" data-go="gymnastes--tableau">Tableau des infos</button><button class="btn" data-go="gymnastes--ajouter">Ajouter</button><button class="btn" data-go="gymnastes--reglages">Réglages</button></div>
-  ${list.length?`<div class="divide">${list.map(g=>{ const p=progress(g); return `<button class="li" data-go="gymnastes--${g.id}"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat} · ${p.done}/${p.total} acquis</span><span class="bar" style="margin-top:6px;max-width:220px"><i class="b3" style="width:${p.pct}%"></i></span></span><span class="chev">›</span></button>`; }).join("")}</div>`:`<div class="empty">Aucun gymnaste dans ce groupe.</div>`}`;
+  ${all.length>1?sortBar(all):""}
+  ${list.length?`<div class="divide">${list.map(g=>{ const p=progress(g); return `<button class="li" data-go="gymnastes--${g.id}"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${ageOf(g)!==null?` · ${ageOf(g)} ans`:""} · ${p.done}/${p.total} acquis</span><span class="bar" style="margin-top:6px;max-width:220px"><i class="b3" style="width:${p.pct}%"></i></span></span><span class="chev">›</span></button>`; }).join("")}</div>`:`<div class="empty">Aucun gymnaste dans ce groupe.</div>`}`;
 }
 function vGym(g){
   const els=elements().filter(e=>forGym(e,g)); const by={}; els.forEach(e=>(by[famOf(e)]=by[famOf(e)]||[]).push(e));
@@ -539,6 +570,8 @@ document.addEventListener("click",e=>{
     else if(act==="delete") confirmBox(`Supprimer le compte de ${usr.name} ?`,"Supprimer",()=>adminAction({action:"delete",uid:u},"Compte supprimé"));
     return; }
   if(t.dataset.go){ go(...t.dataset.go.split("--")); return; }
+  if(t.dataset.gs!==undefined){ const k=t.dataset.gs; S.gsort.d=S.gsort.k===k?-S.gsort.d:1; S.gsort.k=k; saveSort(); render(); return; }
+  if(t.dataset.gc!==undefined){ S.gsort.cat=t.dataset.gc; saveSort(); render(); return; }
   if(t.dataset.bf){ const [k,v]=t.dataset.bf.split("|"); S.bib=S.bib||{}; S.bib[k]=S.bib[k]===v?"":v; render(); return; }
   if(t.dataset.fam){ S.fam=t.dataset.fam; render(); return; }
   if(t.dataset.max){ S.maxSize=+t.dataset.max; saveUi(); render(); return; }
@@ -584,7 +617,7 @@ document.addEventListener("submit",e=>{
   if(f.id==="planForm"){ S.plan=buildPlan({date:$("#pDate").value,start:$("#pStart").value||"18:00",dur:+$("#pDur").value||90,warm:+$("#pWarm").value||0,cool:+$("#pCool").value||0,rot:+$("#pRot").value||0,coaches:[...document.querySelectorAll("[data-coach]")].filter(x=>x.checked).map(x=>x.dataset.coach)}); go("seance","nouvelle"); }
 });
 document.addEventListener("input",e=>{ if(e.target.id==="bibQ"){ S.bibQ=e.target.value; clearTimeout(S._qt); S._qt=setTimeout(()=>{ const pos=e.target.selectionStart; const keep=document.activeElement===e.target; e.target.blur(); render(); const el=$("#bibQ"); if(el&&keep){ el.focus(); try{ el.setSelectionRange(pos,pos); }catch(x){} } },250); } });
-window.addEventListener("hashchange",()=>{ window.scrollTo(0,0); if(location.hash==="#gymnastes--admin") S.admin=null; render(); });
+window.addEventListener("hashchange",()=>{ window.scrollTo(0,0); if(location.hash==="#gymnastes--admin") S.admin=null; if(location.hash==="#gymnastes--tableau") S.tOrd=null; render(); });
 
 /* ---------- démarrage ---------- */
 (()=>{ const c=LS.get("getuma-cache",null); if(c&&S.me){ Object.assign(S,{clubs:c.clubs||{},groups:c.groups||{},gymnasts:c.gymnasts||{},sessions:c.sessions||{},attendance:c.attendance||{},members:c.members||{}}); S.mode="shared"; } for(const op of OUTBOX) applyLocal(op); })();

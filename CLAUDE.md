@@ -68,6 +68,9 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   Champs `prenom`, `nom`, `naissance` (AAAA-MM-JJ), `cat`, `fsg`, `bdns`, `adresse`, `tel1`, `tel2` ; `name` = prénom + nom (affichage).
   Visibles uniquement par les coachs des sociétés du gymnaste. Ne rien ajouter de plus sans besoin réel (nLPD).
 - Tableau des infos (Gymnastes › Tableau des infos) : édition en ligne cellule par cellule + import par copier-coller depuis Excel.
+- Tri des gymnastes (liste et tableau) : prénom, nom, âge, niveau, progression, besoins ; 2e clic = sens inverse ; filtre par niveau.
+  Choix gardé dans localStorage `getuma-sort`. Valeurs vides toujours en fin de liste. Dans le tableau, l'ordre est figé pendant la saisie
+  (recalculé seulement quand le tri change ou à l'ouverture du tableau).
 
 ## Mémoire continue
 À chaque session, si une décision technique est prise, une convention est établie,
