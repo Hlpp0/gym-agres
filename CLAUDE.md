@@ -83,6 +83,9 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - Éléments : fiche par élément. RIEN ne renvoie vers Claude : les fiches complètes sont intégrées dans `FICHE_DEF` (Roue e58 importée
   le 24.11.2026 depuis l'ancien doc) : desc, cue, obj[], pts[], phases[[phase,action,posture,regard,consigne]], rythme, preTech/prePhys[[nom,test]],
   err[[erreur,phase,cause,correction]], aide, parade, progNote, prog[], jeunes, prepaNote, prepa[[exercice,cible,dosage]], check[], checkNote, nextNote.
+  Fiches intégrées (24.11.2026) : Roue e58 + 10 bases du Sol : f1 fente, f2 appui renversé contre le mur, e53 s'établir à l'appui renversé,
+  e54 bougie et roulé avant, e69 roulé avant, e68 roulé avant à la station, e61 roulé arrière, e65 roulé arrière jambes tendues,
+  e59 roue ¼ de tour, e60 rondade et saut en extension. Leurs postes sont dans POSTES_EL (+ détail dans POSTE_INFO).
   Détail des postes d'origine : `POSTE_INFO` (par nom). « Version d'origine » = FICHE_DEF + catalogue ; le doc `content` surcharge.
 - Arbre de progression (Biblio › Arbre) : étapes calculées par profondeur des prérequis, liens SVG ; admin : « Modifier les liens »,
   toucher un élément puis un autre ajoute/retire un lien (prérequis ou suivant), boucles refusées.
