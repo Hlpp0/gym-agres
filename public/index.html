@@ -28,7 +28,9 @@
   --s1:#3f3420; --s1i:#e0b85c; --s2:#4a3520; --s2i:#f0a860; --s3:#253a2c; --s3i:#8fd1a5; --s4:#4f9768; --s4i:#0f1a12; color-scheme:dark;}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-html,body{margin:0;height:100%}
+html,body{margin:0;height:100%;overflow-x:hidden}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+a,button,input,select,label,summary{touch-action:manipulation}
 body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--font);-webkit-font-smoothing:antialiased}
 h1,h2,h3{margin:0;font-weight:700;text-wrap:balance}
 h1{font-size:26px;letter-spacing:-.01em}
@@ -36,6 +38,8 @@ h2{font-size:18px}
 h3{font-size:15px}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
+/* iPhone : un champ en dessous de 16 px déclenche un zoom automatique qui ne revient pas */
+@media (pointer:coarse){input,select,textarea{font-size:16px!important}}
 :focus-visible{outline:2px solid #2383e2;outline-offset:2px;border-radius:4px}
 .wrap.wide{max-width:1280px}
 .tbl{border-collapse:separate;border-spacing:0;font-size:14px;min-width:100%}
@@ -45,8 +49,8 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .tbl td input:focus,.tbl td select:focus{background:var(--hover);outline:2px solid #2383e2;outline-offset:-2px}
 .tbl .stick{position:sticky;left:0;background:var(--bg);z-index:1;border-right:1px solid var(--line)}
 .thsort{all:unset;cursor:pointer}.thsort[aria-pressed="true"]{color:var(--ink)}
-.pres{padding:10px 4px;display:grid;gap:8px}.prow{display:flex;align-items:center;gap:8px}.prow .grow{min-width:0}.pres .t{display:block;font-size:15px}.pres .d{display:block;font-size:12px;color:var(--muted)}
-.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}.seg button{all:unset;cursor:pointer;padding:7px 8px;font-size:13px;color:var(--muted)}.seg button+button{border-left:1px solid var(--line)}
+.pres{padding:10px 2px;display:grid;gap:8px}.prow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px}.prow .grow{min-width:0}.pres .t{display:block;font-size:15px}.pres .d{display:block;font-size:12px;color:var(--muted)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);width:216px;border:1px solid var(--line);border-radius:8px;overflow:hidden}.seg button{all:unset;cursor:pointer;padding:8px 0;font-size:13px;color:var(--muted);text-align:center}@media(max-width:370px){.seg{width:186px}.seg button{font-size:12px}}.seg button+button{border-left:1px solid var(--line)}
 .seg .s-p[aria-pressed="true"]{background:#dbeddb;color:#1c3829}.seg .s-e[aria-pressed="true"]{background:#fdecc8;color:#402c1b}.seg .s-a[aria-pressed="true"]{background:#ffe2dd;color:#5d1715}
 .pdet{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.inp.mini{width:70px;min-height:32px;padding:4px 8px;display:inline-block}
 .elrow{display:flex;align-items:center;gap:10px}.elrow .code{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:var(--muted);width:52px;flex:none}
@@ -60,12 +64,28 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .chips{display:flex;flex-wrap:wrap;gap:6px}.chip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:14px;line-height:1.25}.chip .code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted)}.chip .x{all:unset;cursor:pointer;color:var(--muted);padding:0 2px}
 .gallery{display:grid;gap:10px}.med{margin:0;display:grid;gap:4px}.med img,.med video{width:100%;max-height:70vh;object-fit:contain;border-radius:10px;background:var(--soft)}.med .frame{width:100%;border-radius:10px;overflow:hidden;background:var(--soft)}.med iframe{width:100%;height:100%;border:0;display:block}.med figcaption{font-size:12px;color:var(--muted)}
 .rowthumb{display:flex;align-items:center;gap:10px}.thumb{width:56px;height:42px;border-radius:6px;object-fit:cover;flex:none;background:var(--soft);display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted)}.thumb.empty{width:8px;background:none}.num{width:20px;text-align:center;color:var(--muted);font-size:13px;flex:none}
-.tiles{display:grid;gap:10px}.tile{all:unset;cursor:pointer;display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:12px;padding:16px}.tile .tic{font-size:26px}.tile .t{display:block;font-weight:600;font-size:16px}.tile .d{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.tiles{display:grid;gap:10px}.tile{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:12px;padding:16px}.tile .tic{font-size:26px}.tile .t{display:block;font-weight:600;font-size:16px}.tile .d{display:block;font-size:13px;color:var(--muted);margin-top:2px}
 .facts{display:grid;grid-template-columns:1fr 1fr;gap:10px}.facts>div{background:var(--soft);border-radius:10px;padding:10px 12px;display:grid;gap:2px}
 .filters{display:grid;gap:4px}.sticky{position:sticky;bottom:64px;background:var(--bg);padding:8px 0;z-index:5}
+.profile{display:flex;gap:14px;align-items:center}.avatar{width:72px;height:72px;border-radius:50%;background:var(--s3);color:var(--s3i);display:grid;place-items:center;font-size:26px;font-weight:700;flex:none}.pinfo{display:grid;gap:4px;min-width:0}.pinfo h1{font-size:24px;line-height:1.15;margin:0}.pinfo .sub{color:var(--muted);font-size:14px}.chip.static{cursor:default;font-size:12px;padding:3px 8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stats>div{background:var(--soft);border-radius:10px;padding:10px;display:grid;text-align:center}.stats b{font-size:20px}.stats span{font-size:12px;color:var(--muted)}
+details.card.edit>summary,.acc>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center}details>summary::-webkit-details-marker{display:none}
+.acc{border:1px solid var(--line);border-radius:10px;padding:10px 10px 4px}.acc>summary{padding-bottom:6px}.acc>summary .muted{margin-left:auto;font-size:13px}.acc>summary::after{content:"▾";color:var(--muted);transition:transform .15s}.acc:not([open])>summary::after{transform:rotate(-90deg)}.acc:not([open]){padding-bottom:10px}.acc:not([open])>summary{padding-bottom:0}
+.evrow .rk{display:flex;gap:2px}.evrow .rk .btn{min-height:36px;padding:4px 10px;font-size:18px}
+.trows{display:grid;gap:8px}.trow{background:var(--soft);border-radius:10px;padding:10px 12px;display:grid;gap:3px;font-size:14px;line-height:1.4}
+.cue{margin:0;border-left:3px solid var(--s3i);padding:4px 0 4px 10px;color:var(--ink);font-style:italic}blockquote.cue{background:var(--soft);border-radius:0 8px 8px 0;padding:8px 10px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}.checks li{padding-left:26px;position:relative}.checks li::before{content:"☐";position:absolute;left:2px;color:var(--muted)}
+.toc{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:4;background:var(--bg);padding:6px 0}.card{scroll-margin-top:56px}
+.tree{position:relative;display:grid;gap:26px;padding:4px 0 10px}.tlevel{display:grid;gap:6px;position:relative;z-index:1}.lvl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+.tnodes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}.tnode{all:unset;box-sizing:border-box;cursor:pointer;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 10px;display:grid;gap:1px;flex:0 1 calc(50% - 4px);max-width:200px;font-size:13px;line-height:1.25;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.tnode .code{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--muted)}.tnode.ghost{border-style:dashed}.tnode.sel{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}.tnode.pre{border-color:#2383e2;background:#e7f1fb}.tnode.nxt{border-color:var(--s3i);background:var(--s3)}.tnode.dim{color:#b4b3af;border-color:var(--line)}.tnode.dim .xs,.tnode.dim .code{color:#c9c8c4}
+.tlinks{position:absolute;left:0;top:0;pointer-events:none;z-index:0}.tlinks path{fill:none;stroke:var(--line);stroke-width:1.6}.tlinks path.hl{stroke:var(--ink);stroke-width:2.2}
+.selbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--soft);border-radius:10px;padding:8px 10px}.selbar .btn{margin-left:auto;min-height:34px;padding:4px 12px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 4px 0 2px}.dot.pre{background:#2383e2}.dot.nxt{background:var(--s3i)}
+.card ol a,.card p a{color:var(--ink);text-decoration-color:var(--line);text-underline-offset:3px}
 .tbl th.stick{z-index:3;background:var(--soft)}
 .tscroll{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:70vh}
-.wrap{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));display:grid;gap:20px}
+.wrap{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(104px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+.wrap>*,.card>*,.box>*{min-width:0}
 .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .head .sub{color:var(--muted);font-size:14px}
 .muted{color:var(--muted)} .small{font-size:14px} .xs{font-size:12px}
@@ -108,8 +128,8 @@ label.f>*{color:var(--ink);font-size:16px}
 .bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;display:flex}
 .bar i{display:block;height:100%}
 .b3{background:var(--s3i)} .b4{background:var(--s4)}
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
-.tabs a{flex:1;max-width:180px;text-align:center;padding:10px 2px 12px;color:var(--muted);text-decoration:none;font-size:11px;font-weight:600;display:grid;gap:2px;justify-items:center}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+.tabs a{flex:1 1 0;min-width:0;max-width:180px;text-align:center;padding:9px 0 11px;color:var(--muted);text-decoration:none;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;display:grid;gap:2px;justify-items:center}
 .tabs a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
 .tabs a[aria-current="page"]{color:var(--ink)}
 .back{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:15px;padding:6px 0}
@@ -136,7 +156,7 @@ svg.ch text{fill:var(--muted);font:11px var(--font)}
   <a href="#seance"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Séance</a>
   <a href="#presences"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12l2 2 4-4"/></svg>Présences</a>
   <a href="#biblio"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13"/></svg>Biblio</a>
-  <a href="#gymnastes"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>Gymnastes</a>
+  <a href="#gymnastes"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>Équipe</a>
 </nav>
 <script>
 "use strict";
@@ -184,7 +204,7 @@ const PRE={
   e47:["f3","e53"], e82:["f4"], e48:["f4"], e49:["e50"], e51:["e50"], e52:["e50"], e68:["e69"], e70:["e69"],
   e64:["e65","e53"], e63:["e64"], e67:["e65"], e46:["e55","e53"], e45:["e46"], e44:["e45"], e72:["e71"], e76:["e71"], e78:["e80"]
 };
-const FICHES={e58:"https://claude.ai/artifact/K1rEro44RernaYjQLibGke"};
+const FICHES={}; /* plus aucun lien externe : les fiches vivent dans GETUMA (FICHE_DEF) */
 const POSTES_EL={
   e58:["Lapin latéral sur la ligne","Roue au-dessus d'un plinth bas, parade aux hanches","Roue sur plan incliné","Roue entre deux repères","Roue sur la ligne avec 4 marques","Roue des deux côtés"],
   f1:["Fente tenue 3 s face au miroir","Fente + bascule du tronc vers l'avant","Fente des deux côtés"],
@@ -226,7 +246,8 @@ let OUTBOX=LS.get("getuma-outbox",[]); let flushing=false; S.lastSync=LS.get("ge
 function deepMerge(a,b){ const o={...(a||{})}; for(const k in b){ const v=b[k]; o[k]=(v&&typeof v==="object"&&!Array.isArray(v)&&o[k]&&typeof o[k]==="object"&&!Array.isArray(o[k]))?deepMerge(o[k],v):v; } return o; }
 function applyLocal(op){ const c={...S[op.col]}; if(op.op==="del") delete c[op.id]; else c[op.id]=op.op==="patch"?deepMerge(c[op.id],op.data):op.data; S[op.col]=c; }
 const saveCache=()=>{ LS.set("getuma-cache",{content:S.content,clubs:S.clubs,groups:S.groups,gymnasts:S.gymnasts,sessions:S.sessions,attendance:S.attendance,members:S.members}); LS.set("getuma-me",S.me); };
-function queue(op){ op.qid=uid(); applyLocal(op); OUTBOX.push(op); LS.set("getuma-outbox",OUTBOX); saveCache(); render(); flush(); }
+let _sc=0; const saveCacheSoon=()=>{ clearTimeout(_sc); _sc=setTimeout(saveCache,400); };
+function queue(op){ op.qid=uid(); applyLocal(op); OUTBOX.push(op); render(); setTimeout(()=>{ LS.set("getuma-outbox",OUTBOX); saveCacheSoon(); flush(); },0); }
 const store={ set:(col,id,data)=>queue({op:"set",col,id,data}), patch:(col,id,data)=>queue({op:"patch",col,id,data}), del:(col,id)=>queue({op:"del",col,id}) };
 const isAdmin=()=>S.me&&S.me.role==="admin";
 async function call(url,method,body){ const r=await fetch(url,{method,credentials:"same-origin",headers:{"x-getuma":"1","content-type":"application/json"},body:body?JSON.stringify(body):undefined,cache:"no-store"}); let d={}; try{ d=await r.json(); }catch(e){} return {status:r.status,ok:r.ok,d}; }
@@ -242,9 +263,14 @@ const stOf=(g,eid)=>(g&&g.st&&g.st[eid]&&g.st[eid].s)||0;
 const inLevel=e=>S.level==="all"?true:(e.base||minCat(e)<=1);
 const elements=()=>ALLE.filter(e=>e.a===S.engin).filter(inLevel).sort((a,b)=>famRank(famOf(a))-famRank(famOf(b))||codeOf(a)-codeOf(b)||minCat(a)-minCat(b)||a.n.localeCompare(b.n,"fr"));
 const forGym=(e,g)=>e.base||e.c.includes(g.cat)||minCat(e)<catIdx(g.cat);
+const maxCat=e=>{ if(e.base) return -1; const ix=e.c.map(catIdx).filter(i=>i>=0); return ix.length?Math.max(...ix):-1; };
+/* élément plus demandé dans la catégorie du gymnaste (catégories inférieures seulement) et jamais évalué : considéré acquis */
+const implicitOk=(g,e)=>!!e&&!e.base&&stOf(g,e.id)===0&&maxCat(e)>=0&&maxCat(e)<catIdx(g.cat);
+const effSt=(g,eid)=>implicitOk(g,BY[eid])?3:stOf(g,eid);
+const ownCat=(e,g)=>e.base||e.c.includes(g.cat);
 function preOk(g,pid){ const s=stOf(g,pid); if(s>=3) return true; const p=BY[pid]; if(!p) return true; return s===0&&!p.base&&minCat(p)<catIdx(g.cat); }
-function needs(g){ const out=[]; for(const e of elements()){ if(!forGym(e,g)) continue; const s=stOf(g,e.id); if(s>=3) continue; const miss=preOf(e.id).filter(p=>!preOk(g,p)); out.push({e,s,ready:!miss.length,miss}); } out.sort((a,b)=>(b.ready-a.ready)||((b.s>0)-(a.s>0))||(b.s-a.s)||(minCat(a.e)-minCat(b.e))); return out; }
-function progress(g){ const els=elements().filter(e=>forGym(e,g)); const done=els.filter(e=>stOf(g,e.id)>=3).length; return {done,total:els.length,pct:els.length?Math.round(done/els.length*100):0}; }
+function needs(g){ const out=[]; for(const e of elements()){ if(!forGym(e,g)) continue; const s=effSt(g,e.id); if(s>=3) continue; const miss=preOf(e.id).filter(p=>!preOk(g,p)); out.push({e,s,ready:!miss.length,miss}); } out.sort((a,b)=>(b.ready-a.ready)||((b.s>0)-(a.s>0))||(b.s-a.s)||(minCat(a.e)-minCat(b.e))); return out; }
+function progress(g){ const els=elements().filter(e=>ownCat(e,g)); const done=els.filter(e=>effSt(g,e.id)>=3).length; return {done,total:els.length,pct:els.length?Math.round(done/els.length*100):0}; }
 function workGroups(list,max){ const b={},free=[]; for(const g of list){ const n=needs(g).filter(x=>x.ready); if(!n.length){ free.push(g); continue; } (b[n[0].e.id]=b[n[0].e.id]||[]).push(g); } const out=[]; for(const [eid,l] of Object.entries(b)) for(let i=0;i<l.length;i+=max) out.push({eid,gyms:l.slice(i,i+max)}); out.sort((a,b)=>b.gyms.length-a.gyms.length||minCat(BY[a.eid])-minCat(BY[b.eid])); if(free.length) out.push({eid:null,gyms:free}); return out; }
 function setStatus(gid,eid,s){ const d=today(); store.patch("gymnasts",gid,{st:{[eid]:{s,d}},log:{[Date.now().toString(36)+uid().slice(0,3)]:{e:eid,s,d}}}); }
 
@@ -272,19 +298,23 @@ function vEvaluer(id){
   ${enginBar()}
   <div class="pillbar" role="group" aria-label="Famille">${fams.map(f=>`<button class="pill" data-fam="${esc(f)}" aria-pressed="${f===S.fam}">${esc(f)}</button>`).join("")}</div>
   ${list.length?"":noGyms()}
-  ${Object.entries(by).map(([f,arr])=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${arr.map(e=>{ const tgt=list.filter(g=>forGym(e,g)); const ok=tgt.filter(g=>stOf(g,e.id)>=3).length; const wip=tgt.filter(g=>{const s=stOf(g,e.id);return s===1||s===2;}).length; return `<button class="li" data-go="evaluer--${e.id}"><span class="grow"><span class="t">${esc(e.n)}</span><span class="d">${e.base?"Base GETUMA":esc(e.c.join(" · "))}${wip?` · ${wip} en cours`:""}</span></span><span class="nm small muted">${ok}/${tgt.length}</span><span class="chev">›</span></button>`; }).join("")}</div></div>`).join("")}`;
+  ${Object.entries(by).map(([f,arr])=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${arr.map(e=>{ const tgt=list.filter(g=>forGym(e,g)); const ok=tgt.filter(g=>effSt(g,e.id)>=3).length; const wip=tgt.filter(g=>{const s=stOf(g,e.id);return s===1||s===2;}).length; return `<button class="li" data-go="evaluer--${e.id}"><span class="grow"><span class="t">${esc(e.n)}</span><span class="d">${e.base?"Base GETUMA":esc(e.c.join(" · "))}${wip?` · ${wip} en cours`:""}</span></span><span class="nm small muted">${ok}/${tgt.length}</span><span class="chev">›</span></button>`; }).join("")}</div></div>`).join("")}`;
 }
-function rankList(eid,list){ return list.filter(g=>stOf(g,eid)>=3).sort((a,b)=>{ const ra=(a.rk||{})[eid], rb=(b.rk||{})[eid]; return (ra??1e6)-(rb??1e6)||stOf(b,eid)-stOf(a,eid)||(a.name||"").localeCompare(b.name||"","fr"); }); }
+function rankIn(eid,list,s){ return list.filter(g=>effSt(g,eid)===s).sort((a,b)=>{ const ra=(a.rk||{})[eid], rb=(b.rk||{})[eid]; return (ra??1e6)-(rb??1e6)||(a.name||"").localeCompare(b.name||"","fr"); }); }
 function vElement(e,list){
   const tgt=S.showAll?list:list.filter(g=>forGym(e,g));
-  const pre=preOf(e.id).map(p=>BY[p]).filter(Boolean);
+  const pre=preOf(e.id).map(p=>BY[p]).filter(Boolean); S.acc=S.acc||{};
+  const groups=[0,1,2,3,4].map(s=>({s,arr:rankIn(e.id,tgt,s)}));
+  const row=(g,i,arr,s)=>{ const imp=implicitOk(g,e); const miss=s<3&&preOf(e.id).some(p=>!preOk(g,p));
+    return `<div class="li evrow">${S.rankMode&&arr.length>1?`<span class="num">${i+1}</span>`:""}<span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${imp?" · catégorie inférieure, considéré acquis":""}${miss?" · prérequis manquant":""}</span></span>
+    ${S.rankMode?(arr.length>1?`<span class="rk"><button class="btn link" data-rk="${e.id}|${g.id}|-1|${s}" aria-label="Monter ${esc(g.name)}" ${i===0?"disabled":""}>↑</button><button class="btn link" data-rk="${e.id}|${g.id}|1|${s}" aria-label="Descendre ${esc(g.name)}" ${i===arr.length-1?"disabled":""}>↓</button></span>`:""):pick(g.id,e.id)}</div>`; };
   return `<button class="back" data-go="evaluer">‹ Éléments</button>
-  <div class="head"><div style="flex:1"><h1 style="font-size:22px">${esc(e.n)}</h1><div class="sub">${e.base?"Base GETUMA":esc(e.c.join(" · "))}${e.est?` · EST ${esc(e.est)}`:""}${e.h?" · tenue exigée":""}</div></div></div>
-  ${legend()}
-  <div class="sec"><div class="label">Gymnastes (${tgt.length})</div>${tgt.length?`<div class="divide">${tgt.map(g=>`<div class="li"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${preOf(e.id).some(p=>!preOk(g,p))&&stOf(g,e.id)<3?" · prérequis manquant":""}</span></span>${pick(g.id,e.id)}</div>`).join("")}</div>`:`<div class="empty">Aucun gymnaste concerné par cet élément.</div>`}
-  ${(()=>{ const r=rankList(e.id,list); return r.length>1?`<div class="sec"><div class="label">Classement : qui le fait le mieux</div><p class="xs muted" style="margin:0 4px 4px">Parmi les gymnastes qui l'ont acquis ou maîtrisé. Monte ou descends avec les flèches.</p><div class="divide">${r.map((g,i)=>`<div class="li"><span class="nm muted" style="width:22px">${i+1}</span><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${ST[stOf(g,e.id)].l}</span></span><button class="btn link" data-rk="${e.id}|${g.id}|-1" aria-label="Monter ${esc(g.name)}" ${i===0?"disabled":""}>↑</button><button class="btn link" data-rk="${e.id}|${g.id}|1" aria-label="Descendre ${esc(g.name)}" ${i===r.length-1?"disabled":""}>↓</button></div>`).join("")}</div></div>`:""; })()}
-  <button class="btn link" data-toggleall>${S.showAll?"Afficher seulement les catégories concernées":"Afficher tout le groupe"}</button></div>
-  <div class="box"><h3>Exercices d'apprentissage</h3><div class="divide">${postesIds(e.id).map((p,i)=>poLi(p,i)).join("")}</div>${pre.length?`<div class="small muted">Prérequis : ${pre.map(p=>esc(p.n)).join(" · ")}</div>`:""}<a class="small" href="#biblio--el-${e.id}">Fiche technique et renforcement</a></div>`;
+  <header class="hero"><div class="row">${/^\d{5}$/.test(e.stv||"")?`<span class="tag">N° ${e.stv}</span>`:""}<span class="tag">${e.base?"Base GETUMA":catRange(e)}</span>${e.h?`<span class="tag">Tenue 2 s</span>`:""}</div><h1>${esc(e.n)}</h1>
+   <div class="row"><button class="btn ${S.rankMode?"primary":""}" data-rankmode>${S.rankMode?"Terminer le classement":"Classer du meilleur au moins bon"}</button><a class="btn" href="#biblio--el-${e.id}" style="text-decoration:none">Fiche technique</a></div></header>
+  ${S.rankMode?`<p class="small muted" style="margin:0">Dans chaque statut, monte en haut le gymnaste le plus proche de réussir (ou qui le fait le mieux).</p>`:legend()}
+  ${tgt.length?groups.map(({s,arr})=>{ const key=`${s}`; const open=S.acc[key]??(s<3); return `<details class="acc" data-acc="${key}" ${open?"open":""}><summary><i class="st st${s}">${ST[s].s}</i><b>${ST[s].l}</b><span class="muted">${arr.length}</span></summary>${arr.length?`<div class="divide">${arr.map((g,i)=>row(g,i,arr,s)).join("")}</div>`:`<div class="small muted" style="padding:6px 4px">Personne.</div>`}</details>`; }).join(""):`<div class="empty">Aucun gymnaste concerné par cet élément.</div>`}
+  <button class="btn link" data-toggleall>${S.showAll?"Afficher seulement les catégories concernées":"Afficher tout le groupe"}</button>
+  <section class="card"><h2><span aria-hidden="true">🧩</span>Exercices d'apprentissage</h2><div class="divide">${postesIds(e.id).map((p,i)=>poLi(p,i)).join("")}</div>${pre.length?`<div class="small muted">Prérequis : ${pre.map(p=>esc(p.n)).join(" · ")}</div>`:""}</section>`;
 }
 function vGroupes(){
   const po=presentOnly(gyms(),today()); const list=po.list; const wg=workGroups(list,S.maxSize);
@@ -311,23 +341,29 @@ function vSeance(id){
    <label class="f" for="pWarm">Échauffement<input class="inp" type="number" id="pWarm" inputmode="numeric" min="0" max="60" step="5" value="15"></label>
    <label class="f" for="pCool">Retour au calme<input class="inp" type="number" id="pCool" inputmode="numeric" min="0" max="30" step="5" value="10"></label>
    <label class="f" for="pRot">Changement d'atelier toutes les<select class="sel" id="pRot">${[0,10,15,20].map(n=>`<option value="${n}" ${n===15?"selected":""}>${n?n+" min":"jamais"}</option>`).join("")}</select></label>
+   <fieldset style="border:0;padding:0;margin:0;grid-column:1/-1"><legend class="xs muted">Engins de l'entraînement</legend><div class="pillbar" style="flex-wrap:wrap">${ENGINS.map(([k,l])=>`<label class="pill" for="pe-${k}"><input type="checkbox" id="pe-${k}" data-pe="${k}" ${(S.planEngins||[S.engin]).includes(k)?"checked":""}> ${l}</label>`).join("")}</div></fieldset>
+   <label class="f" for="pFree" style="grid-column:1/-1">Blocs libres (un par ligne : nom et minutes)<textarea class="inp" id="pFree" data-keep style="min-height:70px" placeholder="Chorégraphie 15&#10;Synchro 10">${esc(S.planFree||"")}</textarea></label>
    <fieldset style="border:0;padding:0;margin:0;grid-column:1/-1"><legend class="xs muted">Coachs présents</legend><div class="pillbar">${coaches.length?coaches.map((c,i)=>`<label class="pill" for="pc-${i}"><input type="checkbox" id="pc-${i}" data-coach="${esc(c)}" checked> ${esc(c)}</label>`).join(""):`<span class="small muted">Aucun coach rattaché à cette société.</span>`}</div></fieldset>
    <button class="btn primary" type="submit" style="grid-column:1/-1">Générer la séance</button></form>`:noGyms()}
   <div class="sec"><div class="label">Séances enregistrées</div>${saved.length?`<div class="divide">${saved.slice(0,15).map(([sid,s])=>`<button class="li" data-go="seance--${sid}"><span class="grow"><span class="t">${fmtDate(s.date)} · ${esc(s.start)}</span><span class="d">${s.dur} min</span></span><span class="chev">›</span></button>`).join("")}</div>`:`<div class="small muted" style="padding:4px">Aucune pour l'instant.</div>`}</div>`;
 }
 function buildPlan(o){
-  const po=presentOnly(gyms(),o.date); const list=po.list; const t0=toMin(o.start); const main=Math.max(10,o.dur-o.warm-o.cool);
-  const wg=workGroups(list,S.maxSize); const coaches=o.coaches;
-  const stations=wg.map((w,i)=>({eid:w.eid,names:w.gyms.map(g=>g.name+(po.a&&presNote(po.a,g)?` (${presNote(po.a,g)})`:"")),coach:coaches.length?coaches[i%coaches.length]:"",postes:w.eid?postesFor(w.eid):["Perfectionnement ou préparation physique"]}));
-  const blocks=[]; let t=t0;
+  const po=presentOnly(gyms(),o.date); const list=po.list; const t0=toMin(o.start); const coaches=o.coaches;
+  const engins=(o.engins&&o.engins.length?o.engins:[S.engin]); const free=o.free||[]; const freeMin=free.reduce((s,f)=>s+f.min,0);
+  const main=Math.max(10*engins.length,o.dur-o.warm-o.cool-freeMin); const per=Math.max(10,Math.floor(main/engins.length/5)*5||Math.floor(main/engins.length));
+  const blocks=[]; let t=t0; const prev=S.engin;
   if(o.warm){ blocks.push({t:toHM(t),dur:o.warm,title:"Échauffement",detail:"Mobilisation, poignets, gainage I / C+ / C−, appuis.",stations:[]}); t+=o.warm; }
-  blocks.push({t:toHM(t),dur:main,title:"Travail par groupes de besoin",detail:o.rot?`Chaque groupe enchaîne ses ateliers et change toutes les ${o.rot} min. Termine par l'élément complet.`:"Chaque groupe enchaîne ses ateliers et termine par l'élément complet.",stations}); t+=main;
+  engins.forEach((eng,k)=>{ S.engin=eng; const d=k===engins.length-1?main-per*(engins.length-1):per;
+    const stations=workGroups(list,S.maxSize).map((w,i)=>({eid:w.eid,names:w.gyms.map(g=>g.name+(po.a&&presNote(po.a,g)?` (${presNote(po.a,g)})`:"")),coach:coaches.length?coaches[i%coaches.length]:"",postes:w.eid?postesFor(w.eid):["Perfectionnement ou préparation physique"]}));
+    blocks.push({t:toHM(t),dur:d,engin:eng,title:`${enginName(eng)} : groupes de besoin`,detail:o.rot?`Chaque groupe enchaîne ses ateliers et change toutes les ${o.rot} min. Termine par l'élément complet.`:"Chaque groupe enchaîne ses ateliers et termine par l'élément complet.",stations}); t+=d; });
+  S.engin=prev;
+  free.forEach(f=>{ blocks.push({t:toHM(t),dur:f.min,title:f.t,detail:"Bloc libre",stations:[]}); t+=f.min; });
   if(o.cool) blocks.push({t:toHM(t),dur:o.cool,title:"Retour au calme",detail:"Souplesse active, bilan rapide.",stations:[]});
-  return {...o,groupId:S.groupId,apps:[S.engin],blocks,created:new Date().toISOString()};
+  return {...o,groupId:S.groupId,apps:engins,blocks,created:new Date().toISOString()};
 }
 function vPlan(p,unsaved){
   return `<button class="back" data-go="seance">‹ Séances</button>
-  <div class="head"><div style="flex:1"><h1 style="font-size:22px">${fmtDate(p.date)} · ${esc(p.start)}</h1><div class="sub">${p.dur} min · ${groupName()} · ${enginName((p.apps||["sol"])[0])}</div></div></div>
+  <div class="head"><div style="flex:1"><h1 style="font-size:22px">${fmtDate(p.date)} · ${esc(p.start)}</h1><div class="sub">${p.dur} min · ${groupName()} · ${(p.apps||["sol"]).map(enginName).join(" + ")}</div></div></div>
   <div class="row">${unsaved?`<button class="btn primary" id="savePlan">Enregistrer</button>`:""}<button class="btn" id="copyPlan">Copier le texte</button>${!unsaved?`<button class="btn" data-presgo="${p.date}">Présences</button>`:""}${!unsaved?`<button class="btn link danger" data-delplan="${p.id}">Supprimer</button>`:""}</div>
   <div class="tl">${p.blocks.map(b=>`<div class="slot"><time>${b.t}<div class="xs muted">${b.dur} min</div></time><div style="display:grid;gap:8px"><h3>${esc(b.title)}</h3>${b.detail?`<span class="small muted">${esc(b.detail)}</span>`:""}${(b.stations||[]).map((s,i)=>`<div class="box"><div class="xs muted">Groupe ${i+1}${s.coach?` · ${esc(s.coach)}`:""}</div><b>${s.eid?esc(BY[s.eid]?.n||""):"Consolidation"}</b><div class="small">${s.names.map(esc).join(", ")}</div><ol class="steps xs muted">${s.postes.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>`).join("")}</div></div>`).join("")}</div>`;
 }
@@ -357,7 +393,7 @@ function vPresences(){
    <label class="f" for="presStart">Heure<input class="inp" type="time" id="presStart" value="${esc((a&&a.start)||gr.def_start||"18:00")}"></label>
    <label class="f" for="presDur">Durée (min)<input class="inp" type="number" id="presDur" inputmode="numeric" min="30" max="300" step="15" value="${esc((a&&a.dur)||gr.def_dur||90)}"></label>
    <label class="f" for="presLieu">Lieu<input class="inp" id="presLieu" value="${esc((a&&a.lieu)||gr.def_lieu||"")}" placeholder="Ex. Salle de Vevey"></label></div>
-  <div class="row"><button class="btn" id="presAll">Tous présents</button></div>
+  <div class="row"><button class="btn" id="presAll">Tous présents</button><button class="btn" id="presNone">Décocher les présents</button></div>
   <datalist id="excuses"><option>Santé</option><option>École</option><option>Famille</option><option>Vacances</option><option>Autre activité</option></datalist>
   <div class="sec"><div class="label">Gymnastes (par nom de famille)</div><div class="divide">${list.map(g=>{ const x=pst(a,g.id); const [pr,nm]=splitName(g); const k=`${key}|${g.id}`;
     return `<div class="pres"><div class="prow"><span class="grow"><span class="t"><b>${esc(nm)}</b> ${esc(pr)}</span><span class="d">${g.cat}${yearOf(g)?` · ${yearOf(g)}`:""}${S.extra&&!g.bdns?" · N° BDNS manquant":""}</span></span>
@@ -446,14 +482,48 @@ const ENGIN_ZONES={anneaux:["Épaules","Tronc (gainage)","Poignets & mains"],rec
 const FAM_ZONES={"Roulés":["Tronc (gainage)","Colonne & dos","Cou"],"Appuis renversés":["Épaules","Poignets & mains","Tronc (gainage)"],"Renversements latéraux":["Épaules","Hanches","Tronc (gainage)"],"Ponts et souplesses":["Colonne & dos","Épaules"],"Sauts":["Jambes","Pieds & chevilles"],"Souplesse":["Hanches"],"Balances":["Hanches","Jambes","Pieds & chevilles"],"Force et gainage":["Tronc (gainage)","Hanches"]};
 const norm=s=>String(s||"").normalize("NFD").replace(/\p{M}/gu,"").toLowerCase();
 function suggestEx(e,n=6){ if(!EX) return []; const z=FAM_ZONES[famOf(e)]||ENGIN_ZONES[e.a]||[]; const wantSoup=famOf(e)==="Souplesse"||famOf(e)==="Ponts et souplesses"; return EX.filter(x=>x.zone.some(v=>z.includes(v))&&x.niv<=2).map(x=>({x,s:x.zone.reduce((s,v,i)=>s+(z.includes(v)?(3-z.indexOf(v))*(i===0?2:1):0),0)+(wantSoup&&x.type.includes("Souplesse")?2:0)+(x.type.includes("Force")&&!wantSoup?1:0)-x.niv})).sort((a,b)=>b.s-a.s).slice(0,n).map(o=>o.x); }
+/* ---------- fiches techniques intégrées à GETUMA (version d'origine, modifiable par l'admin) ---------- */
+const FICHE_DEF={
+ e58:{
+  desc:"La roue est un renversement latéral : le gymnaste passe de la station à la station en posant successivement une main, l'autre main, un pied puis l'autre pied, sur une même ligne, en passant par l'appui renversé jambes écartées. C'est le premier élément qui combine renversement et rotation autour de l'axe profond.\n\nElle paraît simple, mais elle installe tout ce dont la rondade aura besoin : fente d'entrée, pose alternée des mains sur une ligne, corps gainé dans un seul plan et rythme main, main, pied, pied. Une roue approximative donne presque toujours une rondade déviante.",
+  cue:"Tu passes par-dessus tes mains comme une roue de vélo, bien droit, sur une ligne.",
+  axe:"Profond", posture:"I",
+  obj:["Maîtriser le renversement latéral depuis une fente avant.","Poser mains et pieds sur une même ligne, dans le bon ordre et avec un rythme régulier.","Traverser l'appui renversé écarté dans un seul plan, corps gainé.","Préparer la rondade (entrée, pose des mains, alignement)."],
+  pts:["Entrée par la fente : bras en haut, oreilles entre les bras, la jambe avant fléchie pousse, la jambe arrière lance.","Renversement avant la rotation : le tronc bascule vers l'avant dans l'axe de la ligne, puis la rotation latérale s'installe pendant la pose des mains. Un buste qui tourne trop tôt fait sortir de la ligne.","Mains sur la ligne, épaules ouvertes : bras tendus, épaules poussées vers le haut, regard entre les mains.","Passage à la verticale : jambes tendues et écartées, bassin au-dessus des épaules, corps en I dans le plan latéral.","Retour contrôlé : le premier pied se pose près de la main opposée, sur la ligne, et le gymnaste se redresse à la station écartée latérale, bras en haut."],
+  phasesNote:"Description pour une roue côté gauche (main gauche posée en premier). Inverser pour le côté droit.",
+  phases:[["Position de départ","Station face à la ligne, bras en haut, jambe gauche devant","I","Vers l'avant, sur la ligne","Grand, bras collés aux oreilles"],["Fente et déséquilibre","Pas en fente sur la jambe gauche, le tronc bascule vers l'avant dans l'axe","I (tronc + bras alignés)","Vers le point de pose des mains","Tu tombes vers l'avant comme une planche"],["Pose de la première main","Main gauche sur la ligne, rotation latérale qui démarre, jambe droite lancée","I, épaules ouvertes","Entre les mains","Main, puis l'autre main, loin de ton pied"],["Passage à l'appui renversé écarté","Main droite posée, bassin au-dessus des épaules, jambes en étoile","I latéral, jambes tendues écartées","Entre les mains","Étoile, pieds au plafond"],["Pose des pieds","Jambe droite se pose sur la ligne près de la main droite, poussée des bras","I","Mains, puis devant","Pied, pied, sur la ligne"],["Retour à la station","Redressement à la station écartée latérale, bras en haut","I","Devant, dans l'axe","Tu finis grand, bras en haut, en étoile"]],
+  rythme:"Main, main, pied, pied : quatre appuis réguliers sur une seule ligne.",
+  preTech:[["Fente avant maîtrisée","Fente tenue 3 s, bras en haut, tronc et bras alignés, des deux côtés"],["Appui renversé contre le mur","10 s dos au mur, bras tendus, épaules ouvertes, sans creux marqué"],["Appui renversé lancé depuis la fente","Montée à la verticale et retour en fente, 3 sur 3"],["Orientation latérale","Sait dire quelle main pose en premier et le montre avant d'exécuter"]],
+  prePhys:[["Force d'appui des bras","10 s en appui facial (planche) bras tendus, épaules poussées"],["Gainage","Hollow (C+ léger) 20 s et gainage dorsal 20 s sans perte de ligne"],["Ouverture d'épaules","Bras tendus à l'oreille en position couchée sans décoller le bas du dos"],["Écart des jambes","Écart facial d'au moins 120° jambes tendues (estimation, à valider)"],["Poignets","Échauffement des poignets sans douleur en appui"]],
+  err:[["Mains posées trop près du pied d'appui","2-3","Pas de bascule du tronc, peur de tomber","Marquer au sol la fente et la pose des mains à une longueur de corps ; « loin de ton pied »"],["Trajectoire en arc, pas en ligne","3-5","Buste qui tourne trop tôt, mains hors axe","Ligne tracée ou poutre au sol, repères pour les 4 appuis"],["Bassin qui ne passe pas à la verticale (roue « basse »)","4","Jambe arrière pas lancée, manque d'impulsion de la fente","Lancer de jambe isolé, roue sur plan incliné en descente"],["Bras fléchis","3-4","Force d'appui, épaules fermées","Renforcement appuis, « pousse le sol », épaules haussées"],["Jambes fléchies, pieds non pointés","4-5","Tonicité, souplesse en écart","Roue contre le mur ou entre deux tapis verticaux, éducatifs étoile tenue"],["Corps « cassé » aux hanches (carpé)","4","Gainage, peur du renversement","Roue sur gros tapis avec manipulation, gainage I"],["Retour déséquilibré, chute vers l'arrière","5-6","Pied posé loin de la ligne, pas de poussée des bras","Pied près de la main, finir « grand », tenir 2 s"]],
+  aide:"Aide manuelle (manipulation) : le coach se place dans le dos du gymnaste, côté de la première main, mains croisées sur la taille, et accompagne la rotation pendant tout le renversement.",
+  prepaNote:"Dosage par défaut : 2 séries, qualité avant quantité.",
+  prepa:[["Planche faciale puis latérale (rotation de l'une à l'autre)","Gainage en rotation, appuis des bras","4 rotations par côté"],["Marche des mains en appui facial, pieds au mur","Force d'appui, épaules ouvertes","20 s"],["Étoile au sol (couché sur le côté, bras et jambe du dessus levés)","Gainage latéral","20 s par côté"],["Ouverture d'épaules avec bâton, bras tendus","Mobilité épaules","10 répétitions"],["Lancers de jambe arrière depuis la fente","Impulsion de la jambe lancée","8 par jambe"],["Écart facial actif (jambes levées et tenues)","Souplesse active en écart","20 s"]],
+  progNote:"On change un seul levier à la fois (matériel ou autonomie). On passe à l'étape suivante après 3 réussites sur 3, sur 2 séances.",
+  prog:["Découverte : lapin latéral sur la ligne (poste 1), puis manipulation complète par le coach.","Hauteur : roue au-dessus du plinth (poste 2), avec parade.","Facilitation : roue sur plan incliné (poste 3), aide légère puis sans aide.","Plan : roue entre deux repères (poste 4).","Ligne : roue sur la ligne avec marques (poste 5).","Autonomie : roue complète au sol, côté préféré puis côté faible (poste 6).","Variantes : roue sur une main, roues enchaînées, roue 1/4 de tour (vers la rondade)."],
+  jeunes:"Jeunes gymnastes : travailler les deux côtés dès le début, limiter les séries longues en appui sur les poignets, privilégier les parcours et les défis (« 3 roues sur la ligne sans toucher les côtés »).",
+  check:["Départ en fente, bras en haut alignés avec le tronc","Mains, puis pieds, posés sur une même ligne","Ordre et rythme réguliers : main, main, pied, pied","Bras tendus et épaules ouvertes pendant tout l'appui","Passage par la verticale, bassin au-dessus des épaules","Jambes tendues et écartées, pieds pointés","Retour à la station écartée latérale, bras en haut, sans pas supplémentaire","Réussi des deux côtés"],
+  checkNote:"Liste pédagogique GETUMA. Les critères officiels (EST, Programme de compétition 2026) seront ajoutés dès réception des documents.",
+  nextNote:[["e59","Ajout d'une rotation longitudinale en fin de roue"],["e60","Entrée, pose alternée des mains, alignement"]]
+ }
+};
+/* détail des postes d'origine, par nom de poste */
+const POSTE_INFO={
+ "Lapin latéral sur la ligne":{desc:"Appuis mains puis pieds, rythme",mat:"Ligne au sol",steps:["« Mains sur la ligne, saute les pieds de l'autre côté »"],crit:["Mains et pieds sur la ligne, 5 de suite"],secu:"Aucune aide nécessaire."},
+ "Roue au-dessus d'un plinth bas, parade aux hanches":{desc:"Passage du bassin en hauteur",mat:"Plinth 1 élément en travers, mains sur le plinth",steps:["« Les hanches passent au-dessus des mains »"],crit:["Bassin au-dessus des épaules"],secu:"Parade aux hanches."},
+ "Roue sur plan incliné":{desc:"Vitesse de renversement facilitée",mat:"Plan incliné en descente",steps:["« Étoile, puis pied, pied »"],crit:["Jambes tendues, retour stable"],secu:"Aide légère aux hanches."},
+ "Roue entre deux repères":{desc:"Rester dans un seul plan",mat:"Deux tapis verticaux ou couloir étroit",steps:["« Ne touche pas les murs »"],crit:["Aucun contact, 3 sur 3"],secu:"Parade."},
+ "Roue sur la ligne avec 4 marques":{desc:"Alignement des 4 appuis",mat:"Ligne tracée + 4 marques",steps:["« Main, main, pied, pied sur les marques »"],crit:["4 appuis sur les marques"],secu:"Aucune aide nécessaire."},
+ "Roue des deux côtés":{desc:"Bilatéralité et validation",mat:"Praticable",steps:["« Pareil de l'autre côté »"],crit:["Checklist validée des deux côtés"],secu:"Assurer."}
+};
 /* ---------- contenu modifiable par l'admin (collection content) ---------- */
 const CT=k=>(S.content&&S.content[k])||null;
-const elC=id=>CT("el_"+id)||{};
+const elC=id=>({...(FICHE_DEF[id]||{}),...(CT("el_"+id)||{})});
 const preOf=id=>{ const c=elC(id); return Array.isArray(c.pre)?c.pre:(PRE[id]||[]); };
 const nextOf=id=>ALLE.filter(e=>preOf(e.id).includes(id));
 const ficheOf=e=>elC(e.id).fiche||FICHES[e.id]||"";
 const hashId=s=>{ let h=5381; for(const ch of String(s)) h=((h*33)^ch.charCodeAt(0))>>>0; return "p"+h.toString(36); };
-const POSTE_DEF={}; const pidOf=n=>{ const id=hashId(n); POSTE_DEF[id]=POSTE_DEF[id]||{n}; return id; };
+const POSTE_DEF={}; const pidOf=n=>{ const id=hashId(n); POSTE_DEF[id]=POSTE_DEF[id]||{n,...(POSTE_INFO[n]||{})}; return id; };
 const POSTE_GEN=["Éducatif ciblé","Élément avec parade","Élément seul, 3 essais"].map(pidOf);
 Object.values(POSTES_EL).flat().forEach(pidOf); Object.values(POSTES_FAM).flat().forEach(pidOf);
 const posteOf=pid=>{ const d=POSTE_DEF[pid], c=CT("po_"+pid); if(!d&&!c) return null; return {id:pid,...(d||{}),...(c||{})}; };
@@ -504,13 +574,15 @@ function vBiblio(id){
   if(id&&id.startsWith("po-")) return posteOf(id.slice(3))?vFichePo(id.slice(3)):`<button class="back" data-go="biblio--appr">‹ Apprentissage</button><div class="empty">Poste introuvable.</div>`;
   if(id&&id.startsWith("ex-")){ loadEx(); return EX?(EXBY[id.slice(3)]?vFicheEx(exOf(id.slice(3))):`<button class="back" data-go="biblio--renfo">‹ Renforcement</button><div class="empty">Exercice introuvable.</div>`):`<div class="empty">Chargement…</div>`; }
   if(id==="elements") return vBibElements();
+  if(id==="arbre") return vTree();
   if(id==="appr") return vBibAppr();
   if(id==="renfo") return vBibRenfo();
   const tile=(go,ic,t,d)=>`<button class="tile" data-go="${go}"><span class="tic" aria-hidden="true">${ic}</span><span class="grow"><span class="t">${t}</span><span class="d">${d}</span></span><span class="chev">›</span></button>`;
   return `${header("Bibliothèque","Fiches et exercices")}
   <div class="tiles">${tile("biblio--elements","📖","Éléments","Fiches techniques par engin : code, catégories, prérequis, progression")}
   ${tile("biblio--appr","🧩","Exercices d'apprentissage","Postes et éducatifs pour apprendre chaque élément")}
-  ${tile("biblio--renfo","💪","Renforcement et mobilité","172 exercices de préparation physique spécifique")}</div>`;
+  ${tile("biblio--renfo","💪","Renforcement et mobilité","172 exercices de préparation physique spécifique")}
+  ${tile("biblio--arbre","🌳","Arbre de progression","Qui mène à quoi : prérequis et éléments suivants")}</div>`;
 }
 function vBibElements(){
   const q=norm(S.bibQ); const sol=S.engin==="sol";
@@ -522,22 +594,76 @@ function vBibElements(){
   ${fams.map(f=>`<section class="card flush"><h2>${esc(f)}</h2><div class="divide">${by[f].map(e=>`<button class="li elrow" data-go="biblio--el-${e.id}"><span class="code">${/^\d{5}$/.test(e.stv||"")?e.stv:e.base?"GETUMA":"·"}</span><span class="tag cat">${catRange(e)}</span><span class="grow t">${esc(e.n)}</span><span class="media">${mediaIcons(elC(e.id).media,ficheOf(e)||elC(e.id).desc)}</span><span class="chev">›</span></button>`).join("")}</div></section>`).join("")||`<div class="empty">Aucun élément trouvé.</div>`}
   <p class="xs muted" style="margin:0">Code STV, catégories où l'élément est demandé, nom. Icônes : image, vidéo, fiche technique.</p>`;
 }
+const boldLead=s=>{ const m=String(s).match(/^([^:]{2,60}) : (.+)$/s); return m?`<b>${esc(m[1])}</b> : ${esc(m[2])}`:esc(s); };
+const paras=s=>String(s||"").split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join("");
+const rowsOf=v=>(v||[]).map(r=>Array.isArray(r)?r:String(r).split("|").map(x=>x.trim()));
+function trows(rows,labels){ return rowsOf(rows).length?`<div class="trows">${rowsOf(rows).map(r=>`<div class="trow"><b>${esc(r[0])}</b>${labels.slice(1).map((l,i)=>r[i+1]?`<div><span class="xs muted">${l}</span> ${esc(r[i+1])}</div>`:"").join("")}</div>`).join("")}</div>`:""; }
+/* éléments « minimaux » : on retire ceux dont un prérequis (direct ou indirect) est déjà dans la liste */
+function ancestors(id,seen=new Set()){ for(const p of preOf(id)){ if(!seen.has(p)){ seen.add(p); ancestors(p,seen); } } return seen; }
+const minimalEls=arr=>arr.filter(e=>!arr.some(o=>o.id!==e.id&&ancestors(e.id).has(o.id)));
 function vFicheEl(e){
   loadEx(); const c=elC(e.id); const pre=preOf(e.id).map(p=>BY[p]).filter(Boolean); const nx=nextOf(e.id); const sug=suggestEx(e); const f=ficheOf(e);
-  const tech=[c.desc?`<p class="lead">${esc(c.desc)}</p>`:"",sub("Points clés",olist(c.pts)),sub("Erreurs fréquentes",ulist(c.err)),sub("Parade et sécurité",c.parade?`<p>${esc(c.parade)}</p>`:""),
-    f?`<a class="btn primary" style="text-decoration:none;text-align:center" href="${esc(f)}" target="_blank" rel="noopener">Ouvrir la fiche technique complète ↗</a>`:""].join("");
+  const nn=Object.fromEntries(rowsOf(c.nextNote)); const secs=[];
+  const S_=(id,icon,title,body)=>{ if(!body) return ""; secs.push([id,icon,title]); return `<section class="card" id="sec-${id}"><h2><span aria-hidden="true">${icon}</span>${title}</h2>${body}</section>`; };
+  const errs=(c.err||[]).map(x=>Array.isArray(x)?x:[x]);
+  const html=[
+    S_("pres","📖","Présentation",[paras(c.desc),c.cue?`<blockquote class="cue">Pour le gymnaste : « ${esc(c.cue)} »</blockquote>`:"",c.axe||c.posture?`<div class="xs muted">${c.axe?`Axe : ${esc(c.axe)}`:""}${c.axe&&c.posture?" · ":""}${c.posture?`Posture dominante : ${esc(c.posture)}`:""}</div>`:""].join("")),
+    S_("obj","🎯","Objectifs et points clés",[sub("Objectifs pédagogiques",ulist(c.obj)),(c.pts||[]).length?sub("Points clés",`<ol class="steps">${c.pts.map(s=>`<li>${boldLead(s)}</li>`).join("")}</ol>`):""].join("")),
+    S_("phases","🎞️","Décomposition par phase",[c.phasesNote?`<p class="small muted">${esc(c.phasesNote)}</p>`:"",rowsOf(c.phases).length?`<div class="trows">${rowsOf(c.phases).map((r,i)=>`<div class="trow"><b>${i+1}. ${esc(r[0])}</b>${r[1]?`<div>${esc(r[1])}</div>`:""}<div class="xs muted">${[r[2]?`Posture : ${esc(r[2])}`:"",r[3]?`Regard : ${esc(r[3])}`:""].filter(Boolean).join(" · ")}</div>${r[4]?`<div class="cue small">« ${esc(r[4])} »</div>`:""}</div>`).join("")}</div>`:"",c.rythme?`<p><b>Rythme</b> : ${esc(c.rythme)}</p>`:""].join("")),
+    S_("prog","🔗","Progression",`<div class="prog"><div><h3>Avant : prérequis</h3>${pre.length?`<div class="chips">${pre.map(elLink).join("")}</div>`:`<span class="small muted">Aucun</span>`}</div><div><h3>Après : éléments suivants</h3>${nx.length?`<div class="divide">${nx.map(p=>`<button class="li" data-go="biblio--el-${p.id}" style="min-height:0"><span class="grow"><span class="t small">${esc(p.n)} <span class="muted">${catRange(p)}</span></span>${nn[p.id]?`<span class="d">${esc(nn[p.id])}</span>`:""}</span><span class="chev">›</span></button>`).join("")}</div>`:`<span class="small muted">Aucun</span>`}</div></div>
+      ${sub("Prérequis techniques",trows(c.preTech,["","Test"]))}${sub("Prérequis physiques",trows(c.prePhys,["","Test"]))}
+      ${isAdmin()?`<a class="small" href="#biblio--arbre">Voir et modifier l'arbre de progression</a>`:`<a class="small" href="#biblio--arbre">Voir l'arbre de progression</a>`}`),
+    S_("err","⚠️","Erreurs fréquentes et corrections",errs.length?`<div class="trows">${errs.map(r=>`<div class="trow"><b>${esc(r[0])}</b>${r.length>1?`${r[1]?`<div class="xs muted">Phase ${esc(r[1])}</div>`:""}${r[2]?`<div><span class="xs muted">Cause</span> ${esc(r[2])}</div>`:""}${r[3]?`<div><span class="xs muted">Correction</span> ${esc(r[3])}</div>`:""}`:""}</div>`).join("")}</div>`:""),
+    S_("appr","🧩","Exercices d'apprentissage",`<p class="small muted">Dans l'ordre de progression. Touche un poste pour voir sa fiche.</p><div class="divide">${postesIds(e.id).map((p,i)=>poLi(p,i)).join("")}</div>${c.aide?`<p class="small">${boldLead(c.aide)}</p>`:""}${c.parade?`<p class="small"><b>Parade et sécurité</b> : ${esc(c.parade)}</p>`:""}
+      ${(c.prog||[]).length?sub("Étapes de progression",`${c.progNote?`<p class="small muted">${esc(c.progNote)}</p>`:""}<ol class="steps">${c.prog.map(s=>`<li>${boldLead(s)}</li>`).join("")}</ol>`):""}${c.jeunes?`<blockquote class="cue small">${boldLead(c.jeunes)}</blockquote>`:""}`),
+    S_("phys","💪","Préparation physique",[c.prepaNote?`<p class="small muted">${esc(c.prepaNote)}</p>`:"",sub("Spécifique à l'élément",trows(c.prepa,["","Cible","Dosage"])),EX?sub("Dans la bibliothèque",`<div class="divide">${sug.map(exLi).join("")}</div>`):""].join("")),
+    S_("check","✅","Checklist de validation",(c.check||[]).length?`${c.checkNote?`<p class="small muted">${esc(c.checkNote)}</p>`:""}<ul class="checks">${c.check.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`:"")
+  ].join("");
+  const rich=c.desc||(c.pts||[]).length||rowsOf(c.phases).length;
   return `<button class="back" data-go="biblio--elements">‹ Éléments</button>
   <header class="hero"><div class="row">${/^\d{5}$/.test(e.stv||"")?`<span class="tag">N° ${e.stv}</span>`:""}<span class="tag">${e.base?"Base GETUMA":catRange(e)}</span>${e.h?`<span class="tag">Tenue 2 s</span>`:""}</div>
    <h1>${esc(e.n)}</h1><div class="sub">${enginName(e.a)} · ${esc(famOf(e))}${e.est?` · EST ${esc(e.est)}`:""}</div>
-   <div class="row">${editBtn("el-"+e.id)}<button class="btn" data-go="evaluer--${e.id}">Évaluer le groupe</button></div></header>
+   <div class="row">${editBtn("el-"+e.id)}<button class="btn" data-go="evaluer--${e.id}">Évaluer le groupe</button>${f?`<a class="btn" href="${esc(f)}" target="_blank" rel="noopener" style="text-decoration:none">Document lié ↗</a>`:""}</div></header>
+  ${secs.length>2?`<nav class="toc" aria-label="Sommaire">${secs.map(([id,ic,ti])=>`<button class="pill" data-scroll="sec-${id}">${ic} ${esc(ti.split(" ")[0])}</button>`).join("")}</nav>`:""}
   ${gallery(c.media)}
-  ${card("🎯","Technique",tech||`<p class="muted small" style="margin:0">Fiche technique en cours de rédaction.</p>`)}
-  ${card("🔗","Progression",`<div class="prog"><div><h3>Avant : prérequis</h3>${pre.length?`<div class="chips">${pre.map(elLink).join("")}</div>`:`<span class="small muted">Aucun</span>`}</div><div><h3>Après : éléments suivants</h3>${nx.length?`<div class="chips">${nx.map(elLink).join("")}</div>`:`<span class="small muted">Aucun</span>`}</div></div>`)}
-  ${card("🧩","Exercices d'apprentissage",`<p class="small muted" style="margin:0">Dans l'ordre de progression. Touche un poste pour voir sa fiche.</p><div class="divide">${postesIds(e.id).map((p,i)=>poLi(p,i)).join("")}</div>`)}
-  ${card("💪","Renforcement conseillé",EX?`<div class="divide">${sug.map(exLi).join("")||`<span class="small muted">Aucune suggestion.</span>`}</div>`:`<div class="small muted">Chargement…</div>`)}`;
+  ${rich?"":`<p class="small muted" style="margin:0">Fiche technique en cours de rédaction.</p>`}
+  ${html}`;
+}
+/* ---------- arbre de progression ---------- */
+function vTree(){
+  const all=ALLE.filter(e=>e.a===S.engin); const fams=famList(all); if(S.treeFam&&!fams.includes(S.treeFam)) S.treeFam="";
+  let set=all.filter(e=>!S.treeFam||famOf(e)===S.treeFam);
+  if(S.treeFam){ const ids=new Set(set.map(e=>e.id)); const extra=all.filter(e=>!ids.has(e.id)&&(preOf(e.id).some(p=>ids.has(p))||set.some(s=>preOf(s.id).includes(e.id)))); set=set.concat(extra.map(e=>({...e,ghost:1}))); }
+  const ids=new Set(set.map(e=>e.id)); const lv={}; const level=(id,stack=new Set())=>{ if(lv[id]!=null) return lv[id]; if(stack.has(id)) return 0; stack.add(id); const ps=preOf(id).filter(p=>ids.has(p)); lv[id]=ps.length?1+Math.max(...ps.map(p=>level(p,stack))):0; return lv[id]; };
+  set.forEach(e=>level(e.id)); const rows={}; set.forEach(e=>(rows[lv[e.id]]=rows[lv[e.id]]||[]).push(e));
+  const sel=S.treeSel&&ids.has(S.treeSel)?BY[S.treeSel]:null; const sp=sel?new Set(preOf(sel.id)):new Set(), sn=sel?new Set(nextOf(sel.id).map(e=>e.id)):new Set();
+  const cls=e=>[e.ghost?"ghost":"",sel?(e.id===sel.id?"sel":sp.has(e.id)?"pre":sn.has(e.id)?"nxt":"dim"):""].join(" ");
+  const node=e=>`<button class="tnode ${cls(e)}" data-tn="${e.id}"><span class="code">${/^\d{5}$/.test(e.stv||"")?e.stv:e.base?"Base":""}</span><span class="tn">${esc(e.n.length>48?e.n.slice(0,46)+"…":e.n)}</span><span class="xs muted">${catRange(e)}</span></button>`;
+  return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Arbre de progression · ${enginName(S.engin)}</h1>${enginBar()}
+  <div class="pillbar"><button class="pill" data-tf="" aria-pressed="${!S.treeFam}">Tout</button>${fams.map(f=>`<button class="pill" data-tf="${esc(f)}" aria-pressed="${S.treeFam===f}">${esc(f)}</button>`).join("")}</div>
+  ${isAdmin()?`<div class="row"><button class="btn ${S.treeEdit?"primary":""}" data-tedit>${S.treeEdit?"Terminer la modification":"Modifier les liens"}</button>${S.treeEdit?`<div class="seg" style="width:auto;grid-template-columns:1fr 1fr"><button data-tdir="pre" aria-pressed="${S.treeDir!=="next"}" class="s-p">Prérequis</button><button data-tdir="next" aria-pressed="${S.treeDir==="next"}" class="s-p">Suivant</button></div>`:""}</div>`:""}
+  <p class="small muted" style="margin:0">${S.treeEdit?(sel?`Touche un autre élément pour l'ajouter comme <b>${S.treeDir==="next"?"élément suivant":"prérequis"}</b> de « ${esc(sel.n)} », ou pour retirer un lien existant.`:"Touche d'abord l'élément à modifier."):"Du haut vers le bas : chaque élément s'appuie sur ceux du dessus. Touche un élément pour voir ses liens."}</p>
+  ${sel?`<div class="selbar"><b>${esc(sel.n)}</b><span class="small"><span class="dot pre"></span>${sp.size} prérequis · <span class="dot nxt"></span>${sn.size} suivant${sn.size>1?"s":""}</span><button class="btn" data-go="biblio--el-${sel.id}">Fiche</button></div>`:""}
+  <div class="tree">${Object.keys(rows).sort((a,b)=>a-b).map(k=>`<div class="tlevel"><div class="lvl">Étape ${+k+1}</div><div class="tnodes">${rows[k].sort((a,b)=>famRank(famOf(a))-famRank(famOf(b))||codeOf(a)-codeOf(b)).map(node).join("")}</div></div>`).join("")}<svg class="tlinks" aria-hidden="true"></svg></div>`;
+}
+function drawTree(){ const box=document.querySelector(".tree"), svg=box&&box.querySelector(".tlinks"); if(!svg) return; const r0=box.getBoundingClientRect(); svg.setAttribute("width",r0.width); svg.setAttribute("height",r0.height);
+  const pos={}; box.querySelectorAll("[data-tn]").forEach(b=>{ const r=b.getBoundingClientRect(); pos[b.dataset.tn]={x:r.left-r0.left+r.width/2,top:r.top-r0.top,bot:r.bottom-r0.top}; });
+  let out=""; for(const id of Object.keys(pos)) for(const p of preOf(id)){ if(!pos[p]) continue; const a=pos[p], b=pos[id]; const hl=S.treeSel&&(S.treeSel===id||S.treeSel===p); const y1=a.bot, y2=b.top, my=(y1+y2)/2;
+    out+=`<path d="M${a.x},${y1} C${a.x},${my} ${b.x},${my} ${b.x},${y2}" class="${hl?"hl":""}"/>`; }
+  svg.innerHTML=out; }
+window.addEventListener("resize",()=>{ clearTimeout(window._dt); window._dt=setTimeout(drawTree,120); });
+function treeTap(id){
+  if(!S.treeEdit||!S.treeSel||S.treeSel===id){ S.treeSel=S.treeSel===id?null:id; render(); return; }
+  const sel=S.treeSel; const [child,parent]=S.treeDir==="next"?[id,sel]:[sel,id];
+  const linked=preOf(child).includes(parent), rev=preOf(parent).includes(child);
+  const save=(c,arr)=>store.set("content","el_"+c,{...(CT("el_"+c)||{}),pre:arr});
+  if(linked){ save(child,preOf(child).filter(p=>p!==parent)); toast("Lien retiré"); }
+  else if(rev){ save(parent,preOf(parent).filter(p=>p!==child)); toast("Lien retiré"); }
+  else if(ancestors(parent).has(child)){ toast("Impossible : ça créerait une boucle"); return; }
+  else { save(child,[...preOf(child),parent]); toast(`« ${BY[parent].n} » est maintenant prérequis de « ${BY[child].n} »`); }
 }
 function vFichePo(pid){
-  const p=posteOf(pid); const used=ALLE.filter(e=>postesIds(e.id).includes(pid)&&(e.a==="sol"||Array.isArray(elC(e.id).postes)));
+  const p=posteOf(pid); const used=minimalEls(ALLE.filter(e=>postesIds(e.id).includes(pid)&&(e.a==="sol"||Array.isArray(elC(e.id).postes))));
   return `<button class="back" data-go="biblio--appr">‹ Apprentissage</button>
   <header class="hero"><div class="row"><span class="tag">Exercice d'apprentissage</span>${p.fam?`<span class="tag">${esc(p.fam)}</span>`:""}</div><h1>${esc(p.n)}</h1>${p.desc?`<div class="sub">${esc(p.desc)}</div>`:""}
    <div class="row">${editBtn("po-"+pid)}</div></header>
@@ -554,7 +680,7 @@ function vBibAppr(){
   ALLE.filter(e=>e.a==="sol").forEach(e=>postesIds(e.id).forEach(pid=>{ if(!POSTE_GEN.includes(pid)) add(famOf(e),pid,e); }));
   Object.entries(S.content||{}).forEach(([k,v])=>{ if(k.startsWith("po_")&&v.fam) add(v.fam,k.slice(3)); });
   const order=Object.keys(fams).sort((a,b)=>famRank(a)-famRank(b));
-  const usedTxt=arr=>arr.length?`Pour : ${arr.slice(0,3).map(e=>e.n.length>28?e.n.slice(0,27)+"…":e.n).join(", ")}${arr.length>3?` +${arr.length-3}`:""}`:"";
+  const usedTxt=arr0=>{ const arr=minimalEls(arr0); return arr.length?`Pour : ${arr.slice(0,3).map(e=>e.n.length>28?e.n.slice(0,27)+"…":e.n).join(", ")}${arr.length>3?` +${arr.length-3}`:""}`:""; };
   return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Exercices d'apprentissage</h1>
   <p class="small muted" style="margin:0">Postes et éducatifs du Sol, par famille d'éléments. Touche un poste pour voir sa fiche.</p>
   ${isAdmin()?`<form class="row" id="newPoste"><input class="inp" id="newPosteN" data-keep placeholder="Nom d'un nouveau poste" style="flex:1" aria-label="Nom du nouveau poste"><select class="sel" id="newPosteF" style="width:auto" aria-label="Famille">${FAM_ORDER.map(f=>`<option>${esc(f)}</option>`).join("")}</select><button class="btn primary">Créer</button></form>`:""}
@@ -578,8 +704,12 @@ function vFicheEx(x){
   return `<button class="back" data-go="biblio--renfo">‹ Renforcement</button>
   <header class="hero"><div class="row">${x.type.map(v=>`<span class="tag">${esc(v)}</span>`).join("")}<span class="tag">${NIV[x.niv]||""}</span></div><h1>${esc(x.n)}</h1><div class="sub">${esc(x.zone.join(", "))}</div>
    <div class="row">${editBtn("ex-"+x.id)}</div></header>
-  ${gallery(x.media)}
+  ${gallery((x.media||[]).length?x.media:(x.src||[]).filter(u=>/instagram\.com\/(p|reel|reels|tv)\//.test(u)).slice(0,1).map(u=>({url:u,cap:`Vidéo de ${x.auteur||"la source"}`})))}
   <div class="facts"><div><span class="xs muted">Dosage</span><b>${esc(x.dos||"à adapter")}</b></div><div><span class="xs muted">Matériel</span><b>${esc(mat||"aucun")}</b></div></div>
+  ${(()=>{ const gl=gyms(); if(!gl.length) return ""; const has=gl.filter(g=>g.prog&&g.prog[x.id]); return card("🎯","Programme perso",`${has.length?`<div class="small">Attribué à : ${has.map(g=>`<a href="#gymnastes--${g.id}">${esc(g.name)}</a>${[g.prog[x.id].dos,g.prog[x.id].charge].filter(Boolean).length?` (${esc([g.prog[x.id].dos,g.prog[x.id].charge].filter(Boolean).join(", "))})`:""}`).join(", ")}</div>`:""}
+   <details><summary class="small"><b>Attribuer à un gymnaste</b></summary><div class="form" style="margin-top:8px"><label class="f" style="grid-column:1/-1">Gymnaste<select class="sel" id="asGym">${gl.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join("")}</select></label>
+   <label class="f">Dosage<input class="inp" id="asDos" data-keep value="${esc(x.dos||"")}" placeholder="3 x 10"></label><label class="f">Charge<input class="inp" id="asCharge" data-keep placeholder="2 kg, élastique rouge…"></label>
+   <label class="f" style="grid-column:1/-1">Note<input class="inp" id="asNote" data-keep placeholder="Objectif, progression…"></label><button class="btn primary" id="assignBtn" data-ex="${x.id}" style="grid-column:1/-1">Attribuer</button></div></details>`); })()}
   ${card("▶️","Exécution",olist(x.exec))}
   ${card("✅","Points clés et erreurs",ulist(x.keys))}
   ${card("🔁","Variantes",ulist(x.var))}
@@ -592,7 +722,7 @@ function vFicheEx(x){
 function edInit(kind,id){
   const key=`${kind}_${id}`; if(S.ed&&S.ed.key===key) return S.ed;
   let d;
-  if(kind==="el"){ const c=elC(id); d={desc:c.desc||"",pts:c.pts||[],err:c.err||[],parade:c.parade||"",fiche:c.fiche||FICHES[id]||"",pre:[...preOf(id)],next:nextOf(id).map(e=>e.id),postes:[...postesIds(id)],media:[...(c.media||[])]}; }
+  if(kind==="el"){ const c=elC(id); const tb=v=>rowsOf(v).map(r=>r.join(" | ")); d={desc:c.desc||"",cue:c.cue||"",obj:c.obj||[],pts:c.pts||[],phasesNote:c.phasesNote||"",phases:tb(c.phases),rythme:c.rythme||"",preTech:tb(c.preTech),prePhys:tb(c.prePhys),err:tb(c.err),aide:c.aide||"",parade:c.parade||"",progNote:c.progNote||"",prog:c.prog||[],jeunes:c.jeunes||"",prepaNote:c.prepaNote||"",prepa:tb(c.prepa),check:c.check||[],checkNote:c.checkNote||"",fiche:c.fiche||"",pre:[...preOf(id)],next:nextOf(id).map(e=>e.id),postes:[...postesIds(id)],media:[...(c.media||[])]}; }
   else if(kind==="po"){ const p=posteOf(id)||{n:""}; d={n:p.n||"",desc:p.desc||"",fam:p.fam||"",mat:p.mat||"",steps:p.steps||[],crit:p.crit||[],secu:p.secu||"",media:[...(p.media||[])]}; }
   else { const x=exOf(id)||{}; d={n:x.n||"",dos:x.dos||"",mat:Array.isArray(x.mat)?x.mat.join(", "):(x.mat||""),exec:x.exec||[],keys:x.keys||[],bio:x.bio||"",media:[...(x.media||[])]}; }
   S.ed={key,kind,id,d:JSON.parse(JSON.stringify(d))}; return S.ed;
@@ -606,7 +736,7 @@ function edMedia(d){
    <label class="f" style="grid-column:1/-1">Légende (facultatif)<input class="inp" id="edCap" data-keep placeholder="Ex. Vue de côté"></label>
    <button class="btn" id="edAddUrl" type="button">Ajouter le lien</button>
    <label class="btn" style="text-align:center;cursor:pointer">Envoyer un fichier<input type="file" id="edFile" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" hidden></label></div>
-  <span class="xs muted">Fichiers : photo, GIF ou courte vidéo, 4 Mo max (les photos sont réduites automatiquement). Pour une vidéo plus longue, mets-la sur YouTube (non répertoriée) et colle le lien.${S.upl?` <b>Envoi en cours…</b>`:""}</span>
+  <span class="xs muted">Fichiers : photo, GIF ou vidéo jusqu'à 100 Mo (les photos sont réduites automatiquement). Pour une vidéo plus longue, mets-la sur YouTube (non répertoriée) et colle le lien.${S.upl?` <b>Envoi en cours…</b>`:""}</span>
   ${gallery(d.media)}</section>`;
 }
 function edElPicker(list,field,eng){
@@ -623,12 +753,15 @@ function vEdit(kind,id){
   const title=kind==="el"?BY[id].n:d.n;
   let body="";
   if(kind==="el"){ const e=BY[id]; const all=Object.keys(POSTE_DEF).concat(Object.keys(S.content||{}).filter(k=>k.startsWith("po_")).map(k=>k.slice(3))).filter((v,i,a)=>a.indexOf(v)===i&&!d.postes.includes(v)&&posteOf(v));
-    body=`<section class="card"><h2><span aria-hidden="true">🎯</span>Technique</h2>
-      ${fArea("desc","Présentation",d.desc,"Description courte de l'élément")}
-      ${fArea("pts","Points clés",d.pts,"Gainage, regard, placement des mains…",1)}
-      ${fArea("err","Erreurs fréquentes",d.err,"",1)}
-      ${fArea("parade","Parade et sécurité",d.parade)}
-      ${fText("fiche","Lien vers la fiche complète (facultatif)",d.fiche,"https://…")}</section>
+    const fTab=(f,l,cols)=>`<label class="f">${l}<span class="xs muted">Une ligne par entrée, colonnes séparées par « | » : ${cols}</span><textarea class="inp" data-keep data-ed="${f}" data-list="1">${esc((d[f]||[]).join("\n"))}</textarea></label>`;
+    body=`<section class="card"><h2><span aria-hidden="true">📖</span>Présentation</h2>
+      ${fArea("desc","Présentation (paragraphes séparés par une ligne vide)",d.desc)}${fText("cue","Phrase pour le gymnaste",d.cue)}</section>
+    <section class="card"><h2><span aria-hidden="true">🎯</span>Objectifs et points clés</h2>${fArea("obj","Objectifs pédagogiques",d.obj,"",1)}${fArea("pts","Points clés (« Titre : explication »)",d.pts,"",1)}</section>
+    <section class="card"><h2><span aria-hidden="true">🎞️</span>Décomposition par phase</h2>${fText("phasesNote","Remarque",d.phasesNote)}${fTab("phases","Phases","Phase | Action | Posture | Regard | Consigne")}${fText("rythme","Rythme",d.rythme)}</section>
+    <section class="card"><h2><span aria-hidden="true">⚠️</span>Erreurs fréquentes</h2>${fTab("err","Erreurs","Erreur | Phase | Cause | Correction")}</section>
+    <section class="card"><h2><span aria-hidden="true">🧩</span>Apprentissage et sécurité</h2>${fArea("aide","Aide manuelle",d.aide)}${fArea("parade","Parade et sécurité",d.parade)}${fText("progNote","Règle de progression",d.progNote)}${fArea("prog","Étapes de progression",d.prog,"",1)}${fArea("jeunes","Conseil jeunes gymnastes",d.jeunes)}</section>
+    <section class="card"><h2><span aria-hidden="true">💪</span>Prérequis et préparation physique</h2>${fTab("preTech","Prérequis techniques","Prérequis | Test")}${fTab("prePhys","Prérequis physiques","Prérequis | Test")}${fText("prepaNote","Dosage par défaut",d.prepaNote)}${fTab("prepa","Exercices spécifiques","Exercice | Cible | Dosage")}</section>
+    <section class="card"><h2><span aria-hidden="true">✅</span>Checklist de validation</h2>${fText("checkNote","Remarque",d.checkNote)}${fArea("check","Critères",d.check,"",1)}${fText("fiche","Document lié (facultatif)",d.fiche,"https://…")}</section>
     <section class="card"><h2><span aria-hidden="true">🔗</span>Progression</h2><h3>Prérequis (avant)</h3>${edElPicker(d.pre,"pre",e.a)}<h3>Éléments suivants (après)</h3>${edElPicker(d.next,"next",e.a)}
       <span class="xs muted">Ajouter un élément suivant ajoute « ${esc(e.n)} » à ses prérequis. Ces liens servent aussi au calcul des besoins.</span></section>
     <section class="card"><h2><span aria-hidden="true">🧩</span>Exercices d'apprentissage</h2><div class="divide">${d.postes.map((p,i)=>`<div class="li"><span class="num">${i+1}</span><span class="grow"><span class="t small">${esc(posteOf(p).n)}</span></span><button class="btn link" data-edp="up|${i}" ${i?"":"disabled"} aria-label="Monter">↑</button><button class="btn link danger" data-edp="del|${i}" aria-label="Retirer">✕</button></div>`).join("")||`<span class="small muted">Aucun poste.</span>`}</div>
@@ -641,16 +774,17 @@ function vEdit(kind,id){
   else body=`<section class="card"><h2><span aria-hidden="true">💪</span>Exercice</h2>${fText("n","Nom",d.n)}${fText("dos","Dosage",d.dos,"3 x 10")}${fText("mat","Matériel",d.mat)}${fArea("exec","Exécution",d.exec,"",1)}${fArea("keys","Points clés et erreurs",d.keys,"",1)}${fArea("bio","Pourquoi ça marche",d.bio)}</section>`;
   return `<button class="back" data-go="${back}">‹ Annuler</button><header class="hero"><div class="row"><span class="tag">Modification</span></div><h1>${esc(title||"Sans nom")}</h1></header>
   ${body}${edMedia(d)}
-  <div class="row sticky"><button class="btn primary" id="edSave">Enregistrer</button><button class="btn" data-go="${back}">Annuler</button>${CT(ed.key)?`<button class="btn link danger" id="edReset">Revenir à la version d'origine</button>`:""}</div>`;
+  <div class="row sticky"><button class="btn primary" id="edSave">Enregistrer</button><button class="btn" data-go="${back}">Annuler</button>${CT(ed.key)?`<button class="btn link danger" id="edReset">Annuler toutes mes modifications</button>`:""}</div>`;
 }
 function edSave(){
   const ed=S.ed; if(!ed) return; const d=ed.d, key=ed.key; const clean=a=>lines(a);
   if(ed.kind==="el"){
     const prevNext=nextOf(ed.id).map(e=>e.id);
-    const out={...elC(ed.id),desc:d.desc.trim(),pts:clean(d.pts),err:clean(d.err),parade:d.parade.trim(),fiche:okUrl(d.fiche.trim())?d.fiche.trim():"",pre:d.pre,postes:d.postes,media:d.media};
+    const tb=v=>clean(v).map(l=>l.split("|").map(x=>x.trim()));
+    const out={...(CT(key)||{}),desc:d.desc.trim(),cue:d.cue.trim(),obj:clean(d.obj),pts:clean(d.pts),phasesNote:d.phasesNote.trim(),phases:tb(d.phases),rythme:d.rythme.trim(),preTech:tb(d.preTech),prePhys:tb(d.prePhys),err:tb(d.err),aide:d.aide.trim(),parade:d.parade.trim(),progNote:d.progNote.trim(),prog:clean(d.prog),jeunes:d.jeunes.trim(),prepaNote:d.prepaNote.trim(),prepa:tb(d.prepa),check:clean(d.check),checkNote:d.checkNote.trim(),fiche:okUrl(d.fiche.trim())?d.fiche.trim():"",pre:d.pre,postes:d.postes,media:d.media};
     store.set("content",key,out);
-    for(const x of d.next.filter(x=>!prevNext.includes(x))) store.set("content","el_"+x,{...elC(x),pre:[...new Set([...preOf(x),ed.id])]});
-    for(const x of prevNext.filter(x=>!d.next.includes(x))) store.set("content","el_"+x,{...elC(x),pre:preOf(x).filter(p=>p!==ed.id)});
+    for(const x of d.next.filter(x=>!prevNext.includes(x))) store.set("content","el_"+x,{...(CT("el_"+x)||{}),pre:[...new Set([...preOf(x),ed.id])]});
+    for(const x of prevNext.filter(x=>!d.next.includes(x))) store.set("content","el_"+x,{...(CT("el_"+x)||{}),pre:preOf(x).filter(p=>p!==ed.id)});
   } else if(ed.kind==="po") store.set("content",key,{...(CT(key)||{}),n:d.n.trim()||"Poste",desc:d.desc.trim(),fam:d.fam,mat:d.mat.trim(),steps:clean(d.steps),crit:clean(d.crit),secu:d.secu.trim(),media:d.media});
   else store.set("content",key,{...(CT(key)||{}),n:d.n.trim()||EXBY[ed.id].n,dos:d.dos.trim(),mat:d.mat.trim(),exec:clean(d.exec),keys:clean(d.keys),bio:d.bio.trim(),media:d.media});
   const back=`biblio--${ed.kind}-${ed.id}`; S.ed=null; toast("Fiche enregistrée"); go(...back.split("--"));
@@ -659,8 +793,18 @@ async function uploadMedia(file){
   if(!navigator.onLine){ toast("Pas de réseau : envoi impossible"); return; }
   let f=file;
   if(/^image\/(jpeg|png|webp)$/.test(f.type)) f=await shrink(f).catch(()=>file);
-  if(f.size>4*1024*1024){ toast("Fichier trop lourd (4 Mo max). Mets la vidéo sur YouTube et colle le lien."); return; }
+  if(f.size>100*1024*1024){ toast("Fichier trop lourd (100 Mo max). Mets la vidéo sur YouTube et colle le lien."); return; }
+  const EXT={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov"};
+  if(!EXT[f.type]){ toast("Format non pris en charge"); return; }
   S.upl=true; render();
+  if(f.size>4*1024*1024){ /* gros fichier : envoi direct vers le stockage privé, en plusieurs morceaux */
+    try{ const {upload}=await import("/vendor/blob-client.js"); const key=`${crypto.randomUUID()}.${EXT[f.type]}`;
+      await upload(`media/${key}`,f,{access:"private",handleUploadUrl:"/api/media/upload",contentType:f.type,multipart:f.size>20*1024*1024});
+      if(S.ed) S.ed.d.media.push({url:`/api/media?k=${key}`,type:f.type.startsWith("video")?"video":"img",cap:($("#edCap")||{}).value||""}); toast("Fichier ajouté");
+    }catch(e){ console.error(e); toast("Envoi impossible. Réessaie ou passe par un lien YouTube."); }
+    finally{ S.upl=false; render(); }
+    return;
+  }
   try{ const fd=new FormData(); fd.append("file",f,f.name||"media"); const r=await fetch("/api/media",{method:"POST",body:fd,headers:{"x-getuma":"1"},credentials:"same-origin"}); const j=await r.json().catch(()=>({}));
     if(!r.ok||!j.url){ toast(r.status===415?"Format non pris en charge":r.status===413?"Fichier trop lourd (4 Mo max)":"Envoi impossible"); return; }
     if(S.ed){ S.ed.d.media.push({url:j.url,type:j.type,cap:($("#edCap")||{}).value||""}); } toast("Fichier ajouté");
@@ -677,23 +821,36 @@ function vGymnastes(id){
   return `${banner()}${header("Gymnastes",`${S.gsort.cat||S.gsort.yr?`${list.length} sur ${all.length}`:`${all.length} au total`}`)}
   <div class="row"><button class="btn primary" data-go="gymnastes--tableau">Tableau des infos</button><button class="btn" data-go="gymnastes--ajouter">Ajouter</button><button class="btn" data-go="gymnastes--reglages">Réglages</button></div>
   ${all.length>1?sortBar(all):""}
-  ${list.length?`<div class="divide">${list.map(g=>{ const p=progress(g); return `<button class="li" data-go="gymnastes--${g.id}"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${yearOf(g)?` · ${yearOf(g)}`:""} · ${p.done}/${p.total} acquis</span><span class="bar" style="margin-top:6px;max-width:220px"><i class="b3" style="width:${p.pct}%"></i></span></span><span class="chev">›</span></button>`; }).join("")}</div>`:`<div class="empty">Aucun gymnaste dans ce groupe.</div>`}`;
+  ${list.length?`<div class="divide">${list.map(g=>{ const p=progress(g); return `<button class="li" data-go="gymnastes--${g.id}"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${yearOf(g)?` · ${yearOf(g)}`:""} · ${p.done}/${p.total} en ${g.cat}</span><span class="bar" style="margin-top:6px;max-width:220px"><i class="b3" style="width:${p.pct}%"></i></span></span><span class="chev">›</span></button>`; }).join("")}</div>`:`<div class="empty">Aucun gymnaste dans ce groupe.</div>`}`;
 }
 function vGym(g){
-  const els=elements().filter(e=>forGym(e,g)); const by={}; els.forEach(e=>(by[famOf(e)]=by[famOf(e)]||[]).push(e));
-  const n=needs(g).filter(x=>x.ready).slice(0,3); const p=progress(g);
-  return `<button class="back" data-go="gymnastes">‹ Gymnastes</button>
-  <div class="head"><div style="flex:1"><h1 style="font-size:24px">${esc(g.name)}</h1><div class="sub">${p.done}/${p.total} éléments acquis</div></div>
-   <select class="sel" data-cat="${g.id}" style="width:auto" aria-label="Catégorie">${CATS.map(c=>`<option ${c===g.cat?"selected":""}>${c}</option>`).join("")}</select></div>
-  <div class="box"><h3>À travailler</h3>${n.length?`<ol class="steps small">${n.map(x=>`<li>${esc(x.e.n)}${x.s?` <span class="tag">${ST[x.s].l}</span>`:""}</li>`).join("")}</ol>`:`<span class="small muted">Rien de prêt : tout est acquis ou des prérequis manquent.</span>`}</div>
+  loadEx(); const els=elements().filter(e=>forGym(e,g)); const own=els.filter(e=>ownCat(e,g)), low=els.filter(e=>!ownCat(e,g));
+  const fam=arr=>{ const by={}; arr.forEach(e=>(by[famOf(e)]=by[famOf(e)]||[]).push(e)); return by; };
+  const n=needs(g).filter(x=>x.ready).slice(0,3); const p=progress(g); const [pr,nm]=splitName(g);
+  const wip=own.filter(e=>{ const s=stOf(g,e.id); return s===1||s===2; }).length, top=own.filter(e=>stOf(g,e.id)===4).length;
+  const ini=((pr[0]||"")+(nm[0]||"")).toUpperCase()||"?";
+  const prog=Object.entries(g.prog||{}).filter(([id,v])=>v&&EXBY[id]);
+  const rows=by=>Object.entries(by).map(([f,arr])=>`<div class="subsec"><h3>${esc(f)}</h3><div class="divide">${arr.map(e=>`<div class="li"><span class="grow"><span class="t small" style="white-space:normal">${esc(e.n)}</span>${implicitOk(g,e)?`<span class="d">catégorie inférieure, considéré acquis</span>`:""}</span>${pick(g.id,e.id)}</div>`).join("")}</div></div>`).join("");
+  return `<button class="back" data-go="gymnastes">‹ Équipe</button>
+  <header class="profile"><div class="avatar" aria-hidden="true">${esc(ini)}</div><div class="pinfo"><h1>${esc(g.name)}</h1><div class="sub">${g.cat}${yearOf(g)?` · ${yearOf(g)}`:""}${g.fsg?` · FSG ${esc(g.fsg)}`:""}</div>
+   <div class="chips">${gGroups(g).filter(id=>S.groups[id]).map(id=>`<span class="chip static">${esc(groupLabel(id))}</span>`).join("")}</div></div></header>
+  <div class="stats"><div><b>${p.done}/${p.total}</b><span>acquis en ${g.cat}</span></div><div><b>${wip}</b><span>en cours</span></div><div><b>${top}</b><span>maîtrisés</span></div></div>
+  <details class="card edit"><summary><b>Modifier le profil</b></summary><div class="form">
+   <label class="f">Prénom<input class="inp" data-keep data-cell="${g.id}|prenom" value="${esc(pr)}"></label>
+   <label class="f">Nom (facultatif)<input class="inp" data-keep data-cell="${g.id}|nom" value="${esc(nm)}"></label>
+   <label class="f" for="gYear">Année de naissance<input class="inp" id="gYear" data-keep data-cell="${g.id}|annee" inputmode="numeric" maxlength="4" value="${esc(yearOf(g))}" placeholder="Ex. 2015"></label>
+   <label class="f">Niveau<select class="sel" data-cat="${g.id}" aria-label="Catégorie">${CATS.map(c=>`<option ${c===g.cat?"selected":""}>${c}</option>`).join("")}</select></label>
+   <label class="f">N° FSG<input class="inp" data-keep data-cell="${g.id}|fsg" inputmode="numeric" value="${esc(g.fsg||"")}"></label>
+   ${S.extra?`<label class="f" for="gBdns">N° BDNS<input class="inp" id="gBdns" data-bdns="${g.id}" inputmode="numeric" value="${esc(g.bdns||"")}"></label>`:""}</div>
+   <div class="subsec"><h3>Groupes</h3><div class="pillbar" style="flex-wrap:wrap">${Object.keys(S.groups).sort((a,b)=>groupLabel(a).localeCompare(groupLabel(b),"fr")).map(gid=>`<label class="pill" for="gg-${g.id}-${gid}"><input type="checkbox" id="gg-${g.id}-${gid}" data-gymgroup="${g.id}|${gid}" ${gGroups(g).includes(gid)?"checked":""}> ${esc(groupLabel(gid))}</label>`).join("")}</div><span class="xs muted">Ses évaluations le suivent dans tous ses groupes.</span></div>
+   <label class="f" for="gNote">Note<textarea class="inp" id="gNote" data-note="${g.id}" style="min-height:70px" placeholder="Objectif, remarque (sans détail médical)">${esc(g.note||"")}</textarea></label>
+   <div class="row"><button class="btn link danger" data-unlink="${g.id}">Retirer de ${groupName()}</button>${isAdmin()?`<button class="btn link danger" data-delgym="${g.id}">Supprimer définitivement</button>`:""}</div></details>
+  ${g.note?`<p class="small" style="margin:0">📝 ${esc(g.note)}</p>`:""}
+  ${card("🎯","À travailler",n.length?`<ol class="steps">${n.map(x=>`<li><a href="#evaluer--${x.e.id}">${esc(x.e.n)}</a>${x.s?` <span class="tag">${ST[x.s].l}</span>`:""}</li>`).join("")}</ol>`:`<span class="small muted">Rien de prêt : tout est acquis ou des prérequis manquent.</span>`)}
+  ${card("💪","Programme perso",`${prog.length?`<div class="divide">${prog.map(([id,v])=>`<div class="li"><button class="grow" style="text-align:left" data-go="biblio--ex-${id}"><span class="t">${esc(exOf(id).n)}</span><span class="d">${[v.dos,v.charge,v.note].filter(Boolean).map(esc).join(" · ")||"dosage à définir"}</span></button><button class="btn link danger" data-unprog="${g.id}|${id}" aria-label="Retirer">✕</button></div>`).join("")}</div>`:`<span class="small muted">Aucun exercice attribué.</span>`}<a class="small" href="#biblio--renfo">+ Attribuer un exercice depuis Renforcement</a>`)}
   ${chart(g)}
-  <label class="f" for="gNote">Note<textarea class="inp" id="gNote" data-note="${g.id}" style="min-height:70px" placeholder="Objectif, remarque (sans détail médical)">${esc(g.note||"")}</textarea></label>
-  ${legend()}
-  ${Object.entries(by).map(([f,arr])=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${arr.map(e=>`<div class="li"><span class="grow"><span class="t small" style="white-space:normal">${esc(e.n)}</span></span>${pick(g.id,e.id)}</div>`).join("")}</div></div>`).join("")}
-  <div class="sec"><div class="label">Groupes</div><div class="pillbar" style="flex-wrap:wrap">${Object.keys(S.groups).sort((a,b)=>groupLabel(a).localeCompare(groupLabel(b),"fr")).map(gid=>`<label class="pill" for="gg-${g.id}-${gid}"><input type="checkbox" id="gg-${g.id}-${gid}" data-gymgroup="${g.id}|${gid}" ${gGroups(g).includes(gid)?"checked":""}> ${esc(groupLabel(gid))}</label>`).join("")}</div><span class="xs muted">Un gymnaste peut être dans plusieurs groupes, même de sociétés différentes : ses évaluations le suivent partout.</span></div>
-  <label class="f" for="gYear">Année de naissance<input class="inp" id="gYear" data-keep data-cell="${g.id}|annee" inputmode="numeric" maxlength="4" value="${esc(yearOf(g))}" placeholder="Ex. 2015" style="max-width:140px"></label>
-  ${S.extra?`<label class="f" for="gBdns">N° personnel BDNS (pour l'export des présences)<input class="inp" id="gBdns" data-bdns="${g.id}" inputmode="numeric" value="${esc(g.bdns||"")}" placeholder="Ex. 123456789"></label>`:""}
-  <div class="row"><button class="btn link danger" data-unlink="${g.id}">Retirer de ${groupName()}</button>${isAdmin()?`<button class="btn link danger" data-delgym="${g.id}">Supprimer définitivement</button>`:""}</div>`;
+  <section class="card"><h2><span aria-hidden="true">✅</span>Évaluations ${enginName(S.engin)} · ${g.cat}</h2>${enginBar()}${legend()}${rows(fam(own))||`<span class="small muted">Aucun élément.</span>`}
+   ${low.length?`<details class="acc"><summary><b>Catégories inférieures</b><span class="muted">${low.length}</span></summary><p class="xs muted" style="margin:4px">Considérés acquis tant qu'ils ne sont pas évalués autrement.</p>${rows(fam(low))}</details>`:""}</section>`;
 }
 function chart(g){
   const log=Object.entries(g.log||{}).map(([k,v])=>({k,...v})).filter(l=>BY[l.e]&&BY[l.e].a==="sol").sort((a,b)=>(a.d+a.k).localeCompare(b.d+b.k));
@@ -765,10 +922,12 @@ function render(){
   const keepSc=[...V.querySelectorAll(".tscroll,.pillbar")].map(el=>[el.scrollTop,el.scrollLeft]);
   V.innerHTML=({evaluer:vEvaluer,groupes:vGroupes,seance:vSeance,presences:vPresences,biblio:vBiblio,gymnastes:vGymnastes})[r](id);
   V.querySelectorAll(".tscroll,.pillbar").forEach((el,i)=>{ if(keepSc[i]){ el.scrollTop=keepSc[i][0]; el.scrollLeft=keepSc[i][1]; } });
+  if(V.querySelector(".tree")) requestAnimationFrame(drawTree);
   window.scrollTo(0,sy);
 }
 
 /* ---------- interactions ---------- */
+document.addEventListener("toggle",e=>{ const d=e.target; if(d.dataset&&d.dataset.acc!==undefined){ S.acc=S.acc||{}; S.acc[d.dataset.acc]=d.open; } },true);
 document.addEventListener("click",e=>{
   const t=e.target.closest("button"); if(!t) return;
   if(t.dataset.set){ const [gid,eid,s]=t.dataset.set.split("|"); const cur=stOf(S.gymnasts[gid],eid); if(+s!==cur) setStatus(gid,eid,+s); return; }
@@ -798,17 +957,26 @@ document.addEventListener("click",e=>{
   if(t.id==="addRow"){ const gid=uid(); store.set("gymnasts",gid,{name:"Nouveau",prenom:"",nom:"",cat:"C1",groupIds:[S.groupId],groupId:S.groupId,st:{},log:{},created:today()}); setTimeout(()=>{ const el=document.querySelector(`[data-cell="${gid}|prenom"]`); if(el){ el.focus(); el.scrollIntoView({block:"center"}); } },50); return; }
   if(t.id==="presAll"){ const key=presKey(); ensurePres(key); const a=S.attendance[key]; const pres={},st={}; gyms().forEach(g=>{ if(!pst(a,g.id).s){ pres[g.id]=1; st[g.id]={s:"p"}; } }); store.patch("attendance",key,{present:pres,st}); return; }
   if(t.id==="edSave"){ edSave(); return; }
-  if(t.id==="edReset"){ const ed=S.ed; confirmBox("Revenir à la version d'origine de cette fiche ? Tes modifications seront perdues.","Revenir",()=>{ store.del("content",ed.key); S.ed=null; go("biblio",`${ed.kind}-${ed.id}`); }); return; }
+  if(t.id==="edReset"){ const ed=S.ed; confirmBox("Annuler toutes tes modifications de cette fiche ? Elle reviendra au contenu de base de GETUMA (catalogue, ateliers et fiches intégrés, ta bibliothèque d'exercices).","Annuler mes modifications",()=>{ store.del("content",ed.key); S.ed=null; go("biblio",`${ed.kind}-${ed.id}`); }); return; }
   if(t.id==="edAddUrl"){ const u=($("#edUrl").value||"").trim(); if(!okUrl(u)){ toast("Lien invalide (il doit commencer par https://)"); return; } S.ed.d.media.push({url:u,cap:($("#edCap").value||"").trim()}); render(); return; }
   if(t.dataset.edm){ const [a,i]=t.dataset.edm.split("|"); const m=S.ed.d.media; if(a==="del") m.splice(+i,1); else if(+i>0) [m[+i-1],m[+i]]=[m[+i],m[+i-1]]; render(); return; }
   if(t.dataset.edp){ const [a,i]=t.dataset.edp.split("|"); const m=S.ed.d.postes; if(a==="del") m.splice(+i,1); else if(+i>0) [m[+i-1],m[+i]]=[m[+i],m[+i-1]]; render(); return; }
   if(t.dataset.edrm){ const [f,id]=t.dataset.edrm.split("|"); S.ed.d[f]=S.ed.d[f].filter(x=>x!==id); render(); return; }
   if(t.id==="edNewPoBtn"){ const n=($("#edNewPo").value||"").trim(); if(!n) return; const pid="n"+uid(); store.set("content","po_"+pid,{n,fam:famOf(BY[S.ed.id])==="Autres"?"":famOf(BY[S.ed.id])}); S.ed.d.postes.push(pid); $("#edNewPo").value=""; render(); return; }
   if(t.dataset.presgo){ S.presDate=t.dataset.presgo; go("presences"); return; }
+  if(t.id==="presNone"){ const key=presKey(); const a=S.attendance[key]; if(!a) return; const pres={},st={}; gyms().forEach(g=>{ if(pst(a,g.id).s==="p"){ pres[g.id]=0; st[g.id]={s:"",late:0,early:0}; } }); store.patch("attendance",key,{present:pres,st}); return; }
   if(t.dataset.ps){ const [key,gid,s]=t.dataset.ps.split("|"); const cur=pst(S.attendance[key],gid); setPres(key,gid,cur.s===s?{s:"",late:0,early:0}:{s}); return; }
   if(t.dataset.pf){ const [key,gid,f]=t.dataset.pf.split("|"); const cur=pst(S.attendance[key],gid); setPres(key,gid,{[f]:cur[f]?0:(f==="late"?10:15)}); return; }
   if(t.dataset.engin){ S.engin=t.dataset.engin; S.fam="Tous"; try{ localStorage.setItem("getuma-engin",S.engin); }catch(x){} render(); return; }
-  if(t.dataset.rk){ const [eid,gid,dir]=t.dataset.rk.split("|"); const r=rankList(eid,gyms()); const i=r.findIndex(g=>g.id===gid), j=i+ +dir; if(i<0||j<0||j>=r.length) return; [r[i],r[j]]=[r[j],r[i]]; r.forEach((g,n)=>{ if(((S.gymnasts[g.id].rk||{})[eid])!==n) store.patch("gymnasts",g.id,{rk:{[eid]:n}}); }); return; }
+  if(t.dataset.tn){ treeTap(t.dataset.tn); return; }
+  if(t.dataset.tf!==undefined){ S.treeFam=t.dataset.tf; S.treeSel=null; render(); return; }
+  if(t.dataset.tedit!==undefined){ S.treeEdit=!S.treeEdit; render(); return; }
+  if(t.dataset.tdir){ S.treeDir=t.dataset.tdir; render(); return; }
+  if(t.dataset.scroll){ const el=document.getElementById(t.dataset.scroll); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); return; }
+  if(t.dataset.unprog){ const [gid,id]=t.dataset.unprog.split("|"); store.patch("gymnasts",gid,{prog:{[id]:null}}); return; }
+  if(t.id==="assignBtn"){ const gid=$("#asGym").value; const id=t.dataset.ex; if(!gid) return; store.patch("gymnasts",gid,{prog:{[id]:{dos:($("#asDos").value||"").trim().slice(0,60),charge:($("#asCharge").value||"").trim().slice(0,60),note:($("#asNote").value||"").trim().slice(0,120),d:today()}}}); toast("Exercice attribué"); return; }
+  if(t.dataset.rankmode!==undefined){ S.rankMode=!S.rankMode; render(); return; }
+  if(t.dataset.rk){ const [eid,gid,dir,s]=t.dataset.rk.split("|"); const r=rankIn(eid,gyms(),+s); const i=r.findIndex(g=>g.id===gid), j=i+ +dir; if(i<0||j<0||j>=r.length) return; [r[i],r[j]]=[r[j],r[i]]; r.forEach((g,n)=>{ if(((S.gymnasts[g.id].rk||{})[eid])!==n) store.patch("gymnasts",g.id,{rk:{[eid]:n}}); }); return; }
   if(t.id==="presExport"){ exportBdns(); return; }
   if(t.id==="presCopy"){ navigator.clipboard.writeText(S.lastCsv||"").then(()=>toast("CSV copié"),()=>toast("Copie refusée")); return; }
   if(t.dataset.delgym){ const g=S.gymnasts[t.dataset.delgym]; confirmBox(`Supprimer définitivement ${g.name} de tous ses groupes, avec son historique ?`,"Supprimer",()=>{ store.del("gymnasts",t.dataset.delgym); go("gymnastes"); }); return; }
@@ -850,7 +1018,8 @@ document.addEventListener("submit",e=>{
   if(f.id==="pwForm"){ const current=$("#pwCur").value, next=$("#pwNew").value; document.activeElement.blur(); call("/api/auth/password","POST",{current,next}).then(r=>{ toast(r.ok?"Mot de passe modifié":r.d.error==="invalid"?"Mot de passe actuel incorrect":"Le nouveau mot de passe doit faire 10 caractères minimum"); if(r.ok) render(); }); return; }
   if(f.id==="newClubForm"){ const v=$("#newClubIn").value.trim().slice(0,60); $("#newClubIn").blur(); if(v){ store.set("clubs",uid(),{name:v}); } return; }
   if(f.dataset.newgroup){ const inp=f.querySelector("input"); const v=inp.value.trim().slice(0,60); inp.blur(); if(v){ const gid=uid(); store.set("groups",gid,{name:v,clubId:f.dataset.newgroup,apps:["sol"]}); toast("Groupe créé"); } return; }
-  if(f.id==="planForm"){ S.plan=buildPlan({date:$("#pDate").value,start:$("#pStart").value||"18:00",dur:+$("#pDur").value||90,warm:+$("#pWarm").value||0,cool:+$("#pCool").value||0,rot:+$("#pRot").value||0,coaches:[...document.querySelectorAll("[data-coach]")].filter(x=>x.checked).map(x=>x.dataset.coach)}); go("seance","nouvelle"); }
+  if(f.id==="planForm"){ S.planEngins=[...document.querySelectorAll("[data-pe]")].filter(x=>x.checked).map(x=>x.dataset.pe); S.planFree=$("#pFree").value; const free=S.planFree.split(/\n/).map(l=>l.trim()).filter(Boolean).map(l=>{ const m=l.match(/^(.*?)[\s:;,-]+(\d{1,3})\s*(min)?$/i); return m?{t:m[1].trim().slice(0,40)||"Bloc libre",min:Math.min(180,+m[2])}:{t:l.slice(0,40),min:10}; });
+    S.plan=buildPlan({engins:S.planEngins,free,date:$("#pDate").value,start:$("#pStart").value||"18:00",dur:+$("#pDur").value||90,warm:+$("#pWarm").value||0,cool:+$("#pCool").value||0,rot:+$("#pRot").value||0,coaches:[...document.querySelectorAll("[data-coach]")].filter(x=>x.checked).map(x=>x.dataset.coach)}); go("seance","nouvelle"); }
 });
 document.addEventListener("input",e=>{ if(e.target.dataset&&e.target.dataset.ed&&S.ed){ S.ed.d[e.target.dataset.ed]=e.target.dataset.list?e.target.value.split("\n"):e.target.value; return; } if(e.target.id==="bibQ"){ S.bibQ=e.target.value; clearTimeout(S._qt); S._qt=setTimeout(()=>{ const pos=e.target.selectionStart; const keep=document.activeElement===e.target; e.target.blur(); render(); const el=$("#bibQ"); if(el&&keep){ el.focus(); try{ el.setSelectionRange(pos,pos); }catch(x){} } },250); } });
 window.addEventListener("hashchange",()=>{ window.scrollTo(0,0); if(location.hash==="#gymnastes--admin") S.admin=null; if(location.hash==="#gymnastes--tableau") S.tOrd=null; if(!location.hash.startsWith("#biblio--edit-")) S.ed=null; render(); });

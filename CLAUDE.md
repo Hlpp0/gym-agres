@@ -56,12 +56,28 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   PRE (prérequis) et ateliers détaillés n'existent que pour le Sol pour l'instant.
 - Classement par élément : `gymnast.rk[eid]` = rang (0 = le meilleur) parmi les gymnastes à « acquis » ou « maîtrisé » ; flèches dans la page de l'élément.
 - Tableau : la position de scroll des zones `.tscroll` et `.pillbar` est conservée à chaque rendu.
+- Statut effectif (`effSt`) : un élément jamais évalué qui n'est demandé que dans des catégories INFÉRIEURES à celle du gymnaste
+  est considéré acquis (`implicitOk`). Progression = éléments de SA catégorie + bases (« 3/13 en C3 »). Besoins idem.
+- Page d'un élément (Évaluer) : accordéons par statut (non abordé en haut, maîtrisé en bas), état gardé dans `S.acc`.
+  Mode « Classer » : `gymnast.rk[eid]` ordonne les gymnastes à l'intérieur de chaque statut (qui est le plus proche de réussir).
+- Fiche gymnaste façon profil (avatar, catégorie, année, groupes, 3 chiffres), « Modifier le profil » repliable.
+  Programme perso : `gymnast.prog[exId]` = {dos, charge, note, d} ; attribué depuis la fiche d'un exercice (null = retiré).
+- Séance : plusieurs engins (`apps[]`, temps principal réparti à parts égales) + blocs libres (« Chorégraphie 15 ») avant le retour au calme.
+- Présences : « Tous présents » / « Décocher les présents » (ne touchent pas aux excusés et absents).
+- Affichage mobile : `.wrap` en `minmax(0,1fr)` (évite le débordement horizontal), champs à 16 px sur écran tactile (sinon zoom iPhone),
+  barre du bas avec « Équipe » au lieu de « Gymnastes ». Rendu immédiat au clic, sauvegarde locale différée (saveCacheSoon).
 - Statuts : 0 non abordé, 1 découverte, 2 avec aide, 3 acquis, 4 maîtrisé.
 - Besoin prioritaire = élément de la catégorie pas encore acquis dont les prérequis (table PRE) sont validés.
 
 ## Bibliothèque (onglet Biblio)
-- Éléments : fiche par élément du catalogue (codes, famille, prérequis, éléments suivants, ateliers, renforcement conseillé).
-  Lien vers la fiche technique complète quand elle existe (table FICHES).
+- Éléments : fiche par élément. RIEN ne renvoie vers Claude : les fiches complètes sont intégrées dans `FICHE_DEF` (Roue e58 importée
+  le 24.11.2026 depuis l'ancien doc) : desc, cue, obj[], pts[], phases[[phase,action,posture,regard,consigne]], rythme, preTech/prePhys[[nom,test]],
+  err[[erreur,phase,cause,correction]], aide, parade, progNote, prog[], jeunes, prepaNote, prepa[[exercice,cible,dosage]], check[], checkNote, nextNote.
+  Détail des postes d'origine : `POSTE_INFO` (par nom). « Version d'origine » = FICHE_DEF + catalogue ; le doc `content` surcharge.
+- Arbre de progression (Biblio › Arbre) : étapes calculées par profondeur des prérequis, liens SVG ; admin : « Modifier les liens »,
+  toucher un élément puis un autre ajoute/retire un lien (prérequis ou suivant), boucles refusées.
+- Postes « Pour : » et « Utilisé pour » : seulement les éléments dont aucun prérequis (direct ou indirect) n'est déjà listé (`minimalEls`).
+- Exercices de renforcement sans média : la 1re vidéo Instagram source (@get.gymnast.fit) est intégrée via l'embed officiel.
 - Exercices d'apprentissage : ateliers par famille (POSTES_FAM) et par élément (POSTES_EL).
 - Renforcement et mobilité : `public/data/exercices.json` (172 exercices), généré depuis la bibliothèque Obsidian
   d'Hippolyte (iCloud « 21 Bibliothèque d'exercices », textes reformulés, source @get.gymnast.fit créditée et liée).
@@ -77,7 +93,9 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   à E écrit E dans les prérequis de X. Ces liens servent aussi au calcul des besoins.
 - Postes : id `p` + hash du texte pour les postes d'origine (POSTES_EL / POSTES_FAM), `n…` pour les postes créés.
 - Médias : `{url, cap, type?}`. Liens intégrés : YouTube (youtube-nocookie), Vimeo, Instagram, TikTok, Google Drive ; image/GIF/vidéo directe.
-  Fichiers envoyés via `/api/media` (POST admin, 4 Mo max, jpg/png/webp/gif/mp4/webm/mov ; photos réduites à 1600 px côté app),
+  Fichiers ≤ 4 Mo via `/api/media` ; plus lourds (≤ 100 Mo) : envoi direct navigateur → Blob privé avec `public/vendor/blob-client.js`
+  (bundle esbuild de `@vercel/blob/client`) et jeton délivré par `/api/media/upload` (admin). Lecture : plages transmises au Blob.
+  Ancienne règle : `/api/media` (POST admin, 4 Mo max, jpg/png/webp/gif/mp4/webm/mov ; photos réduites à 1600 px côté app),
   servis seulement aux comptes actifs, avec lecture par plages (vidéo iPhone). Seuls les liens https:// ou /api/media sont acceptés.
 
 ## Conventions importantes

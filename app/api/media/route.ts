@@ -53,27 +53,28 @@ export async function GET(req: Request) {
     if (!u) return new Response("auth", { status: 401 });
     const key = new URL(req.url).searchParams.get("k") || "";
     if (!KEY.test(key)) return new Response("bad key", { status: 400 });
-    const r = await get(`media/${key}`, { access: "private" });
-    if (!r || r.statusCode !== 200) return new Response("not found", { status: 404 });
-    const buf = new Uint8Array(await new Response(r.stream).arrayBuffer());
+    const range = req.headers.get("range") || "";
     const type = MIME[key.split(".").pop() as string] || "application/octet-stream";
     const base = { "Content-Type": type, "Accept-Ranges": "bytes", "Cache-Control": "private, max-age=86400" };
-    // Lecture par plages (nécessaire aux vidéos sur iPhone).
-    const m = (req.headers.get("range") || "").match(/^bytes=(\d*)-(\d*)$/);
-    if (m && (m[1] || m[2])) {
-      let start = m[1] ? +m[1] : Math.max(0, buf.length - +m[2]);
-      let end = m[1] && m[2] ? Math.min(+m[2], buf.length - 1) : buf.length - 1;
-      if (start >= buf.length || start > end) {
-        return new Response(null, { status: 416, headers: { ...base, "Content-Range": `bytes */${buf.length}` } });
-      }
-      start = Math.max(0, start);
-      end = Math.max(start, end);
-      return new Response(buf.slice(start, end + 1), {
-        status: 206,
-        headers: { ...base, "Content-Range": `bytes ${start}-${end}/${buf.length}`, "Content-Length": String(end - start + 1) },
-      });
+    // La plage demandée (vidéo sur iPhone) est transmise au Blob : pas de chargement complet en mémoire.
+    const r = await get(`media/${key}`, { access: "private", ...(range ? { headers: { range } } : {}) });
+    if (!r || r.statusCode !== 200) return new Response("not found", { status: 404 });
+    const cr = r.headers.get("content-range");
+    const len = r.headers.get("content-length");
+    if (range && cr) {
+      return new Response(r.stream, { status: 206, headers: { ...base, "Content-Range": cr, ...(len ? { "Content-Length": len } : {}) } });
     }
-    return new Response(buf, { headers: { ...base, "Content-Length": String(buf.length) } });
+    const m = range.match(/^bytes=(\d*)-(\d*)$/);
+    if (m && (m[1] || m[2]) && (!len || +len <= 20 * 1024 * 1024)) {
+      // Secours : le stockage n'a pas découpé la plage, on la découpe ici (fichiers moyens seulement).
+      const buf = new Uint8Array(await new Response(r.stream).arrayBuffer());
+      let start = m[1] ? +m[1] : Math.max(0, buf.length - +m[2]);
+      const end = m[1] && m[2] ? Math.min(+m[2], buf.length - 1) : buf.length - 1;
+      if (start >= buf.length || start > end) return new Response(null, { status: 416, headers: { ...base, "Content-Range": `bytes */${buf.length}` } });
+      start = Math.max(0, start);
+      return new Response(buf.slice(start, end + 1), { status: 206, headers: { ...base, "Content-Range": `bytes ${start}-${end}/${buf.length}`, "Content-Length": String(end - start + 1) } });
+    }
+    return new Response(r.stream, { headers: { ...base, ...(len ? { "Content-Length": len } : {}) } });
   } catch (e) {
     console.error(e);
     return new Response("server", { status: 500 });
