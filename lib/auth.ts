@@ -16,6 +16,7 @@ export type User = {
   status: "pending" | "active" | "disabled";
   clubs: string[];
   sv: number; // version de session : l'incrémenter déconnecte partout
+  bdns?: string; // N° personnel BDNS (moniteur J+S), pour l'export des présences
   fails?: number;
   lockUntil?: number;
   created: string;
@@ -100,7 +101,7 @@ export function csrfOk(req: Request) {
   return req.headers.get("x-getuma") === "1";
 }
 
-export const publicUser = (u: User) => ({ uid: u.uid, email: u.email, name: u.name, role: u.role, status: u.status, clubs: u.clubs || [] });
+export const publicUser = (u: User) => ({ uid: u.uid, email: u.email, name: u.name, role: u.role, status: u.status, clubs: u.clubs || [], bdns: u.bdns || "" });
 
 export async function saveUser(u: User) {
   await writeDoc(userPath(u.uid), u as unknown as Doc);

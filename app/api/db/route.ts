@@ -1,19 +1,28 @@
 import { deepMerge, deleteDoc, json, listPaths, readDoc, updateDoc, writeDoc, type Doc } from "@/lib/blobdb";
 import { csrfOk, getUser, publicUser, type User } from "@/lib/auth";
 
-// API de GETUMA Coach : sociétés, groupes, gymnastes, séances.
+// API de GETUMA Coach : sociétés, groupes, gymnastes, séances, présences.
 // Stockage : Blob privé, un JSON par document : db/{collection}/{id}.json.
 // Droits : l'admin voit et modifie tout. Un coach voit les sociétés de son compte (user.clubs)
-// et peut modifier les gymnastes et séances de leurs groupes. Sociétés et groupes : admin seulement.
+// et peut modifier les gymnastes, séances et présences de leurs groupes. Sociétés et groupes : admin seulement.
+// Un gymnaste peut appartenir à plusieurs groupes, y compris de sociétés différentes (champ groupIds).
+// Un coach ne voit que les groupes de ses sociétés dans groupIds ; les autres sont conservés côté serveur.
 
 export const dynamic = "force-dynamic";
 
-const COLS = ["clubs", "groups", "gymnasts", "sessions"] as const;
+const COLS = ["clubs", "groups", "gymnasts", "sessions", "attendance"] as const;
 type Col = (typeof COLS)[number];
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
 const docPath = (col: string, id: string) => `db/${col}/${id}.json`;
 type Op = { op: "set" | "patch" | "del"; col: Col; id: string; data?: Doc; qid?: string };
 type All = Record<Col, Record<string, Doc>>;
+
+/** Groupes d'un gymnaste (ancien format : groupId unique). */
+function gymGroups(d: Doc | undefined): string[] {
+  if (!d) return [];
+  if (Array.isArray(d.groupIds)) return (d.groupIds as unknown[]).map(String);
+  return d.groupId ? [String(d.groupId)] : [];
+}
 
 class HttpError extends Error {
   status: number;
@@ -24,7 +33,7 @@ class HttpError extends Error {
 }
 
 async function readAll(): Promise<All> {
-  const out: All = { clubs: {}, groups: {}, gymnasts: {}, sessions: {} };
+  const out: All = { clubs: {}, groups: {}, gymnasts: {}, sessions: {}, attendance: {} };
   const paths = await listPaths("db/");
   await Promise.all(
     paths.map(async (p) => {
@@ -65,15 +74,15 @@ function scope(all: All, u: User) {
 }
 
 async function members(clubIds: Set<string>) {
-  const out: Record<string, string[]> = {};
+  const out: Record<string, { uid: string; name: string; bdns: string }[]> = {};
   const paths = await listPaths("users/");
   const users = await Promise.all(paths.map(async (p) => (await readDoc(p))?.data as unknown as User | undefined));
   for (const u of users) {
     if (!u || u.status !== "active") continue;
     const cl = u.role === "admin" ? [...clubIds] : (u.clubs || []).filter((c) => clubIds.has(c));
-    for (const c of cl) (out[c] = out[c] || []).push(u.name);
+    for (const c of cl) (out[c] = out[c] || []).push({ uid: u.uid, name: u.name, bdns: u.bdns || "" });
   }
-  for (const c of Object.keys(out)) out[c].sort((a, b) => a.localeCompare(b, "fr"));
+  for (const c of Object.keys(out)) out[c].sort((a, b) => a.name.localeCompare(b.name, "fr"));
   return out;
 }
 
@@ -90,8 +99,13 @@ export async function GET(req: Request) {
       me: publicUser(u),
       clubs: pick("clubs", (id) => clubIds.has(id)),
       groups: pick("groups", (id) => groupIds.has(id)),
-      gymnasts: pick("gymnasts", (_, d) => groupIds.has(String(d.groupId))),
+      gymnasts: Object.fromEntries(
+        Object.entries(all.gymnasts)
+          .filter(([, d]) => gymGroups(d).some((g) => groupIds.has(g)))
+          .map(([id, d]) => [id, { ...d, groupIds: gymGroups(d).filter((g) => groupIds.has(g)) }]),
+      ),
       sessions: pick("sessions", (_, d) => groupIds.has(String(d.groupId))),
+      attendance: pick("attendance", (_, d) => groupIds.has(String(d.groupId))),
       members: await members(clubIds),
     });
   } catch (e) {
@@ -108,7 +122,30 @@ async function applyOp(op: Op, u: User, all: All) {
   if (op.col === "groups" && op.op !== "del" && op.data && "clubId" in op.data && !all.clubs[String(op.data.clubId)]) {
     throw new HttpError(400, "unknown club");
   }
-  if (op.col === "gymnasts" || op.col === "sessions") {
+  if (op.col === "gymnasts") {
+    const cur = all.gymnasts[op.id];
+    const curGroups = gymGroups(cur);
+    if (cur && !isAdmin && !curGroups.some((g) => groupIds.has(g))) throw new HttpError(403, "forbidden");
+    const hidden = isAdmin ? [] : curGroups.filter((g) => !groupIds.has(g)); // groupes d'autres sociétés, conservés
+    if (op.op === "del") {
+      if (hidden.length) {
+        // Le gymnaste existe aussi ailleurs : on le retire seulement des groupes visibles.
+        const next = await updateDoc(p, (d) => (d ? { ...d, groupIds: hidden, groupId: hidden[0] } : null));
+        if (next) all.gymnasts[op.id] = next;
+        return;
+      }
+    } else if (op.data) {
+      if ("groupIds" in op.data || "groupId" in op.data || !cur) {
+        const asked = Array.isArray(op.data.groupIds) ? (op.data.groupIds as unknown[]).map(String) : op.data.groupId ? [String(op.data.groupId)] : curGroups;
+        const allowed = asked.filter((g) => (isAdmin ? !!all.groups[g] : groupIds.has(g)));
+        const merged = [...new Set([...hidden, ...allowed])];
+        if (!merged.length || (!isAdmin && !allowed.length && !cur)) throw new HttpError(403, "forbidden");
+        if (!merged.length) throw new HttpError(400, "no group");
+        op.data = { ...op.data, groupIds: merged, groupId: merged[0] };
+      }
+    }
+  }
+  if (op.col === "sessions" || op.col === "attendance") {
     // Le document existant ET la nouvelle version doivent rester dans un groupe autorisé.
     const cur = all[op.col][op.id];
     if (cur && !groupIds.has(String(cur.groupId))) throw new HttpError(403, "forbidden");

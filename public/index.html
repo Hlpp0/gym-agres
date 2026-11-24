@@ -106,6 +106,7 @@ svg.ch text{fill:var(--muted);font:11px var(--font)}
   <a href="#evaluer"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>Évaluer</a>
   <a href="#groupes"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 19c0-3 2.5-5 5-5s5 2 5 5M11 19c0-3 2.5-5 5-5s5 2 5 5"/></svg>Groupes</a>
   <a href="#seance"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Séance</a>
+  <a href="#presences"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12l2 2 4-4"/></svg>Présences</a>
   <a href="#gymnastes"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>Gymnastes</a>
 </nav>
 <script>
@@ -174,7 +175,7 @@ function toast(msg){ document.querySelectorAll(".toast").forEach(t=>t.remove());
 function confirmBox(msg,label,fn){ const m=document.createElement("div"); m.className="modal"; m.innerHTML=`<section role="dialog" aria-modal="true"><p style="margin:0">${esc(msg)}</p><div class="row" style="justify-content:flex-end"><button class="btn" data-no>Annuler</button><button class="btn primary" data-yes>${esc(label)}</button></div></section>`; m.addEventListener("click",e=>{ if(e.target===m||e.target.closest("[data-no]")) m.remove(); if(e.target.closest("[data-yes]")){ m.remove(); fn(); } }); document.body.appendChild(m); }
 
 /* ---------- état ---------- */
-const S={clubs:{},groups:{},gymnasts:{},sessions:{},members:{},me:null,authView:"login",groupId:null,level:"base",fam:"Tous",maxSize:6,mode:"loading",canWrite:true,plan:null,showAll:false};
+const S={clubs:{},groups:{},gymnasts:{},sessions:{},attendance:{},members:{},presDate:null,me:null,authView:"login",groupId:null,level:"base",fam:"Tous",maxSize:6,mode:"loading",canWrite:true,plan:null,showAll:false};
 try{ const p=JSON.parse(localStorage.getItem("getuma-ui2")||"{}"); Object.assign(S,{groupId:p.groupId||null,level:p.level||"base",maxSize:p.maxSize||6}); }catch(e){}
 const saveUi=()=>{ try{ localStorage.setItem("getuma-ui2",JSON.stringify({groupId:S.groupId,level:S.level,maxSize:S.maxSize})); }catch(e){} };
 
@@ -183,18 +184,19 @@ const LS={get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v)
 let OUTBOX=LS.get("getuma-outbox",[]); let flushing=false; S.lastSync=LS.get("getuma-lastsync",null); S.me=LS.get("getuma-me",null);
 function deepMerge(a,b){ const o={...(a||{})}; for(const k in b){ const v=b[k]; o[k]=(v&&typeof v==="object"&&!Array.isArray(v)&&o[k]&&typeof o[k]==="object"&&!Array.isArray(o[k]))?deepMerge(o[k],v):v; } return o; }
 function applyLocal(op){ const c={...S[op.col]}; if(op.op==="del") delete c[op.id]; else c[op.id]=op.op==="patch"?deepMerge(c[op.id],op.data):op.data; S[op.col]=c; }
-const saveCache=()=>{ LS.set("getuma-cache",{clubs:S.clubs,groups:S.groups,gymnasts:S.gymnasts,sessions:S.sessions,members:S.members}); LS.set("getuma-me",S.me); };
+const saveCache=()=>{ LS.set("getuma-cache",{clubs:S.clubs,groups:S.groups,gymnasts:S.gymnasts,sessions:S.sessions,attendance:S.attendance,members:S.members}); LS.set("getuma-me",S.me); };
 function queue(op){ op.qid=uid(); applyLocal(op); OUTBOX.push(op); LS.set("getuma-outbox",OUTBOX); saveCache(); render(); flush(); }
 const store={ set:(col,id,data)=>queue({op:"set",col,id,data}), patch:(col,id,data)=>queue({op:"patch",col,id,data}), del:(col,id)=>queue({op:"del",col,id}) };
 const isAdmin=()=>S.me&&S.me.role==="admin";
 async function call(url,method,body){ const r=await fetch(url,{method,credentials:"same-origin",headers:{"x-getuma":"1","content-type":"application/json"},body:body?JSON.stringify(body):undefined,cache:"no-store"}); let d={}; try{ d=await r.json(); }catch(e){} return {status:r.status,ok:r.ok,d}; }
 async function api(method,body){ const r=await call("/api/db",method,body); if(r.status===401){ toLogin(); throw new Error("auth"); } if(!r.ok) throw new Error("http "+r.status); return r.d; }
 function toLogin(){ S.mode="login"; S.authView="login"; render(); }
-function wipeLocal(){ OUTBOX=[]; ["getuma-outbox","getuma-cache","getuma-me","getuma-lastsync"].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); Object.assign(S,{clubs:{},groups:{},gymnasts:{},sessions:{},members:{},me:null,groupId:null}); }
+function wipeLocal(){ OUTBOX=[]; ["getuma-outbox","getuma-cache","getuma-me","getuma-lastsync"].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); Object.assign(S,{clubs:{},groups:{},gymnasts:{},sessions:{},attendance:{},members:{},me:null,groupId:null}); }
 async function flush(){ if(flushing||!OUTBOX.length||!S.me||!navigator.onLine) return; flushing=true; try{ const batch=OUTBOX.slice(0,40); const res=await api("POST",{ops:batch}); const done=new Set(res.done); OUTBOX=OUTBOX.filter(o=>!done.has(o.qid)); LS.set("getuma-outbox",OUTBOX); S.syncErr=false; if(res.rejected&&res.rejected.length) toast("Une modification a été refusée (droits insuffisants)"); }catch(e){ if(e.message!=="auth") S.syncErr=true; } finally{ flushing=false; render(); if(OUTBOX.length&&!S.syncErr&&S.me) flush(); } }
-async function pull(){ if(!S.me||!navigator.onLine) return; try{ await flush(); const d=await api("GET"); if(OUTBOX.length) return; Object.assign(S,{me:d.me,clubs:d.clubs||{},groups:d.groups||{},gymnasts:d.gymnasts||{},sessions:d.sessions||{},members:d.members||{}}); S.lastSync=new Date().toISOString(); LS.set("getuma-lastsync",S.lastSync); S.syncErr=false; saveCache(); if(S.mode!=="login") S.mode="shared"; render(); }catch(e){ if(e.message!=="auth"){ S.syncErr=true; if(S.mode==="loading") S.mode="shared"; render(); } } }
+async function pull(){ if(!S.me||!navigator.onLine) return; try{ await flush(); const d=await api("GET"); if(OUTBOX.length) return; Object.assign(S,{me:d.me,clubs:d.clubs||{},groups:d.groups||{},gymnasts:d.gymnasts||{},sessions:d.sessions||{},attendance:d.attendance||{},members:d.members||{}}); S.lastSync=new Date().toISOString(); LS.set("getuma-lastsync",S.lastSync); S.syncErr=false; saveCache(); if(S.mode!=="login") S.mode="shared"; render(); }catch(e){ if(e.message!=="auth"){ S.syncErr=true; if(S.mode==="loading") S.mode="shared"; render(); } } }
 /* ---------- logique ---------- */
-const gyms=()=>Object.entries(S.gymnasts).filter(([,g])=>g.groupId===S.groupId).map(([id,g])=>({id,...g})).sort((a,b)=>(a.name||"").localeCompare(b.name||"","fr"));
+const gGroups=g=>Array.isArray(g&&g.groupIds)?g.groupIds:(g&&g.groupId?[g.groupId]:[]);
+const gyms=()=>Object.entries(S.gymnasts).filter(([,g])=>gGroups(g).includes(S.groupId)).map(([id,g])=>({id,...g})).sort((a,b)=>(a.name||"").localeCompare(b.name||"","fr"));
 const stOf=(g,eid)=>(g&&g.st&&g.st[eid]&&g.st[eid].s)||0;
 const inLevel=e=>S.level==="all"?true:(e.base||minCat(e)<=1);
 const elements=()=>ALL.filter(inLevel).sort((a,b)=>FAM_ORDER.indexOf(famOf(a))-FAM_ORDER.indexOf(famOf(b))||minCat(a)-minCat(b)||a.n.localeCompare(b.n,"fr"));
@@ -207,7 +209,7 @@ function setStatus(gid,eid,s){ const d=today(); store.patch("gymnasts",gid,{st:{
 
 /* ---------- vues ---------- */
 const V=$("#view");
-const ROUTES=["evaluer","groupes","seance","gymnastes"];
+const ROUTES=["evaluer","groupes","seance","presences","gymnastes"];
 function parse(){ const h=location.hash.slice(1); const [r,id]=h.split("--"); return {r:ROUTES.includes(r)?r:"evaluer",id:id||null}; }
 const go=(r,id)=>{ location.hash=id?r+"--"+id:r; };
 const groupName=()=>esc(S.groups[S.groupId]?.name||"");
@@ -252,7 +254,7 @@ function vSeance(id){
   if(id&&S.sessions[id]) return vPlan({...S.sessions[id],id},false);
   if(id==="nouvelle"&&S.plan) return vPlan(S.plan,true);
   const saved=Object.entries(S.sessions).filter(([,s])=>s.groupId===S.groupId).sort((a,b)=>(b[1].date+b[1].start).localeCompare(a[1].date+a[1].start));
-  const coaches=(S.members[S.groups[S.groupId]?.clubId]||[]);
+  const coaches=(S.members[S.groups[S.groupId]?.clubId]||[]).map(m=>typeof m==="string"?m:m.name);
   return `${banner()}${header("Séance","")}
   ${list.length?`<form id="planForm" class="form">
    <label class="f" for="pDate">Date<input class="inp" type="date" id="pDate" value="${today()}"></label>
@@ -283,6 +285,43 @@ function vPlan(p,unsaved){
 }
 const planText=p=>{ const L=[`Séance ${p.date} ${p.start} (${p.dur} min)`]; for(const b of p.blocks){ L.push("",`${b.t} ${b.title} (${b.dur} min)`); (b.stations||[]).forEach((s,i)=>L.push(`Groupe ${i+1}${s.coach?" ("+s.coach+")":""} : ${s.eid?BY[s.eid]?.n:"Consolidation"} : ${s.names.join(", ")}`)); } return L.join("\n"); };
 
+/* ---------- présences ---------- */
+const presKey=()=>`${S.groupId}_${S.presDate||today()}`;
+function ensurePres(key){ if(S.attendance[key]) return; const gr=S.groups[S.groupId]||{}; store.set("attendance",key,{groupId:S.groupId,date:S.presDate||today(),start:gr.def_start||"18:00",dur:gr.def_dur||90,lieu:gr.def_lieu||"",type:"Entraînement",present:{},coaches:{}}); }
+function togglePresence(key,gid,on,coach){ ensurePres(key); if(coach) store.patch("attendance",key,{coaches:{[coach]:on?1:0}}); else store.patch("attendance",key,{present:{[gid]:on?1:0}}); }
+function vPresences(){
+  const list=gyms(); if(!list.length) return `${banner()}${header("Présences","")}${noGyms()}`;
+  const date=S.presDate||today(); const key=presKey(); const a=S.attendance[key]; const gr=S.groups[S.groupId]||{};
+  const coaches=(S.members[gr.clubId]||[]).map(m=>typeof m==="string"?{name:m,bdns:""}:m);
+  const nPres=list.filter(g=>a&&a.present&&a.present[g.id]).length;
+  const month=date.slice(0,7);
+  const done=Object.values(S.attendance).filter(x=>x.groupId===S.groupId&&String(x.date).startsWith(month)).length;
+  return `${banner()}${header("Présences",`${nPres}/${list.length} présents`)}
+  <div class="form"><label class="f" for="presDate">Date<input class="inp" type="date" id="presDate" value="${date}"></label>
+   <label class="f" for="presStart">Heure<input class="inp" type="time" id="presStart" value="${esc((a&&a.start)||gr.def_start||"18:00")}"></label>
+   <label class="f" for="presDur">Durée (min)<input class="inp" type="number" id="presDur" inputmode="numeric" min="30" max="300" step="15" value="${esc((a&&a.dur)||gr.def_dur||90)}"></label>
+   <label class="f" for="presLieu">Lieu<input class="inp" id="presLieu" value="${esc((a&&a.lieu)||gr.def_lieu||"")}" placeholder="Ex. Salle de Vevey"></label></div>
+  <div class="row"><button class="btn" id="presAll">Tous présents</button></div>
+  <div class="sec"><div class="label">Gymnastes</div><div class="divide">${list.map(g=>`<label class="li" for="pr-${g.id}" style="cursor:pointer"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${g.bdns?"":" · N° BDNS manquant"}</span></span><input type="checkbox" id="pr-${g.id}" data-pres="${key}|${g.id}" ${a&&a.present&&a.present[g.id]?"checked":""} style="width:26px;height:26px"></label>`).join("")}</div></div>
+  <div class="sec"><div class="label">Moniteurs présents</div><div class="divide">${coaches.map(c=>`<label class="li" for="pc-${esc(c.name)}" style="cursor:pointer"><span class="grow"><span class="t">${esc(c.name)}</span><span class="d">${c.bdns?"":"N° BDNS manquant (Réglages › Mon compte)"}</span></span><input type="checkbox" id="pc-${esc(c.name)}" data-prescoach="${key}|${esc(c.name)}" ${a&&a.coaches&&a.coaches[c.name]?"checked":""} style="width:26px;height:26px"></label>`).join("")||`<span class="small muted">Aucun moniteur rattaché.</span>`}</div></div>
+  <div class="box"><h3>Export BDNS</h3><span class="small muted">${done} entraînement(s) saisi(s) en ${month}. Le fichier suit le format d'importation du contrôle des présences J+S : à importer dans la BDNS (cours › Contrôle des présences).</span><div class="row"><button class="btn primary" id="presExport">Exporter ${month} (CSV)</button>${S.lastCsv?`<button class="btn" id="presCopy">Copier le CSV</button>`:""}</div>${S.csvWarn?`<span class="small" style="color:#d44c47">${esc(S.csvWarn)}</span>`:""}</div>`;
+}
+function exportBdns(){
+  const date=S.presDate||today(); const month=date.slice(0,7); const gr=S.groups[S.groupId]||{};
+  const coachMap={}; (S.members[gr.clubId]||[]).forEach(m=>{ if(typeof m!=="string") coachMap[m.name]=m.bdns||""; });
+  const fmt=d=>d.split("-").reverse().join(".");
+  const rows=[["N° PERSONNEL","FONCTION","DATE","TYPE D'ACTIVITE","HEURE","DUREE","LIEU"]]; const missing=new Set();
+  const sessions=Object.values(S.attendance).filter(x=>x.groupId===S.groupId&&String(x.date).startsWith(month)).sort((a,b)=>a.date.localeCompare(b.date));
+  for(const s of sessions){
+    for(const [name,on] of Object.entries(s.coaches||{})){ if(!on) continue; const n=coachMap[name]; if(!n){ missing.add(name); continue; } rows.push([n,"Moniteur",fmt(s.date),"Entraînement",s.start||"",String(s.dur||""),s.lieu||""]); }
+    for(const [gid,on] of Object.entries(s.present||{})){ if(!on) continue; const g=S.gymnasts[gid]; if(!g) continue; if(!g.bdns){ missing.add(g.name); continue; } rows.push([g.bdns,"Participant",fmt(s.date),"Entraînement",s.start||"",String(s.dur||""),s.lieu||""]); }
+  }
+  if(rows.length===1){ S.csvWarn="Aucune présence avec N° BDNS ce mois-ci."; S.lastCsv=""; render(); return; }
+  const csv=rows.map(r=>r.map(v=>/[;"\n]/.test(v)?`"${String(v).replace(/"/g,'""')}"`:v).join(";")).join("\r\n");
+  S.lastCsv=csv; S.csvWarn=missing.size?`Ignorés faute de N° BDNS : ${[...missing].join(", ")}`:"";
+  try{ const b=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"}); const u=URL.createObjectURL(b); const l=document.createElement("a"); l.href=u; l.download=`presences-${(gr.name||"groupe").replace(/[^\w-]+/g,"_")}-${month}.csv`; document.body.appendChild(l); l.click(); l.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); }catch(e){}
+  render();
+}
 function vGymnastes(id){
   if(id==="ajouter") return vAjouter();
   if(id==="reglages") return vReglages();
@@ -304,7 +343,9 @@ function vGym(g){
   <label class="f" for="gNote">Note<textarea class="inp" id="gNote" data-note="${g.id}" style="min-height:70px" placeholder="Blessure, objectif, remarque">${esc(g.note||"")}</textarea></label>
   ${legend()}
   ${Object.entries(by).map(([f,arr])=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${arr.map(e=>`<div class="li"><span class="grow"><span class="t small" style="white-space:normal">${esc(e.n)}</span></span>${pick(g.id,e.id)}</div>`).join("")}</div></div>`).join("")}
-  <div class="row"><select class="sel" data-move="${g.id}" style="width:auto" aria-label="Changer de groupe">${Object.entries(S.groups).map(([gid,gr])=>`<option value="${gid}" ${gid===g.groupId?"selected":""}>${esc(gr.name)}</option>`).join("")}</select><button class="btn link danger" data-delgym="${g.id}">Retirer ce gymnaste</button></div>`;
+  <div class="sec"><div class="label">Groupes</div><div class="pillbar" style="flex-wrap:wrap">${Object.keys(S.groups).sort((a,b)=>groupLabel(a).localeCompare(groupLabel(b),"fr")).map(gid=>`<label class="pill" for="gg-${g.id}-${gid}"><input type="checkbox" id="gg-${g.id}-${gid}" data-gymgroup="${g.id}|${gid}" ${gGroups(g).includes(gid)?"checked":""}> ${esc(groupLabel(gid))}</label>`).join("")}</div><span class="xs muted">Un gymnaste peut être dans plusieurs groupes, même de sociétés différentes : ses évaluations le suivent partout.</span></div>
+  <label class="f" for="gBdns">N° personnel BDNS (pour l'export des présences)<input class="inp" id="gBdns" data-bdns="${g.id}" inputmode="numeric" value="${esc(g.bdns||"")}" placeholder="Ex. 123456789"></label>
+  <div class="row"><button class="btn link danger" data-unlink="${g.id}">Retirer de ${groupName()}</button>${isAdmin()?`<button class="btn link danger" data-delgym="${g.id}">Supprimer définitivement</button>`:""}</div>`;
 }
 function chart(g){
   const log=Object.entries(g.log||{}).map(([k,v])=>({k,...v})).filter(l=>BY[l.e]&&BY[l.e].a==="sol").sort((a,b)=>(a.d+a.k).localeCompare(b.d+b.k));
@@ -319,12 +360,15 @@ function vAjouter(){
   return `<button class="back" data-go="gymnastes">‹ Gymnastes</button><h1 style="font-size:22px">Ajouter des gymnastes</h1>
   <form id="bulkForm" style="display:grid;gap:12px"><label class="f" for="bulkIn">Un nom par ligne (prénom et initiale suffisent)<textarea class="inp" id="bulkIn" placeholder="Léa M.&#10;Noah B.&#10;Zoé R."></textarea></label>
   <label class="f" for="bulkCat">Catégorie<select class="sel" id="bulkCat">${CATS.map(c=>`<option>${c}</option>`).join("")}</select></label>
-  <button class="btn primary">Ajouter à ${groupName()}</button></form><p class="xs muted">Données de mineurs : garde le minimum. Seuls les coachs rattachés à cette société voient ces données.</p>`;
+  <button class="btn primary">Ajouter à ${groupName()}</button></form>
+  ${(()=>{ const others=Object.entries(S.gymnasts).filter(([,x])=>!gGroups(x).includes(S.groupId)).sort((a,b)=>(a[1].name||"").localeCompare(b[1].name||"","fr")); return others.length?`<form id="linkForm" style="display:grid;gap:8px"><label class="f" for="linkSel">Ou ajouter un gymnaste déjà inscrit dans un autre groupe<select class="sel" id="linkSel">${others.map(([id,x])=>`<option value="${id}">${esc(x.name)} · ${x.cat} · ${esc(gGroups(x).map(groupLabel).filter(Boolean).join(", "))}</option>`).join("")}</select></label><button class="btn">Ajouter aussi à ${groupName()}</button></form>`:""; })()}
+  <p class="xs muted">Données de mineurs : garde le minimum. Seuls les coachs rattachés à cette société voient ces données.</p>`;
 }
 function vReglages(){
   const g=S.groups[S.groupId]; const me=S.me||{};
   return `<button class="back" data-go="gymnastes">‹ Gymnastes</button><h1 style="font-size:22px">Réglages</h1>
   <div class="sec"><div class="label">Mon compte</div><div class="box"><b>${esc(me.name||"")}</b><span class="small muted">${esc(me.email||"")} · ${me.role==="admin"?"Administrateur":"Coach"}</span>
+   <form id="profileForm" style="display:grid;gap:8px"><label class="f" for="pfBdns">Mon N° personnel BDNS (moniteur)<input class="inp" id="pfBdns" inputmode="numeric" value="${esc(me.bdns||"")}" placeholder="Ex. 123456789"></label><button class="btn">Enregistrer</button></form>
    <details><summary class="small">Changer mon mot de passe</summary><form id="pwForm" style="display:grid;gap:8px;margin-top:8px"><label class="f" for="pwCur">Mot de passe actuel<input class="inp" type="password" id="pwCur" autocomplete="current-password"></label><label class="f" for="pwNew">Nouveau mot de passe (10 caractères min.)<input class="inp" type="password" id="pwNew" autocomplete="new-password" minlength="10"></label><button class="btn">Enregistrer</button></form></details></div>
    ${isAdmin()?`<button class="btn primary" data-go="gymnastes--admin">Administration : sociétés, groupes, comptes</button>`:""}</div>
   <div class="sec"><div class="label">Éléments affichés</div><div class="pillbar"><button class="pill" data-level="base" aria-pressed="${S.level==="base"}">Bases du sol (C1, C2)</button><button class="pill" data-level="all" aria-pressed="${S.level==="all"}">Tout le sol</button></div></div>
@@ -340,7 +384,7 @@ function vAdmin(){
   return `<button class="back" data-go="gymnastes--reglages">‹ Réglages</button><h1 style="font-size:22px">Administration</h1>
   <div class="sec"><div class="label">Sociétés et groupes</div>
    ${clubs.map(([cid,c])=>{ const gs=Object.entries(S.groups).filter(([,g])=>g.clubId===cid).sort((a,b)=>(a[1].name||"").localeCompare(b[1].name||"","fr")); return `<div class="box"><div class="row"><input class="inp" style="flex:1;font-weight:600" data-clubname="${cid}" value="${esc(c.name)}" aria-label="Nom de la société"><button class="btn link danger" data-delclub="${cid}">Supprimer</button></div>
-     <div class="divide">${gs.map(([gid,g])=>`<div class="li" style="min-height:40px"><span class="grow small">${esc(g.name)} <span class="muted">· ${Object.values(S.gymnasts).filter(x=>x.groupId===gid).length} gymnastes</span></span><button class="btn link" data-renamegroup="${gid}">Renommer</button><button class="btn link danger" data-delgroup="${gid}">Supprimer</button></div>`).join("")||`<span class="small muted">Aucun groupe.</span>`}</div>
+     <div class="divide">${gs.map(([gid,g])=>`<div class="li" style="min-height:40px"><span class="grow small">${esc(g.name)} <span class="muted">· ${Object.values(S.gymnasts).filter(x=>gGroups(x).includes(gid)).length} gymnastes</span></span><button class="btn link" data-renamegroup="${gid}">Renommer</button><button class="btn link danger" data-delgroup="${gid}">Supprimer</button></div>`).join("")||`<span class="small muted">Aucun groupe.</span>`}</div>
      <form class="row" data-newgroup="${cid}" style="flex-wrap:nowrap"><input class="inp" name="g" placeholder="Nouveau groupe" aria-label="Nom du nouveau groupe"><button class="btn">Ajouter</button></form></div>`; }).join("")}
    <form id="newClubForm" class="row" style="flex-wrap:nowrap"><input class="inp" id="newClubIn" placeholder="Nouvelle société de gym" aria-label="Nom de la nouvelle société"><button class="btn primary">Créer</button></form></div>
   <div class="sec"><div class="label">Comptes ${users?`(${users.length})`:""}</div>
@@ -359,7 +403,7 @@ function vAuth(){
 }
 function render(){
   const entries=Object.entries(S.groups);
-  if(!S.groups[S.groupId]) S.groupId=(entries.find(([id])=>Object.values(S.gymnasts).some(g=>g.groupId===id))||entries[0]||[null])[0];
+  if(!S.groups[S.groupId]) S.groupId=(entries.find(([id])=>Object.values(S.gymnasts).some(g=>gGroups(g).includes(id)))||entries[0]||[null])[0];
   const {r,id}=parse();
   document.querySelectorAll("#tabs a").forEach(a=>a.setAttribute("aria-current",a.getAttribute("href")==="#"+r?"page":"false"));
   if(S.mode==="login"){ document.getElementById("tabs").hidden=true; const fa=document.activeElement&&document.activeElement.id; if(fa&&/^(li|su)/.test(fa)) return; V.innerHTML=vAuth(); return; }
@@ -367,8 +411,8 @@ function render(){
   if(S.mode==="loading"){ V.innerHTML=`<div class="empty">Chargement…</div>`; return; }
   if(!entries.length&&!(r==="gymnastes"&&(id==="admin"||id==="reglages"))){ V.innerHTML=`${banner()}<h1>GETUMA Coach</h1><div class="empty">${isAdmin()?`Commence par créer une société et un groupe.<br><br><button class="btn primary" data-go="gymnastes--admin">Ouvrir l'administration</button>`:`Ton compte n'est rattaché à aucun groupe pour l'instant. Demande à l'administrateur de t'ajouter à ta société.<br><br><button class="btn" data-go="gymnastes--reglages">Mon compte</button>`}</div>`; return; }
   const ae=document.activeElement, aid=ae&&ae.id, sy=window.scrollY;
-  const typing=ae&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")&&ae.type!=="checkbox"; if(typing&&(aid==="gNote"||aid==="bulkIn"||aid==="gName"||aid==="newClubIn"||aid==="pwCur"||aid==="pwNew"||ae.closest("form[data-newgroup]")||ae.dataset.clubname)) return; /* ne pas écraser une saisie en cours */
-  V.innerHTML=({evaluer:vEvaluer,groupes:vGroupes,seance:vSeance,gymnastes:vGymnastes})[r](id);
+  const typing=ae&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")&&ae.type!=="checkbox"; if(typing&&(aid==="gNote"||aid==="bulkIn"||aid==="gBdns"||aid==="pfBdns"||aid==="presLieu"||aid==="gName"||aid==="newClubIn"||aid==="pwCur"||aid==="pwNew"||ae.closest("form[data-newgroup]")||ae.dataset.clubname)) return; /* ne pas écraser une saisie en cours */
+  V.innerHTML=({evaluer:vEvaluer,groupes:vGroupes,seance:vSeance,presences:vPresences,gymnastes:vGymnastes})[r](id);
   window.scrollTo(0,sy);
 }
 
@@ -380,7 +424,7 @@ document.addEventListener("click",e=>{
   if(t.id==="logout"){ confirmBox(OUTBOX.length?"Des modifications ne sont pas encore envoyées. Se déconnecter quand même ?":"Se déconnecter de ce téléphone ?","Se déconnecter",()=>{ call("/api/auth/logout","POST").catch(()=>{}); wipeLocal(); S.admin=null; toLogin(); }); return; }
   if(t.dataset.auth){ S.authView=t.dataset.auth; S.authErr=""; render(); return; }
   if(t.dataset.delclub){ const cid=t.dataset.delclub; const n=Object.values(S.groups).filter(g=>g.clubId===cid).length; if(n){ toast("Supprime d'abord les groupes de cette société"); return; } confirmBox(`Supprimer la société ${S.clubs[cid]?.name||""} ?`,"Supprimer",()=>store.del("clubs",cid)); return; }
-  if(t.dataset.delgroup){ const gid=t.dataset.delgroup; const n=Object.values(S.gymnasts).filter(g=>g.groupId===gid).length; confirmBox(n?`Supprimer ce groupe ? Ses ${n} gymnastes ne seront plus visibles.`:"Supprimer ce groupe ?","Supprimer",()=>{ store.del("groups",gid); if(S.groupId===gid) S.groupId=null; }); return; }
+  if(t.dataset.delgroup){ const gid=t.dataset.delgroup; const n=Object.values(S.gymnasts).filter(g=>gGroups(g).includes(gid)).length; confirmBox(n?`Supprimer ce groupe ? Ses ${n} gymnastes ne seront plus visibles.`:"Supprimer ce groupe ?","Supprimer",()=>{ store.del("groups",gid); if(S.groupId===gid) S.groupId=null; }); return; }
   if(t.dataset.renamegroup){ const gid=t.dataset.renamegroup; const m=document.createElement("div"); m.className="modal"; m.innerHTML=`<section role="dialog" aria-modal="true"><label class="f" for="rnIn">Nom du groupe<input class="inp" id="rnIn" value="${esc(S.groups[gid]?.name||"")}"></label><div class="row" style="justify-content:flex-end"><button class="btn" data-no>Annuler</button><button class="btn primary" data-yes>Renommer</button></div></section>`; m.addEventListener("click",e=>{ if(e.target===m||e.target.closest("[data-no]")) m.remove(); if(e.target.closest("[data-yes]")){ const v=$("#rnIn",m).value.trim().slice(0,60); m.remove(); if(v) store.patch("groups",gid,{name:v}); } }); document.body.appendChild(m); return; }
   if(t.dataset.uact){ const [u,act]=t.dataset.uact.split("|"); const usr=(S.admin&&S.admin.users||[]).find(x=>x.uid===u)||{};
     if(act==="activate") adminAction({action:"update",uid:u,status:"active"},"Compte validé");
@@ -394,7 +438,11 @@ document.addEventListener("click",e=>{
   if(t.dataset.max){ S.maxSize=+t.dataset.max; saveUi(); render(); return; }
   if(t.dataset.level){ S.level=t.dataset.level; saveUi(); render(); return; }
   if(t.hasAttribute("data-toggleall")){ S.showAll=!S.showAll; render(); return; }
-  if(t.dataset.delgym){ const g=S.gymnasts[t.dataset.delgym]; confirmBox(`Retirer ${g.name} et son historique ?`,"Retirer",()=>{ store.del("gymnasts",t.dataset.delgym); go("gymnastes"); }); return; }
+  if(t.dataset.unlink){ const gid=t.dataset.unlink; const g=S.gymnasts[gid]; const next=gGroups(g).filter(x=>x!==S.groupId); if(!next.length){ confirmBox(`Retirer ${g.name} de ${S.groups[S.groupId]?.name||"ce groupe"} ? S'il n'est inscrit dans aucun autre groupe, son suivi sera supprimé.`,"Retirer",()=>{ store.del("gymnasts",gid); go("gymnastes"); }); } else { store.patch("gymnasts",gid,{groupIds:next}); go("gymnastes"); } return; }
+  if(t.id==="presAll"){ const key=presKey(); ensurePres(key); const all={}; gyms().forEach(g=>all[g.id]=1); store.patch("attendance",key,{present:all}); return; }
+  if(t.id==="presExport"){ exportBdns(); return; }
+  if(t.id==="presCopy"){ navigator.clipboard.writeText(S.lastCsv||"").then(()=>toast("CSV copié"),()=>toast("Copie refusée")); return; }
+  if(t.dataset.delgym){ const g=S.gymnasts[t.dataset.delgym]; confirmBox(`Supprimer définitivement ${g.name} de tous ses groupes, avec son historique ?`,"Supprimer",()=>{ store.del("gymnasts",t.dataset.delgym); go("gymnastes"); }); return; }
   if(t.id==="savePlan"&&S.plan){ const pid=uid(); const p={...S.plan,id:pid}; S.plan=null; store.set("sessions",pid,p); toast("Séance enregistrée"); go("seance",pid); return; }
   if(t.id==="copyPlan"){ const {id}=parse(); const p=id==="nouvelle"?S.plan:S.sessions[id]; if(p) navigator.clipboard.writeText(planText(p)).then(()=>toast("Texte copié"),()=>toast("Copie refusée")); return; }
   if(t.dataset.delplan){ confirmBox("Supprimer cette séance ?","Supprimer",()=>{ store.del("sessions",t.dataset.delplan); go("seance"); }); return; }
@@ -403,7 +451,12 @@ document.addEventListener("change",e=>{
   const t=e.target;
   if(t.id==="groupSel"){ S.groupId=t.value; saveUi(); render(); }
   else if(t.dataset.cat){ store.patch("gymnasts",t.dataset.cat,{cat:t.value}); }
-  else if(t.dataset.move){ store.patch("gymnasts",t.dataset.move,{groupId:t.value}); }
+  else if(t.dataset.gymgroup){ const [gid,grp]=t.dataset.gymgroup.split("|"); const cur=gGroups(S.gymnasts[gid]); const next=t.checked?[...new Set([...cur,grp])]:cur.filter(x=>x!==grp); if(!next.length){ t.checked=true; toast("Un gymnaste doit rester dans au moins un groupe"); return; } store.patch("gymnasts",gid,{groupIds:next}); }
+  else if(t.dataset.bdns){ const v=t.value.replace(/\D/g,"").slice(0,12); t.blur(); store.patch("gymnasts",t.dataset.bdns,{bdns:v}); }
+  else if(t.dataset.pres){ const [key,gid]=t.dataset.pres.split("|"); togglePresence(key,gid,t.checked); }
+  else if(t.dataset.prescoach){ const [key,name]=t.dataset.prescoach.split("|"); togglePresence(key,null,t.checked,name); }
+  else if(t.id==="presDate"){ S.presDate=t.value; render(); }
+  else if(["presStart","presDur","presLieu"].includes(t.id)){ const key=presKey(); ensurePres(key); const f={presStart:"start",presDur:"dur",presLieu:"lieu"}[t.id]; const v=t.id==="presDur"?(+t.value||0):t.value.slice(0,60); t.blur(); store.patch("attendance",key,{[f]:v}); if(isAdmin()) store.patch("groups",S.groupId,{["def_"+f]:v}); }
   else if(t.dataset.note){ const v=t.value.slice(0,500); t.blur(); store.patch("gymnasts",t.dataset.note,{note:v}); }
   else if(t.dataset.clubname){ const v=t.value.trim().slice(0,60); t.blur(); if(v) store.patch("clubs",t.dataset.clubname,{name:v}); }
   else if(t.dataset.userclub){ const [u]=t.dataset.userclub.split("|"); const cl=[...document.querySelectorAll(`[data-userclub^="${u}|"]`)].filter(x=>x.checked).map(x=>x.dataset.userclub.split("|")[1]); adminAction({action:"update",uid:u,clubs:cl},"Sociétés mises à jour"); }
@@ -411,9 +464,11 @@ document.addEventListener("change",e=>{
 });
 document.addEventListener("submit",e=>{
   e.preventDefault(); const f=e.target;
-  if(f.id==="bulkForm"){ const names=$("#bulkIn").value.split(/\n|,/).map(s=>s.trim()).filter(Boolean).slice(0,60); const cat=$("#bulkCat").value; $("#bulkIn").blur(); (async()=>{ for(const n of names) await store.set("gymnasts",uid(),{name:n.slice(0,40),cat,groupId:S.groupId,st:{},log:{},created:today()}); })(); toast(`${names.length} ajouté${names.length>1?"s":""}`); go("gymnastes"); }
+  if(f.id==="bulkForm"){ const names=$("#bulkIn").value.split(/\n|,/).map(s=>s.trim()).filter(Boolean).slice(0,60); const cat=$("#bulkCat").value; $("#bulkIn").blur(); (async()=>{ for(const n of names) await store.set("gymnasts",uid(),{name:n.slice(0,40),cat,groupIds:[S.groupId],groupId:S.groupId,st:{},log:{},created:today()}); })(); toast(`${names.length} ajouté${names.length>1?"s":""}`); go("gymnastes"); }
   if(f.id==="loginForm"){ const email=$("#liEmail").value.trim(), password=$("#liPw").value; document.activeElement.blur(); S.authErr=""; call("/api/auth/login","POST",{email,password}).then(r=>{ if(r.ok){ wipeLocal(); S.me=r.d.user; S.mode="loading"; saveCache(); render(); pull(); } else { S.authErr=r.d.error==="pending"?"":r.d.error==="locked"?"Trop d'essais. Réessaie dans 15 minutes.":r.d.error==="disabled"?"Ce compte est désactivé.":"E-mail ou mot de passe incorrect."; if(r.d.error==="pending") S.authView="pending"; render(); } }).catch(()=>{ S.authErr="Pas de réseau."; render(); }); return; }
   if(f.id==="signupForm"){ const name=$("#suName").value.trim(), email=$("#suEmail").value.trim(), password=$("#suPw").value; document.activeElement.blur(); S.authErr=""; call("/api/auth/signup","POST",{name,email,password}).then(r=>{ if(r.ok){ if(r.d.user.status==="active"){ wipeLocal(); S.me=r.d.user; S.mode="loading"; saveCache(); render(); pull(); } else { S.authView="pending"; render(); } } else { S.authErr=r.d.error==="exists"?"Un compte existe déjà avec cet e-mail.":r.d.error==="password"?"Le mot de passe doit faire au moins 10 caractères.":r.d.error==="email"?"E-mail invalide.":"Création impossible pour le moment."; render(); } }).catch(()=>{ S.authErr="Pas de réseau."; render(); }); return; }
+  if(f.id==="linkForm"){ const gid=$("#linkSel").value; const cur=gGroups(S.gymnasts[gid]); store.patch("gymnasts",gid,{groupIds:[...new Set([...cur,S.groupId])]}); toast("Gymnaste ajouté au groupe"); go("gymnastes"); return; }
+  if(f.id==="profileForm"){ const bdns=$("#pfBdns").value.replace(/\D/g,"").slice(0,12); document.activeElement.blur(); call("/api/auth/profile","POST",{bdns}).then(r=>{ if(r.ok){ S.me=r.d.user; saveCache(); toast("Profil enregistré"); render(); pull(); } else toast("Enregistrement impossible"); }); return; }
   if(f.id==="pwForm"){ const current=$("#pwCur").value, next=$("#pwNew").value; document.activeElement.blur(); call("/api/auth/password","POST",{current,next}).then(r=>{ toast(r.ok?"Mot de passe modifié":r.d.error==="invalid"?"Mot de passe actuel incorrect":"Le nouveau mot de passe doit faire 10 caractères minimum"); if(r.ok) render(); }); return; }
   if(f.id==="newClubForm"){ const v=$("#newClubIn").value.trim().slice(0,60); $("#newClubIn").blur(); if(v){ store.set("clubs",uid(),{name:v}); } return; }
   if(f.dataset.newgroup){ const inp=f.querySelector("input"); const v=inp.value.trim().slice(0,60); inp.blur(); if(v){ const gid=uid(); store.set("groups",gid,{name:v,clubId:f.dataset.newgroup,apps:["sol"]}); toast("Groupe créé"); } return; }
@@ -422,10 +477,10 @@ document.addEventListener("submit",e=>{
 window.addEventListener("hashchange",()=>{ window.scrollTo(0,0); if(location.hash==="#gymnastes--admin") S.admin=null; render(); });
 
 /* ---------- démarrage ---------- */
-(()=>{ const c=LS.get("getuma-cache",null); if(c&&S.me){ Object.assign(S,{clubs:c.clubs||{},groups:c.groups||{},gymnasts:c.gymnasts||{},sessions:c.sessions||{},members:c.members||{}}); S.mode="shared"; } for(const op of OUTBOX) applyLocal(op); })();
+(()=>{ const c=LS.get("getuma-cache",null); if(c&&S.me){ Object.assign(S,{clubs:c.clubs||{},groups:c.groups||{},gymnasts:c.gymnasts||{},sessions:c.sessions||{},attendance:c.attendance||{},members:c.members||{}}); S.mode="shared"; } for(const op of OUTBOX) applyLocal(op); })();
 if(!S.me) S.mode="login";
 render();
-if(navigator.onLine) call("/api/auth/me","GET").then(r=>{ if(r.status===401){ wipeLocal(); toLogin(); } else if(r.ok){ S.me=r.d.user; saveCache(); pull(); } }).catch(()=>{});
+if(navigator.onLine) call("/api/auth/me","GET").then(r=>{ if(r.status===401){ wipeLocal(); toLogin(); } else if(r.ok){ S.me=r.d.user; if(S.mode==="login") S.mode="loading"; saveCache(); render(); pull(); } }).catch(()=>{});
 setInterval(()=>{ if(document.visibilityState==="visible") pull(); },20000);
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") pull(); });
 window.addEventListener("online",()=>{ render(); pull(); });

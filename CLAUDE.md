@@ -17,8 +17,8 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - `public/sw.js` + `public/manifest.json` + icônes : PWA installable, coquille disponible hors-ligne. Monter la version `V` de sw.js à chaque changement d'index.html.
 - `lib/blobdb.ts` : lecture, écriture, mise à jour conditionnelle (`ifMatch`) des documents JSON du Blob privé.
 - `lib/auth.ts` : comptes (scrypt), session en cookie HttpOnly signé HMAC (`gsess`, 30 jours), version de session `sv` pour couper les sessions.
-- Routes : `/api/auth/{signup,login,logout,me,password}`, `/api/admin` (admin seulement), `/api/db` (données filtrées par droits).
-- Stockage Blob PRIVÉ : `db/{clubs|groups|gymnasts|sessions}/{id}.json`, `users/{uid}.json`, `users-email/{sha256(email)}.json`.
+- Routes : `/api/auth/{signup,login,logout,me,password,profile}`, `/api/admin` (admin seulement), `/api/db` (données filtrées par droits).
+- Stockage Blob PRIVÉ : `db/{clubs|groups|gymnasts|sessions|attendance}/{id}.json`, `users/{uid}.json`, `users-email/{sha256(email)}.json`.
 - Variables requises : `BLOB_READ_WRITE_TOKEN`, `SESSION_SECRET` (64 caractères hex), `ADMIN_EMAIL` (emails admin séparés par des virgules).
   `CLUB_CODE` n'est plus utilisé depuis le passage aux comptes.
 
@@ -30,6 +30,16 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - Protection CSRF : toute requête qui modifie doit envoyer l'en-tête `x-getuma: 1`.
 - Verrouillage 15 min après 5 mots de passe faux. Pas d'envoi d'email pour l'instant : mot de passe oublié = l'admin en génère un nouveau.
 - Migration : à la première ouverture par un admin, les groupes sans société sont rattachés à une société « Ma société ».
+- Gymnastes multi-groupes : champ `groupIds` (l'ancien `groupId` reste lu en secours). Un gymnaste peut être dans des groupes
+  de plusieurs sociétés ; ses évaluations sont communes. Un coach ne reçoit que les `groupIds` de ses sociétés, et le serveur
+  conserve les autres lors des modifications. Un coach qui « supprime » un gymnaste présent ailleurs le retire seulement de ses groupes.
+
+## Présences et BDNS
+- Onglet Présences : un document `attendance/{groupId}_{date}` (heure, durée, lieu, gymnastes présents, moniteurs présents).
+- Pas d'API publique BDNS : export CSV au format d'importation du contrôle des présences J+S
+  (N° PERSONNEL;FONCTION;DATE;TYPE D'ACTIVITE;HEURE;DUREE;LIEU, séparateur `;`, UTF-8 avec BOM), import manuel dans la BDNS.
+- N° personnel BDNS : champ `bdns` sur les gymnastes et sur les comptes (Réglages › Mon compte). Les lignes sans numéro sont ignorées et signalées.
+- À vérifier avec un vrai import : libellés FONCTION (« Participant », « Moniteur »), TYPE (« Entraînement »), durées admises.
 
 ## Fonctionnement côté app
 - Cache local (localStorage) + file d'attente des modifications (`getuma-outbox`) : on évalue hors-ligne, l'envoi part au retour du réseau.
@@ -44,7 +54,7 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - Terminologie : "appui renversé" (jamais ATR ou Handstand).
 - Niveaux de compétition : C1 à C7 (jamais K1/K2 ou "catégorie 3").
 - Le symbole `--` dans un nom d'élément = tenue 2 secondes obligatoire (champ `h` dans le catalogue).
-- Données de mineurs : prénom + initiale du nom et catégorie seulement.
+- Données de mineurs : prénom + initiale du nom, catégorie, et N° BDNS si nécessaire pour J+S. Rien d'autre.
 
 ## Mémoire continue
 À chaque session, si une décision technique est prise, une convention est établie,
