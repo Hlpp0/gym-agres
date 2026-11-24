@@ -1,5 +1,5 @@
-import { deleteDoc, json, listPaths, readDoc } from "@/lib/blobdb";
-import { csrfOk, emailPath, getUser, hashPassword, patchUser, publicUser, tempPassword, userPath, type User } from "@/lib/auth";
+import { deleteDoc, json, listPaths, readDoc, touchRev } from "@/lib/blobdb";
+import { csrfOk, emailPath, forgetUser, usersChanged, getUser, hashPassword, patchUser, publicUser, tempPassword, userPath, type User } from "@/lib/auth";
 
 // Administration : réservée au rôle admin. Liste des comptes, validation, rôles, sociétés, mots de passe.
 export const dynamic = "force-dynamic";
@@ -65,6 +65,9 @@ export async function POST(req: Request) {
       if (!d) return json({ ok: true });
       await deleteDoc(emailPath(String(d.data.email)));
       await deleteDoc(userPath(a.uid));
+      forgetUser(a.uid);
+      usersChanged();
+      await touchRev();
       return json({ ok: true });
     }
     return json({ error: "bad action" }, 400);

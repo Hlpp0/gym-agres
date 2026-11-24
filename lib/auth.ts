@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
-import { readDoc, writeDoc, updateDoc, type Doc } from "./blobdb";
+import { readDoc, writeDoc, updateDoc, touchRev, type Doc } from "./blobdb";
 
 // Comptes GETUMA : email + mot de passe (scrypt), session dans un cookie HttpOnly signé (HMAC).
 // Variables requises : SESSION_SECRET (aléatoire, 32+ caractères), ADMIN_EMAIL (emails admin, séparés par des virgules).
@@ -89,11 +89,21 @@ export async function getUser(req: Request): Promise<User | null> {
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   if (Number(exp) < Date.now()) return null;
   if (!/^[a-z0-9]{8,40}$/.test(uid)) return null;
-  const d = await readDoc(userPath(uid));
-  if (!d) return null;
-  const u = d.data as unknown as User;
+  // Cache mémoire 60 s par instance : évite une lecture Blob à chaque requête (quota d'opérations).
+  const hit = UCACHE.get(uid);
+  let u: User | null = hit && Date.now() - hit.at < 60_000 ? hit.u : null;
+  if (!u) {
+    const d = await readDoc(userPath(uid));
+    if (!d) return null;
+    u = d.data as unknown as User;
+    UCACHE.set(uid, { u, at: Date.now() });
+  }
   if (String(u.sv) !== sv || u.status !== "active") return null;
   return u;
+}
+const UCACHE: Map<string, { u: User; at: number }> = ((globalThis as Record<string, unknown>).__getumaUsers ??= new Map()) as Map<string, { u: User; at: number }>;
+export function forgetUser(uid: string) {
+  UCACHE.delete(uid);
 }
 
 /** Protection CSRF : les requêtes qui modifient doivent porter l'en-tête x-getuma (impossible à forger depuis un autre site). */
@@ -107,7 +117,16 @@ export async function saveUser(u: User) {
   await writeDoc(userPath(u.uid), u as unknown as Doc);
 }
 export async function patchUser(uid: string, fn: (u: User) => User | null) {
-  return (await updateDoc(userPath(uid), (cur) => (cur ? (fn(cur as unknown as User) as unknown as Doc | null) : null))) as unknown as User | null;
+  UCACHE.delete(uid);
+  const u = (await updateDoc(userPath(uid), (cur) => (cur ? (fn(cur as unknown as User) as unknown as Doc | null) : null))) as unknown as User | null;
+  usersChanged();
+  await touchRev(); // rôles, sociétés ou nom ont pu changer : les clients doivent relire
+  return u;
+}
+/** Vide la liste des comptes gardée en mémoire par /api/db. */
+export function usersChanged() {
+  const c = (globalThis as Record<string, unknown>).__getumaDb as { users: unknown } | undefined;
+  if (c) c.users = null;
 }
 export async function findUserByEmail(email: string): Promise<User | null> {
   const idx = await readDoc(emailPath(email));

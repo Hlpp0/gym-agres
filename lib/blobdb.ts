@@ -68,3 +68,11 @@ export async function updateDoc(p: string, fn: (cur: Doc | null) => Doc | null):
 export function json(body: unknown, status = 200, headers: Record<string, string> = {}) {
   return Response.json(body, { status, headers: { "Cache-Control": "no-store", ...headers } });
 }
+
+/** Numéro de révision de la base : changé à chaque écriture, pour que les clients et les instances sachent qu'il faut relire. */
+export const REV_PATH = "db/_rev.json";
+export async function touchRev() {
+  const v = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  await writeDoc(REV_PATH, { v });
+  return v;
+}

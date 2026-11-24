@@ -251,11 +251,13 @@ function queue(op){ op.qid=uid(); applyLocal(op); OUTBOX.push(op); render(); set
 const store={ set:(col,id,data)=>queue({op:"set",col,id,data}), patch:(col,id,data)=>queue({op:"patch",col,id,data}), del:(col,id)=>queue({op:"del",col,id}) };
 const isAdmin=()=>S.me&&S.me.role==="admin";
 async function call(url,method,body){ const r=await fetch(url,{method,credentials:"same-origin",headers:{"x-getuma":"1","content-type":"application/json"},body:body?JSON.stringify(body):undefined,cache:"no-store"}); let d={}; try{ d=await r.json(); }catch(e){} return {status:r.status,ok:r.ok,d}; }
-async function api(method,body){ const r=await call("/api/db",method,body); if(r.status===401){ toLogin(); throw new Error("auth"); } if(!r.ok) throw new Error("http "+r.status); return r.d; }
+/* lecture : on envoie la révision connue ; le serveur répond « same » si rien n'a changé (1 seule lecture côté stockage) */
+function apiGet(){ const r=S.rev||LS.get("getuma-rev",""); const hasData=Object.keys(S.groups).length||Object.keys(S.clubs).length; return api("GET",undefined,hasData&&r?`?rev=${encodeURIComponent(r)}`:""); }
+async function api(method,body,qs=""){ const r=await call("/api/db"+qs,method,body); if(r.status===401){ toLogin(); throw new Error("auth"); } if(!r.ok) throw new Error("http "+r.status); return r.d; }
 function toLogin(){ S.mode="login"; S.authView="login"; render(); }
-function wipeLocal(){ OUTBOX=[]; ["getuma-outbox","getuma-cache","getuma-me","getuma-lastsync"].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); Object.assign(S,{content:{},ed:null,clubs:{},groups:{},gymnasts:{},sessions:{},attendance:{},members:{},me:null,groupId:null}); }
+function wipeLocal(){ OUTBOX=[]; ["getuma-outbox","getuma-cache","getuma-me","getuma-lastsync","getuma-rev"].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); Object.assign(S,{content:{},ed:null,clubs:{},groups:{},gymnasts:{},sessions:{},attendance:{},members:{},me:null,groupId:null,rev:""}); }
 async function flush(){ if(flushing||!OUTBOX.length||!S.me||!navigator.onLine) return; flushing=true; try{ const batch=OUTBOX.slice(0,40); const res=await api("POST",{ops:batch}); const done=new Set(res.done); OUTBOX=OUTBOX.filter(o=>!done.has(o.qid)); LS.set("getuma-outbox",OUTBOX); S.syncErr=false; if(res.rejected&&res.rejected.length) toast("Une modification a été refusée (droits insuffisants)"); }catch(e){ if(e.message!=="auth") S.syncErr=true; } finally{ flushing=false; render(); if(OUTBOX.length&&!S.syncErr&&S.me) flush(); } }
-async function pull(){ if(!S.me||!navigator.onLine) return; try{ await flush(); const d=await api("GET"); if(OUTBOX.length) return; Object.assign(S,{me:d.me,content:d.content||{},clubs:d.clubs||{},groups:d.groups||{},gymnasts:d.gymnasts||{},sessions:d.sessions||{},attendance:d.attendance||{},members:d.members||{}}); S.lastSync=new Date().toISOString(); LS.set("getuma-lastsync",S.lastSync); S.syncErr=false; saveCache(); if(S.mode!=="login") S.mode="shared"; render(); }catch(e){ if(e.message!=="auth"){ S.syncErr=true; if(S.mode==="loading") S.mode="shared"; render(); } } }
+async function pull(){ if(!S.me||!navigator.onLine) return; try{ await flush(); const d=await apiGet(); if(OUTBOX.length) return; if(d.same){ S.me=d.me||S.me; S.lastSync=new Date().toISOString(); S.syncErr=false; if(S.mode==="loading") S.mode="shared"; return; } S.rev=d.rev||""; LS.set("getuma-rev",S.rev); Object.assign(S,{me:d.me,content:d.content||{},clubs:d.clubs||{},groups:d.groups||{},gymnasts:d.gymnasts||{},sessions:d.sessions||{},attendance:d.attendance||{},members:d.members||{}}); S.lastSync=new Date().toISOString(); LS.set("getuma-lastsync",S.lastSync); S.syncErr=false; saveCache(); if(S.mode!=="login") S.mode="shared"; render(); }catch(e){ if(e.message!=="auth"){ S.syncErr=true; if(S.mode==="loading") S.mode="shared"; render(); } } }
 /* ---------- logique ---------- */
 const gGroups=g=>Array.isArray(g&&g.groupIds)?g.groupIds:(g&&g.groupId?[g.groupId]:[]);
 const gyms=()=>Object.entries(S.gymnasts).filter(([,g])=>gGroups(g).includes(S.groupId)).map(([id,g])=>({id,...g})).sort((a,b)=>(a.name||"").localeCompare(b.name||"","fr"));
@@ -265,12 +267,12 @@ const elements=()=>ALLE.filter(e=>e.a===S.engin).filter(inLevel).sort((a,b)=>fam
 const forGym=(e,g)=>e.base||e.c.includes(g.cat)||minCat(e)<catIdx(g.cat);
 const maxCat=e=>{ if(e.base) return -1; const ix=e.c.map(catIdx).filter(i=>i>=0); return ix.length?Math.max(...ix):-1; };
 /* élément plus demandé dans la catégorie du gymnaste (catégories inférieures seulement) et jamais évalué : considéré acquis */
-const implicitOk=(g,e)=>!!e&&!e.base&&stOf(g,e.id)===0&&maxCat(e)>=0&&maxCat(e)<catIdx(g.cat);
+const implicitOk=()=>false; /* abandonné le 24.11.2026 : chaque élément doit être évalué */
 const effSt=(g,eid)=>implicitOk(g,BY[eid])?3:stOf(g,eid);
 const ownCat=(e,g)=>e.base||e.c.includes(g.cat);
 function preOk(g,pid){ const s=stOf(g,pid); if(s>=3) return true; const p=BY[pid]; if(!p) return true; return s===0&&!p.base&&minCat(p)<catIdx(g.cat); }
 function needs(g){ const out=[]; for(const e of elements()){ if(!forGym(e,g)) continue; const s=effSt(g,e.id); if(s>=3) continue; const miss=preOf(e.id).filter(p=>!preOk(g,p)); out.push({e,s,ready:!miss.length,miss}); } out.sort((a,b)=>(b.ready-a.ready)||((b.s>0)-(a.s>0))||(b.s-a.s)||(minCat(a.e)-minCat(b.e))); return out; }
-function progress(g){ const els=elements().filter(e=>ownCat(e,g)); const done=els.filter(e=>effSt(g,e.id)>=3).length; return {done,total:els.length,pct:els.length?Math.round(done/els.length*100):0}; }
+function progress(g){ const els=elements().filter(e=>forGym(e,g)); const done=els.filter(e=>effSt(g,e.id)>=3).length; return {done,total:els.length,pct:els.length?Math.round(done/els.length*100):0}; }
 function workGroups(list,max){ const b={},free=[]; for(const g of list){ const n=needs(g).filter(x=>x.ready); if(!n.length){ free.push(g); continue; } (b[n[0].e.id]=b[n[0].e.id]||[]).push(g); } const out=[]; for(const [eid,l] of Object.entries(b)) for(let i=0;i<l.length;i+=max) out.push({eid,gyms:l.slice(i,i+max)}); out.sort((a,b)=>b.gyms.length-a.gyms.length||minCat(BY[a.eid])-minCat(BY[b.eid])); if(free.length) out.push({eid:null,gyms:free}); return out; }
 function setStatus(gid,eid,s){ const d=today(); store.patch("gymnasts",gid,{st:{[eid]:{s,d}},log:{[Date.now().toString(36)+uid().slice(0,3)]:{e:eid,s,d}}}); }
 
@@ -821,7 +823,7 @@ function vGymnastes(id){
   return `${banner()}${header("Gymnastes",`${S.gsort.cat||S.gsort.yr?`${list.length} sur ${all.length}`:`${all.length} au total`}`)}
   <div class="row"><button class="btn primary" data-go="gymnastes--tableau">Tableau des infos</button><button class="btn" data-go="gymnastes--ajouter">Ajouter</button><button class="btn" data-go="gymnastes--reglages">Réglages</button></div>
   ${all.length>1?sortBar(all):""}
-  ${list.length?`<div class="divide">${list.map(g=>{ const p=progress(g); return `<button class="li" data-go="gymnastes--${g.id}"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${yearOf(g)?` · ${yearOf(g)}`:""} · ${p.done}/${p.total} en ${g.cat}</span><span class="bar" style="margin-top:6px;max-width:220px"><i class="b3" style="width:${p.pct}%"></i></span></span><span class="chev">›</span></button>`; }).join("")}</div>`:`<div class="empty">Aucun gymnaste dans ce groupe.</div>`}`;
+  ${list.length?`<div class="divide">${list.map(g=>{ const p=progress(g); return `<button class="li" data-go="gymnastes--${g.id}"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${yearOf(g)?` · ${yearOf(g)}`:""} · ${p.done}/${p.total} acquis</span><span class="bar" style="margin-top:6px;max-width:220px"><i class="b3" style="width:${p.pct}%"></i></span></span><span class="chev">›</span></button>`; }).join("")}</div>`:`<div class="empty">Aucun gymnaste dans ce groupe.</div>`}`;
 }
 function vGym(g){
   loadEx(); const els=elements().filter(e=>forGym(e,g)); const own=els.filter(e=>ownCat(e,g)), low=els.filter(e=>!ownCat(e,g));
@@ -834,7 +836,7 @@ function vGym(g){
   return `<button class="back" data-go="gymnastes">‹ Équipe</button>
   <header class="profile"><div class="avatar" aria-hidden="true">${esc(ini)}</div><div class="pinfo"><h1>${esc(g.name)}</h1><div class="sub">${g.cat}${yearOf(g)?` · ${yearOf(g)}`:""}${g.fsg?` · FSG ${esc(g.fsg)}`:""}</div>
    <div class="chips">${gGroups(g).filter(id=>S.groups[id]).map(id=>`<span class="chip static">${esc(groupLabel(id))}</span>`).join("")}</div></div></header>
-  <div class="stats"><div><b>${p.done}/${p.total}</b><span>acquis en ${g.cat}</span></div><div><b>${wip}</b><span>en cours</span></div><div><b>${top}</b><span>maîtrisés</span></div></div>
+  <div class="stats"><div><b>${p.done}/${p.total}</b><span>acquis</span></div><div><b>${wip}</b><span>en cours</span></div><div><b>${top}</b><span>maîtrisés</span></div></div>
   <details class="card edit"><summary><b>Modifier le profil</b></summary><div class="form">
    <label class="f">Prénom<input class="inp" data-keep data-cell="${g.id}|prenom" value="${esc(pr)}"></label>
    <label class="f">Nom (facultatif)<input class="inp" data-keep data-cell="${g.id}|nom" value="${esc(nm)}"></label>
@@ -850,7 +852,7 @@ function vGym(g){
   ${card("💪","Programme perso",`${prog.length?`<div class="divide">${prog.map(([id,v])=>`<div class="li"><button class="grow" style="text-align:left" data-go="biblio--ex-${id}"><span class="t">${esc(exOf(id).n)}</span><span class="d">${[v.dos,v.charge,v.note].filter(Boolean).map(esc).join(" · ")||"dosage à définir"}</span></button><button class="btn link danger" data-unprog="${g.id}|${id}" aria-label="Retirer">✕</button></div>`).join("")}</div>`:`<span class="small muted">Aucun exercice attribué.</span>`}<a class="small" href="#biblio--renfo">+ Attribuer un exercice depuis Renforcement</a>`)}
   ${chart(g)}
   <section class="card"><h2><span aria-hidden="true">✅</span>Évaluations ${enginName(S.engin)} · ${g.cat}</h2>${enginBar()}${legend()}${rows(fam(own))||`<span class="small muted">Aucun élément.</span>`}
-   ${low.length?`<details class="acc"><summary><b>Catégories inférieures</b><span class="muted">${low.length}</span></summary><p class="xs muted" style="margin:4px">Considérés acquis tant qu'ils ne sont pas évalués autrement.</p>${rows(fam(low))}</details>`:""}</section>`;
+   ${low.length?`<details class="acc"><summary><b>Catégories inférieures</b><span class="muted">${low.length}</span></summary>${rows(fam(low))}</details>`:""}</section>`;
 }
 function chart(g){
   const log=Object.entries(g.log||{}).map(([k,v])=>({k,...v})).filter(l=>BY[l.e]&&BY[l.e].a==="sol").sort((a,b)=>(a.d+a.k).localeCompare(b.d+b.k));
@@ -1029,7 +1031,7 @@ window.addEventListener("hashchange",()=>{ window.scrollTo(0,0); if(location.has
 if(!S.me) S.mode="login";
 render();
 if(navigator.onLine) call("/api/auth/me","GET").then(r=>{ if(r.status===401){ wipeLocal(); toLogin(); } else if(r.ok){ S.me=r.d.user; if(S.mode==="login") S.mode="loading"; saveCache(); render(); pull(); } }).catch(()=>{});
-setInterval(()=>{ if(document.visibilityState==="visible") pull(); },20000);
+setInterval(()=>{ if(document.visibilityState==="visible") pull(); },60000); /* 60 s : économise le quota de lectures */
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") pull(); });
 window.addEventListener("online",()=>{ render(); pull(); });
 window.addEventListener("offline",render);

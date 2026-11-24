@@ -1,4 +1,4 @@
-import { deepMerge, deleteDoc, json, listPaths, readDoc, updateDoc, writeDoc, type Doc } from "@/lib/blobdb";
+import { deepMerge, deleteDoc, json, listPaths, readDoc, touchRev, updateDoc, writeDoc, REV_PATH, type Doc } from "@/lib/blobdb";
 import { csrfOk, getUser, publicUser, type User } from "@/lib/auth";
 
 // API de GETUMA Coach : sociétés, groupes, gymnastes, séances, présences.
@@ -33,6 +33,32 @@ class HttpError extends Error {
   }
 }
 
+// Quota Vercel Blob : chaque lecture compte. On garde la base en mémoire (par instance) et on ne la relit
+// que si le numéro de révision db/_rev.json a changé. Un poll sans changement = 1 seule lecture.
+const REV = REV_PATH;
+type Cache = { rev: string; all: All | null; users: User[] | null; usersAt: number };
+const C: Cache = ((globalThis as Record<string, unknown>).__getumaDb ??= { rev: "", all: null, users: null, usersAt: 0 }) as Cache;
+async function currentRev() {
+  const r = await readDoc(REV);
+  return r ? String(r.data.v) : "0";
+}
+async function load(): Promise<{ all: All; rev: string }> {
+  const rev = await currentRev();
+  if (C.all && C.rev === rev) return { all: C.all, rev };
+  const all = await readAll();
+  C.all = all;
+  C.rev = rev;
+  return { all, rev };
+}
+async function bump(startRev: string) {
+  // Si quelqu'un d'autre a écrit entre-temps, notre copie en mémoire n'est plus fiable : on la jette.
+  const now = await currentRev();
+  const v = await touchRev();
+  if (now !== startRev) C.all = null;
+  C.rev = v;
+  return v;
+}
+
 async function readAll(): Promise<All> {
   const out: All = { clubs: {}, groups: {}, gymnasts: {}, sessions: {}, attendance: {}, content: {} };
   const paths = await listPaths("db/");
@@ -65,6 +91,7 @@ async function migrate(all: All) {
     all.groups[id] = { ...g, clubId };
     await writeDoc(docPath("groups", id), all.groups[id]);
   }
+  await bump(C.rev);
 }
 
 function scope(all: All, u: User) {
@@ -76,8 +103,12 @@ function scope(all: All, u: User) {
 
 async function members(clubIds: Set<string>) {
   const out: Record<string, { uid: string; name: string; bdns: string }[]> = {};
-  const paths = await listPaths("users/");
-  const users = await Promise.all(paths.map(async (p) => (await readDoc(p))?.data as unknown as User | undefined));
+  if (!C.users || Date.now() - C.usersAt > 5 * 60_000) {
+    const paths = await listPaths("users/");
+    C.users = (await Promise.all(paths.map(async (p) => (await readDoc(p))?.data as unknown as User | undefined))).filter(Boolean) as User[];
+    C.usersAt = Date.now();
+  }
+  const users = C.users;
   for (const u of users) {
     if (!u || u.status !== "active") continue;
     const cl = u.role === "admin" ? [...clubIds] : (u.clubs || []).filter((c) => clubIds.has(c));
@@ -91,7 +122,9 @@ export async function GET(req: Request) {
   try {
     const u = await getUser(req);
     if (!u) return json({ error: "auth" }, 401);
-    const all = await readAll();
+    const { all, rev } = await load();
+    const known = new URL(req.url).searchParams.get("rev");
+    if (known && known === rev) return json({ same: true, rev, me: publicUser(u) });
     if (u.role === "admin") await migrate(all);
     const { clubIds, groupIds } = scope(all, u);
     const pick = (col: Col, keep: (id: string, d: Doc) => boolean) =>
@@ -109,6 +142,7 @@ export async function GET(req: Request) {
       attendance: pick("attendance", (_, d) => groupIds.has(String(d.groupId))),
       content: all.content, // fiches modifiées par l'admin (éléments, postes, exercices) : lisibles par tous les comptes actifs
       members: await members(clubIds),
+      rev,
     });
   } catch (e) {
     console.error(e);
@@ -183,7 +217,7 @@ export async function POST(req: Request) {
     if (!u) return json({ error: "auth" }, 401);
     const body = (await req.json().catch(() => ({}))) as { ops?: Op[] };
     const ops = Array.isArray(body.ops) ? body.ops.slice(0, 100) : [];
-    const all = await readAll();
+    const { all, rev: startRev } = await load();
     const done: (string | null)[] = [];
     const rejected: { qid: string | null; error: string }[] = [];
     for (const op of ops) {
@@ -198,6 +232,7 @@ export async function POST(req: Request) {
         } else throw e;
       }
     }
+    if (done.length > rejected.length) await bump(startRev);
     return json({ ok: true, done, rejected });
   } catch (e) {
     console.error(e);

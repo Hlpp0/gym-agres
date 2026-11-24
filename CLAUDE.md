@@ -56,8 +56,11 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   PRE (prérequis) et ateliers détaillés n'existent que pour le Sol pour l'instant.
 - Classement par élément : `gymnast.rk[eid]` = rang (0 = le meilleur) parmi les gymnastes à « acquis » ou « maîtrisé » ; flèches dans la page de l'élément.
 - Tableau : la position de scroll des zones `.tscroll` et `.pillbar` est conservée à chaque rendu.
-- Statut effectif (`effSt`) : un élément jamais évalué qui n'est demandé que dans des catégories INFÉRIEURES à celle du gymnaste
-  est considéré acquis (`implicitOk`). Progression = éléments de SA catégorie + bases (« 3/13 en C3 »). Besoins idem.
+- Pas d'acquis implicite (essayé puis abandonné le 24.11.2026 à la demande d'Hippolyte) : `implicitOk` renvoie toujours faux.
+  Progression = éléments de sa catégorie ET des catégories inférieures + bases, tous à évaluer.
+- Quota Vercel Blob (offre gratuite : 10 000 lectures simples/mois) : `/api/db` garde la base en mémoire par instance et ne la relit
+  que si `db/_rev.json` a changé (`touchRev` à chaque écriture, y compris comptes). Le client envoie `?rev=` et reçoit `{same:true}`
+  si rien n'a changé ; poll toutes les 60 s. Utilisateur de session gardé 60 s en mémoire (`UCACHE`), liste des comptes 5 min.
 - Page d'un élément (Évaluer) : accordéons par statut (non abordé en haut, maîtrisé en bas), état gardé dans `S.acc`.
   Mode « Classer » : `gymnast.rk[eid]` ordonne les gymnastes à l'intérieur de chaque statut (qui est le plus proche de réussir).
 - Fiche gymnaste façon profil (avatar, catégorie, année, groupes, 3 chiffres), « Modifier le profil » repliable.
