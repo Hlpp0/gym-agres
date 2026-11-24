@@ -35,6 +35,11 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   conserve les autres lors des modifications. Un coach qui « supprime » un gymnaste présent ailleurs le retire seulement de ses groupes.
 
 ## Présences et BDNS
+- Statut par gymnaste dans `attendance.st[gid]` = {s: p|e|a (présent, excusé, absent), m: motif, late: min, early: min}.
+  `present[gid]` reste à 1 seulement pour « p » (sert à l'export BDNS). Ancien format (present seul) toujours lu.
+- Liste triée par nom de famille. Enregistrer une séance crée/complète la feuille de présences du jour (heure, durée, moniteurs).
+- Groupes de travail et génération de séance retirent les excusés et absents du jour ; retard et départ anticipé affichés à côté du nom.
+- Motif d'excuse : rester générique (« Santé »), jamais de détail médical (donnée sensible nLPD).
 - Onglet Présences : un document `attendance/{groupId}_{date}` (heure, durée, lieu, gymnastes présents, moniteurs présents).
 - Pas d'API publique BDNS : export CSV au format d'importation du contrôle des présences J+S
   (N° PERSONNEL;FONCTION;DATE;TYPE D'ACTIVITE;HEURE;DUREE;LIEU, séparateur `;`, UTF-8 avec BOM), import manuel dans la BDNS.
@@ -46,6 +51,11 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - Synchronisation : pull toutes les 20 s quand l'app est visible, et au retour en ligne. Les opérations refusées par le serveur (droits) sont retirées de la file.
 - Catalogue : éléments Sol issus du fichier GETUMA_elements.xlsx (codes EST/STV), affichage par défaut des bases C1-C2
   + 4 fondamentaux GETUMA (fente avant, appui renversé contre le mur, pont, gainage I).
+- Engins : sélecteur dans Évaluer, Groupes, Séance et Biblio (`S.engin`, gardé dans localStorage `getuma-engin`).
+  Catalogue RAW : sol, anneaux, saut, reck, bp (barres parallèles), ba (barres asymétriques). Hors Sol, familles = « Éléments C1 », etc.
+  PRE (prérequis) et ateliers détaillés n'existent que pour le Sol pour l'instant.
+- Classement par élément : `gymnast.rk[eid]` = rang (0 = le meilleur) parmi les gymnastes à « acquis » ou « maîtrisé » ; flèches dans la page de l'élément.
+- Tableau : la position de scroll des zones `.tscroll` et `.pillbar` est conservée à chaque rendu.
 - Statuts : 0 non abordé, 1 découverte, 2 avec aide, 3 acquis, 4 maîtrisé.
 - Besoin prioritaire = élément de la catégorie pas encore acquis dont les prérequis (table PRE) sont validés.
 
