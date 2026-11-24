@@ -82,6 +82,8 @@ details.card.edit>summary,.acc>summary{cursor:pointer;list-style:none;display:fl
 .tlinks{position:absolute;left:0;top:0;pointer-events:none;z-index:0}.tlinks path{fill:none;stroke:var(--line);stroke-width:1.6}.tlinks path.hl{stroke:var(--ink);stroke-width:2.2}
 .selbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--soft);border-radius:10px;padding:8px 10px}.selbar .btn{margin-left:auto;min-height:34px;padding:4px 12px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 4px 0 2px}.dot.pre{background:#2383e2}.dot.nxt{background:var(--s3i)}
 .card ol a,.card p a{color:var(--ink);text-decoration-color:var(--line);text-underline-offset:3px}
+.revbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fdf6e3;border:1px solid #f1e2b8;border-radius:10px;padding:8px 10px}.revbar .small{margin-right:auto}.revbar .btn{min-height:34px;padding:4px 12px}
+.review{border-color:#f1e2b8;background:linear-gradient(#fffdf6,var(--bg))}.tabs a.due{position:relative}.tabs a.due::after{content:"";position:absolute;top:7px;left:calc(50% + 9px);width:8px;height:8px;border-radius:50%;background:#e16b2b}
 .tbl th.stick{z-index:3;background:var(--soft)}
 .tscroll{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:70vh}
 .wrap{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(104px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
@@ -586,6 +588,25 @@ const elLink=p=>`<button class="chip" data-go="biblio--el-${p.id}">${/^\d{5}$/.t
 const exLi=x0=>{ const x=exOf(x0.id)||x0; return `<button class="li rowthumb" data-go="biblio--ex-${x.id}">${thumbHTML(x.media)}<span class="grow"><span class="t">${esc(x.n)}</span><span class="d">${esc(x.type.join(", "))} · ${esc(x.zone.join(", "))} · ${NIV[x.niv]||""}</span></span><span class="chev">›</span></button>`; };
 const poLi=(pid,i,used)=>{ const p=posteOf(pid); if(!p) return ""; return `<button class="li rowthumb" data-go="biblio--po-${pid}">${i!=null?`<span class="num">${i+1}</span>`:""}${thumbHTML(p.media)}<span class="grow"><span class="t">${esc(p.n)}</span>${p.desc||used?`<span class="d">${esc(used||p.desc)}</span>`:""}</span><span class="chev">›</span></button>`; };
 
+/* ---------- relecture du jour (admin) : une fiche proposée chaque jour ---------- */
+function reviewQueue(){
+  const els=Object.keys(FICHE_DEF).filter(id=>BY[id]).sort((a,b)=>famRank(famOf(BY[a]))-famRank(famOf(BY[b]))||codeOf(BY[a])-codeOf(BY[b])).map(id=>({k:"el_"+id,kind:"el",id,n:BY[id].n,t:"Fiche technique"}));
+  const pos=[]; els.forEach(e=>postesIds(e.id).forEach(pid=>{ const p=posteOf(pid); if(p&&(p.desc||p.steps)&&!pos.some(x=>x.id===pid)) pos.push({k:"po_"+pid,kind:"po",id:pid,n:p.n,t:"Poste d'apprentissage"}); }));
+  /* on alterne : une fiche technique, puis ses postes */
+  const out=[]; els.forEach(e=>{ out.push(e); postesIds(e.id).forEach(pid=>{ const p=pos.find(x=>x.id===pid); if(p&&!out.includes(p)) out.push(p); }); }); return out;
+}
+const isReviewed=k=>!!((CT(k)||{}).ok);
+function todayReview(){ const q=reviewQueue(); const todo=q.filter(x=>!isReviewed(x.k)); const sk=LS.get("getuma-revskip",{}); const skip=sk.d===today()?sk.ids||[]:[];
+  const doneToday=q.filter(x=>((CT(x.k)||{}).ok)===today()).length;
+  return {item:todo.find(x=>!skip.includes(x.k))||null,left:todo.length,total:q.length,doneToday}; }
+function reviewCard(){ if(!isAdmin()) return ""; const r=todayReview(); const pct=r.total?Math.round((r.total-r.left)/r.total*100):0;
+  return `<section class="card review"><h2><span aria-hidden="true">📝</span>Relecture du jour</h2>
+   ${r.item?`<p class="small muted">${r.doneToday?`Déjà ${r.doneToday} relue${r.doneToday>1?"s":""} aujourd'hui, bravo. En voici une autre si tu as le temps :`:"Une fiche par jour, 5 minutes :"}</p>
+   <button class="li" data-go="biblio--${r.item.kind}-${r.item.id}" style="padding:10px 4px"><span class="grow"><span class="t">${esc(r.item.n)}</span><span class="d">${r.item.t}</span></span><span class="chev">›</span></button>
+   <div class="row"><button class="btn primary" data-go="biblio--${r.item.kind}-${r.item.id}">Lire</button><button class="btn" data-go="biblio--edit-${r.item.kind}-${r.item.id}">Corriger</button><button class="btn" data-okrev="${r.item.k}">Relue ✓</button><button class="btn link" data-skiprev="${r.item.k}">Une autre</button></div>`
+   :`<p class="small">Tout est relu ✨ Envoie l'export « Mes corrections » à Claude pour la suite.</p>`}
+   <div class="bar" style="margin-top:4px"><i class="b3" style="width:${pct}%"></i></div><span class="xs muted">${r.total-r.left}/${r.total} fiches relues</span></section>`; }
+const reviewBanner=k=>isAdmin()&&!isReviewed(k)?`<div class="revbar"><span class="small">📝 Pas encore relue</span><button class="btn" data-go="biblio--edit-${k.slice(0,2)}-${k.slice(3)}">Corriger</button><button class="btn primary" data-okrev="${k}">Relue ✓</button></div>`:"";
 function vBiblio(id){
   if(id&&id.startsWith("edit-")) return isAdmin()?vEdit(id.slice(5,7),id.slice(8)):`<div class="empty">Réservé à l'administrateur.</div>`;
   if(id&&id.startsWith("el-")&&BY[id.slice(3)]) return vFicheEl(BY[id.slice(3)]);
@@ -597,6 +618,7 @@ function vBiblio(id){
   if(id==="renfo") return vBibRenfo();
   const tile=(go,ic,t,d)=>`<button class="tile" data-go="${go}"><span class="tic" aria-hidden="true">${ic}</span><span class="grow"><span class="t">${t}</span><span class="d">${d}</span></span><span class="chev">›</span></button>`;
   return `${header("Bibliothèque","Fiches et exercices")}
+  ${reviewCard()}
   <div class="tiles">${tile("biblio--elements","📖","Éléments","Fiches techniques par engin : code, catégories, prérequis, progression")}
   ${tile("biblio--appr","🧩","Exercices d'apprentissage","Postes et éducatifs pour apprendre chaque élément")}
   ${tile("biblio--renfo","💪","Renforcement et mobilité","172 exercices de préparation physique spécifique")}
@@ -643,6 +665,7 @@ function vFicheEl(e){
   <header class="hero"><div class="row">${/^\d{5}$/.test(e.stv||"")?`<span class="tag">N° ${e.stv}</span>`:""}${e.base?`<span class="tag">Base GETUMA</span>`:`${valTag(e)?`<span class="tag val" title="${e.v==="L"?"Liaison":"Valeur EST"}">${e.v==="L"?"Liaison":valTag(e)}</span>`:""}${catRange(e)?`<span class="tag" title="Exigée dans le programme">Programme ${catRange(e)}</span>`:""}`}${e.i?`<span class="tag">Pos. i</span>`:""}${e.h?`<span class="tag">Tenue 2 s</span>`:""}</div>
    <h1>${esc(e.n)}</h1><div class="sub">${enginName(e.a)} · ${esc(famOf(e))}${e.est?` · EST ${esc(e.est)}`:""}</div>
    <div class="row">${editBtn("el-"+e.id)}<button class="btn" data-go="evaluer--${e.id}">Évaluer le groupe</button>${f?`<a class="btn" href="${esc(f)}" target="_blank" rel="noopener" style="text-decoration:none">Document lié ↗</a>`:""}</div></header>
+  ${FICHE_DEF[e.id]?reviewBanner("el_"+e.id):""}
   ${secs.length>2?`<nav class="toc" aria-label="Sommaire">${secs.map(([id,ic,ti])=>`<button class="pill" data-scroll="sec-${id}">${ic} ${esc(ti.split(" ")[0])}</button>`).join("")}</nav>`:""}
   ${gallery(c.media)}
   ${rich?"":`<p class="small muted" style="margin:0">Fiche technique en cours de rédaction.</p>`}
@@ -686,6 +709,7 @@ function vFichePo(pid){
   return `<button class="back" data-go="biblio--appr">‹ Apprentissage</button>
   <header class="hero"><div class="row"><span class="tag">Exercice d'apprentissage</span>${p.fam?`<span class="tag">${esc(p.fam)}</span>`:""}</div><h1>${esc(p.n)}</h1>${p.desc?`<div class="sub">${esc(p.desc)}</div>`:""}
    <div class="row">${editBtn("po-"+pid)}</div></header>
+  ${(p.desc||p.steps)?reviewBanner("po_"+pid):""}
   ${gallery(p.media)||(isAdmin()?`<div class="box small muted">Pas encore d'image ni de vidéo. Ajoute un GIF, une photo ou un lien YouTube avec « Modifier ».</div>`:"")}
   ${card("🧰","Mise en place",p.mat?`<p>${esc(p.mat)}</p>`:"")}
   ${card("📋","Consignes",olist(p.steps))}
@@ -932,6 +956,7 @@ function render(){
   if(!S.groups[S.groupId]) S.groupId=(entries.find(([id])=>Object.values(S.gymnasts).some(g=>gGroups(g).includes(id)))||entries[0]||[null])[0];
   const {r,id}=parse();
   document.querySelectorAll("#tabs a").forEach(a=>a.setAttribute("aria-current",a.getAttribute("href")==="#"+r?"page":"false"));
+  { const bt=document.querySelector('#tabs a[href="#biblio"]'); if(bt){ let due=false; try{ due=isAdmin()&&S.mode!=="login"&&typeof todayReview==="function"&&(()=>{ const x=todayReview(); return !!x.item&&!x.doneToday; })(); }catch(e){} bt.classList.toggle("due",due); } }
   if(S.mode==="login"){ document.getElementById("tabs").hidden=true; const fa=document.activeElement&&document.activeElement.id; if(fa&&/^(li|su)/.test(fa)) return; V.innerHTML=vAuth(); return; }
   document.getElementById("tabs").hidden=false;
   if(S.mode==="loading"){ V.innerHTML=`<div class="empty">Chargement…</div>`; return; }
@@ -996,6 +1021,8 @@ document.addEventListener("click",e=>{
   if(t.dataset.tf!==undefined){ S.treeFam=t.dataset.tf; S.treeSel=null; render(); return; }
   if(t.dataset.tedit!==undefined){ S.treeEdit=!S.treeEdit; render(); return; }
   if(t.dataset.tdir){ S.treeDir=t.dataset.tdir; render(); return; }
+  if(t.dataset.okrev){ const k=t.dataset.okrev; store.set("content",k,{...(CT(k)||{}),ok:today()}); toast("Merci, fiche relue ✓"); if(location.hash!=="#biblio") go("biblio"); return; }
+  if(t.dataset.skiprev){ const sk=LS.get("getuma-revskip",{}); const ids=sk.d===today()?sk.ids||[]:[]; LS.set("getuma-revskip",{d:today(),ids:[...ids,t.dataset.skiprev]}); render(); return; }
   if(t.dataset.scroll){ const el=document.getElementById(t.dataset.scroll); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); return; }
   if(t.dataset.unprog){ const [gid,id]=t.dataset.unprog.split("|"); store.patch("gymnasts",gid,{prog:{[id]:null}}); return; }
   if(t.id==="assignBtn"){ const gid=$("#asGym").value; const id=t.dataset.ex; if(!gid) return; store.patch("gymnasts",gid,{prog:{[id]:{dos:($("#asDos").value||"").trim().slice(0,60),charge:($("#asCharge").value||"").trim().slice(0,60),note:($("#asNote").value||"").trim().slice(0,120),d:today()}}}); toast("Exercice attribué"); return; }
