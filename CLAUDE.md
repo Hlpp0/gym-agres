@@ -49,8 +49,15 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 ## Fonctionnement côté app
 - Cache local (localStorage) + file d'attente des modifications (`getuma-outbox`) : on évalue hors-ligne, l'envoi part au retour du réseau.
 - Synchronisation : pull toutes les 20 s quand l'app est visible, et au retour en ligne. Les opérations refusées par le serveur (droits) sont retirées de la file.
-- Catalogue : éléments Sol issus du fichier GETUMA_elements.xlsx (codes EST/STV), affichage par défaut des bases C1-C2
-  + 4 fondamentaux GETUMA (fente avant, appui renversé contre le mur, pont, gainage I).
+- Catalogue : programme (RAW, fichier GETUMA_elements.xlsx, catégories C1-C3 exigées) + 4 fondamentaux GETUMA
+  + catalogue complet EST (`EST`, 709 éléments extraits le 24.11.2026 des tableaux d'évaluation : Sol 2025-09, Anneaux 2025-09,
+  Saut 2025-01, Reck 2025-01, Barres parallèles 2025-01, Barres asymétriques scolaires 2018-04 ; script /tmp/est/parse.py, pdfplumber).
+  Champs EST : id `x{code}`, a, n (nom FR), stv (code), v (valeur B ou 4 à 7), s (famille FR), i (passe par l'appui renversé).
+  Fusion : un élément du programme avec le même code reçoit v/i/s ; les autres deviennent `XTRA` (x:1).
+  Affichage : valeur EST (« B », « C5 ») puis « Programme C1-C2 » si exigé. Niveaux d'affichage (Évaluer, Réglages) :
+  base (bases C1-C2), all (programme), est (catalogue complet). Les éléments x:1 sont proposés aux gymnastes dont la catégorie
+  atteint la valeur (B pour tous) mais n'entrent dans les besoins qu'une fois commencés, et jamais dans la progression.
+  Familles Sol dans l'ordre des codes 101 à 112 (FAM_ORDER) ; autres engins : familles EST (ordre `EST_FAMNUM`).
 - Engins : sélecteur dans Évaluer, Groupes, Séance et Biblio (`S.engin`, gardé dans localStorage `getuma-engin`).
   Catalogue RAW : sol, anneaux, saut, reck, bp (barres parallèles), ba (barres asymétriques). Hors Sol, familles = « Éléments C1 », etc.
   PRE (prérequis) et ateliers détaillés n'existent que pour le Sol pour l'instant.
