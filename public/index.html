@@ -49,6 +49,9 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}.seg button{all:unset;cursor:pointer;padding:7px 8px;font-size:13px;color:var(--muted)}.seg button+button{border-left:1px solid var(--line)}
 .seg .s-p[aria-pressed="true"]{background:#dbeddb;color:#1c3829}.seg .s-e[aria-pressed="true"]{background:#fdecc8;color:#402c1b}.seg .s-a[aria-pressed="true"]{background:#ffe2dd;color:#5d1715}
 .pdet{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.inp.mini{width:70px;min-height:32px;padding:4px 8px;display:inline-block}
+.elrow{display:flex;align-items:center;gap:10px}.elrow .code{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:var(--muted);width:52px;flex:none}
+.elrow .cat{flex:none;min-width:50px;text-align:center}.elrow .t{white-space:normal;line-height:1.3}.elrow .media{display:flex;gap:4px;flex:none}
+.mico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--ink)}
 .tbl th.stick{z-index:3;background:var(--soft)}
 .tscroll{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:70vh}
 .wrap{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));display:grid;gap:20px}
@@ -158,6 +161,10 @@ const FAM = {
 const FAM_ORDER=["Roulés","Appuis renversés","Renversements latéraux","Ponts et souplesses","Sauts","Souplesse","Balances","Force et gainage"];
 const famOf=e=>FAM[e.s]||(e&&e.a!=="sol"?(minCat(e)<99?`Éléments ${CATS[minCat(e)]}`:"Autres éléments"):"Autres");
 const famRank=f=>{ const i=FAM_ORDER.indexOf(f); if(i>=0) return i; const m=String(f).match(/C(\d)$/); return m?100+ +m[1]:200; };
+const codeOf=e=>/^\d{5}$/.test(e.stv||"")?+e.stv:(e.base?0:99999);
+const catRange=e=>{ if(e.base) return "Base"; const ix=e.c.map(catIdx).filter(i=>i>=0).sort((a,b)=>a-b); if(!ix.length) return ""; const a=CATS[ix[0]],b=CATS[ix[ix.length-1]]; return a===b?a:`${a}-${b}`; };
+/* images et vidéos par élément : {id:{img:"url",vid:"url"}} (à compléter) */
+const MEDIA={};
 const famList=els=>[...new Set(els.map(famOf))].sort((a,b)=>famRank(a)-famRank(b));
 const ST=[{l:"Non abordé",s:"–"},{l:"Découverte",s:"D"},{l:"Avec aide",s:"A"},{l:"Acquis",s:"✓"},{l:"Maîtrisé",s:"★"}];
 const PRE={
@@ -222,7 +229,7 @@ const gGroups=g=>Array.isArray(g&&g.groupIds)?g.groupIds:(g&&g.groupId?[g.groupI
 const gyms=()=>Object.entries(S.gymnasts).filter(([,g])=>gGroups(g).includes(S.groupId)).map(([id,g])=>({id,...g})).sort((a,b)=>(a.name||"").localeCompare(b.name||"","fr"));
 const stOf=(g,eid)=>(g&&g.st&&g.st[eid]&&g.st[eid].s)||0;
 const inLevel=e=>S.level==="all"?true:(e.base||minCat(e)<=1);
-const elements=()=>ALLE.filter(e=>e.a===S.engin).filter(inLevel).sort((a,b)=>famRank(famOf(a))-famRank(famOf(b))||minCat(a)-minCat(b)||a.n.localeCompare(b.n,"fr"));
+const elements=()=>ALLE.filter(e=>e.a===S.engin).filter(inLevel).sort((a,b)=>famRank(famOf(a))-famRank(famOf(b))||codeOf(a)-codeOf(b)||minCat(a)-minCat(b)||a.n.localeCompare(b.n,"fr"));
 const forGym=(e,g)=>e.base||e.c.includes(g.cat)||minCat(e)<catIdx(g.cat);
 function preOk(g,pid){ const s=stOf(g,pid); if(s>=3) return true; const p=BY[pid]; if(!p) return true; return s===0&&!p.base&&minCat(p)<catIdx(g.cat); }
 function needs(g){ const out=[]; for(const e of elements()){ if(!forGym(e,g)) continue; const s=stOf(g,e.id); if(s>=3) continue; const miss=(PRE[e.id]||[]).filter(p=>!preOk(g,p)); out.push({e,s,ready:!miss.length,miss}); } out.sort((a,b)=>(b.ready-a.ready)||((b.s>0)-(a.s>0))||(b.s-a.s)||(minCat(a.e)-minCat(b.e))); return out; }
@@ -440,16 +447,21 @@ function vBiblio(id){
   </div>`;
 }
 function vBibElements(){
-  const q=norm(S.bibQ); const els=ALLE.filter(e=>e.a===S.engin&&(!q||norm(e.n).includes(q))).sort((a,b)=>famRank(famOf(a))-famRank(famOf(b))||minCat(a)-minCat(b)||a.n.localeCompare(b.n,"fr"));
-  const by={}; els.forEach(e=>(by[famOf(e)]=by[famOf(e)]||[]).push(e));
+  const q=norm(S.bibQ); const sol=S.engin==="sol";
+  const els=ALLE.filter(e=>e.a===S.engin&&(!q||norm(e.n+" "+e.stv).includes(q))).sort((a,b)=>codeOf(a)-codeOf(b)||minCat(a)-minCat(b)||a.n.localeCompare(b.n,"fr"));
+  const by={}; els.forEach(e=>{ const f=sol?famOf(e):"Éléments"; (by[f]=by[f]||[]).push(e); });
+  const fk=f=>Math.min(...by[f].map(e=>e.base?99999:codeOf(e))); const fams=Object.keys(by).sort((a,b)=>fk(a)-fk(b)); /* familles dans l'ordre des codes */
+  const ico=(d,l)=>`<svg class="mico" viewBox="0 0 24 24" role="img" aria-label="${l}"><title>${l}</title>${d}</svg>`;
+  const media=e=>{ const m=MEDIA[e.id]||{}; return [m.img?ico('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-8 7"/>',"Image"):"",m.vid?ico('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/>',"Vidéo"):"",FICHES[e.id]?ico('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/>',"Fiche technique"):""].join(""); };
   return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Éléments · ${enginName(S.engin)}</h1>${enginBar()}
-  <input class="inp" id="bibQ" type="search" placeholder="Rechercher un élément" value="${esc(S.bibQ||"")}" aria-label="Rechercher un élément">
-  ${Object.entries(by).map(([f,arr])=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${arr.map(e=>`<button class="li" data-go="biblio--el-${e.id}"><span class="grow"><span class="t">${esc(e.n)}</span><span class="d">${e.base?"Base GETUMA":esc(e.c.join(" · "))}${FICHES[e.id]?" · fiche complète":""}</span></span><span class="chev">›</span></button>`).join("")}</div></div>`).join("")||`<div class="empty">Aucun élément trouvé.</div>`}`;
+  <input class="inp" id="bibQ" type="search" placeholder="Rechercher un nom ou un code" value="${esc(S.bibQ||"")}" aria-label="Rechercher un élément">
+  ${fams.map(f=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${by[f].map(e=>`<button class="li elrow" data-go="biblio--el-${e.id}"><span class="code">${/^\d{5}$/.test(e.stv||"")?e.stv:e.base?"GETUMA":"·"}</span><span class="tag cat">${catRange(e)}</span><span class="grow t">${esc(e.n)}</span><span class="media">${media(e)}</span><span class="chev">›</span></button>`).join("")}</div></div>`).join("")||`<div class="empty">Aucun élément trouvé.</div>`}
+  <p class="xs muted" style="margin:0">Code STV, puis catégories où l'élément est demandé. Icônes : image, vidéo, fiche technique quand elles existent.</p>`;
 }
 function vFicheEl(e){
   loadEx(); const pre=(PRE[e.id]||[]).map(p=>BY[p]).filter(Boolean); const nx=nextOf(e.id); const sug=suggestEx(e);
   return `<button class="back" data-go="biblio--elements">‹ Éléments</button>
-  <div style="display:grid;gap:6px"><h1 style="font-size:22px">${esc(e.n)}</h1><div class="row">${(e.base?["Base GETUMA"]:e.c).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${e.h?`<span class="tag">Tenue 2 s</span>`:""}</div></div>
+  <div style="display:grid;gap:6px"><h1 style="font-size:22px">${esc(e.n)}</h1><div class="row">${/^\d{5}$/.test(e.stv||"")?`<span class="tag">N° ${e.stv}</span>`:""}<span class="tag">${e.base?"Base GETUMA":catRange(e)}</span>${e.h?`<span class="tag">Tenue 2 s</span>`:""}</div></div>
   <div class="box small"><div><b>Famille :</b> ${esc(famOf(e))}</div>${e.s?`<div><b>Structure de mouvement :</b> ${esc(e.s)}</div>`:""}${e.est?`<div><b>Code EST :</b> ${esc(e.est)}</div>`:""}${e.stv?`<div><b>Code STV :</b> ${esc(e.stv)}</div>`:""}</div>
   ${FICHES[e.id]?`<a class="btn primary" style="text-decoration:none;text-align:center" href="${FICHES[e.id]}" target="_blank" rel="noopener">Ouvrir la fiche technique complète</a>`:`<p class="small muted" style="margin:0">Fiche technique complète (phases, erreurs, parade) en cours de rédaction.</p>`}
   ${pre.length?`<div class="sec"><div class="label">Prérequis</div><div class="divide">${pre.map(p=>`<button class="li" data-go="biblio--el-${p.id}"><span class="grow"><span class="t">${esc(p.n)}</span></span><span class="chev">›</span></button>`).join("")}</div></div>`:""}
