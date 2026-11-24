@@ -6,11 +6,12 @@ import { csrfOk, getUser, publicUser, type User } from "@/lib/auth";
 // Droits : l'admin voit et modifie tout. Un coach voit les sociétés de son compte (user.clubs)
 // et peut modifier les gymnastes, séances et présences de leurs groupes. Sociétés et groupes : admin seulement.
 // Un gymnaste peut appartenir à plusieurs groupes, y compris de sociétés différentes (champ groupIds).
+// Bibliothèque (content/{el_|po_|ex_}{id}) : modifiable par l'admin seulement, lisible par tous.
 // Un coach ne voit que les groupes de ses sociétés dans groupIds ; les autres sont conservés côté serveur.
 
 export const dynamic = "force-dynamic";
 
-const COLS = ["clubs", "groups", "gymnasts", "sessions", "attendance"] as const;
+const COLS = ["clubs", "groups", "gymnasts", "sessions", "attendance", "content"] as const;
 type Col = (typeof COLS)[number];
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
 const docPath = (col: string, id: string) => `db/${col}/${id}.json`;
@@ -33,7 +34,7 @@ class HttpError extends Error {
 }
 
 async function readAll(): Promise<All> {
-  const out: All = { clubs: {}, groups: {}, gymnasts: {}, sessions: {}, attendance: {} };
+  const out: All = { clubs: {}, groups: {}, gymnasts: {}, sessions: {}, attendance: {}, content: {} };
   const paths = await listPaths("db/");
   await Promise.all(
     paths.map(async (p) => {
@@ -106,6 +107,7 @@ export async function GET(req: Request) {
       ),
       sessions: pick("sessions", (_, d) => groupIds.has(String(d.groupId))),
       attendance: pick("attendance", (_, d) => groupIds.has(String(d.groupId))),
+      content: all.content, // fiches modifiées par l'admin (éléments, postes, exercices) : lisibles par tous les comptes actifs
       members: await members(clubIds),
     });
   } catch (e) {
@@ -118,7 +120,7 @@ async function applyOp(op: Op, u: User, all: All) {
   if (!(COLS as readonly string[]).includes(op.col) || !ID.test(String(op.id))) throw new HttpError(400, "bad path");
   const { isAdmin, groupIds } = scope(all, u);
   const p = docPath(op.col, op.id);
-  if ((op.col === "clubs" || op.col === "groups") && !isAdmin) throw new HttpError(403, "admin only");
+  if ((op.col === "clubs" || op.col === "groups" || op.col === "content") && !isAdmin) throw new HttpError(403, "admin only");
   if (op.col === "groups" && op.op !== "del" && op.data && "clubId" in op.data && !all.clubs[String(op.data.clubId)]) {
     throw new HttpError(400, "unknown club");
   }

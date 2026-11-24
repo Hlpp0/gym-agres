@@ -52,6 +52,17 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .elrow{display:flex;align-items:center;gap:10px}.elrow .code{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:var(--muted);width:52px;flex:none}
 .elrow .cat{flex:none;min-width:50px;text-align:center}.elrow .t{white-space:normal;line-height:1.3}.elrow .media{display:flex;gap:4px;flex:none}
 .mico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--ink)}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;background:var(--bg)}.card.flush{padding:12px 6px 4px}.card.flush>h2{padding:0 8px}
+.card>h2{font-size:17px;margin:0;display:flex;gap:8px;align-items:center;font-weight:650}.card p{margin:0;line-height:1.5}.card h3,.subsec h3,.prog h3{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:4px 0 6px;font-weight:600}
+.subsec{display:grid;gap:2px}.lead{font-size:16px}.bul{margin:0;padding-left:20px;display:grid;gap:4px}.steps{margin:0}
+.hero{display:grid;gap:8px;padding:4px 0}.hero h1{font-size:26px;line-height:1.15;margin:0}.hero .sub{color:var(--muted);font-size:14px}
+.prog{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:420px){.prog{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:14px;line-height:1.25}.chip .code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted)}.chip .x{all:unset;cursor:pointer;color:var(--muted);padding:0 2px}
+.gallery{display:grid;gap:10px}.med{margin:0;display:grid;gap:4px}.med img,.med video{width:100%;max-height:70vh;object-fit:contain;border-radius:10px;background:var(--soft)}.med .frame{width:100%;border-radius:10px;overflow:hidden;background:var(--soft)}.med iframe{width:100%;height:100%;border:0;display:block}.med figcaption{font-size:12px;color:var(--muted)}
+.rowthumb{display:flex;align-items:center;gap:10px}.thumb{width:56px;height:42px;border-radius:6px;object-fit:cover;flex:none;background:var(--soft);display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted)}.thumb.empty{width:8px;background:none}.num{width:20px;text-align:center;color:var(--muted);font-size:13px;flex:none}
+.tiles{display:grid;gap:10px}.tile{all:unset;cursor:pointer;display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:12px;padding:16px}.tile .tic{font-size:26px}.tile .t{display:block;font-weight:600;font-size:16px}.tile .d{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px}.facts>div{background:var(--soft);border-radius:10px;padding:10px 12px;display:grid;gap:2px}
+.filters{display:grid;gap:4px}.sticky{position:sticky;bottom:64px;background:var(--bg);padding:8px 0;z-index:5}
 .tbl th.stick{z-index:3;background:var(--soft)}
 .tscroll{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:70vh}
 .wrap{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));display:grid;gap:20px}
@@ -191,7 +202,7 @@ const POSTES_FAM={
   "Balances":["Tenue avec une main à l'espalier","Tenue libre 2 s","Renforcement de la jambe levée"],
   "Force et gainage":["Équerre sur blocs","Compression assise","Hollow et planche"]
 };
-const postesFor=id=>POSTES_EL[id]||POSTES_FAM[famOf(BY[id])]||["Éducatif ciblé","Élément avec parade","Élément seul, 3 essais"];
+let postesFor=id=>POSTES_EL[id]||POSTES_FAM[famOf(BY[id])]||["Éducatif ciblé","Élément avec parade","Élément seul, 3 essais"];
 
 /* ---------- utilitaires ---------- */
 const $=(s,r=document)=>r.querySelector(s);
@@ -205,7 +216,7 @@ function toast(msg){ document.querySelectorAll(".toast").forEach(t=>t.remove());
 function confirmBox(msg,label,fn){ const m=document.createElement("div"); m.className="modal"; m.innerHTML=`<section role="dialog" aria-modal="true"><p style="margin:0">${esc(msg)}</p><div class="row" style="justify-content:flex-end"><button class="btn" data-no>Annuler</button><button class="btn primary" data-yes>${esc(label)}</button></div></section>`; m.addEventListener("click",e=>{ if(e.target===m||e.target.closest("[data-no]")) m.remove(); if(e.target.closest("[data-yes]")){ m.remove(); fn(); } }); document.body.appendChild(m); }
 
 /* ---------- état ---------- */
-const S={engin:ENGINS.some(x=>x[0]===S0_ENGIN)?S0_ENGIN:"sol",clubs:{},groups:{},gymnasts:{},sessions:{},attendance:{},members:{},presDate:null,me:null,authView:"login",groupId:null,level:"base",fam:"Tous",maxSize:6,mode:"loading",canWrite:true,plan:null,showAll:false};
+const S={content:{},ed:null,engin:ENGINS.some(x=>x[0]===S0_ENGIN)?S0_ENGIN:"sol",clubs:{},groups:{},gymnasts:{},sessions:{},attendance:{},members:{},presDate:null,me:null,authView:"login",groupId:null,level:"base",fam:"Tous",maxSize:6,mode:"loading",canWrite:true,plan:null,showAll:false};
 try{ const p=JSON.parse(localStorage.getItem("getuma-ui2")||"{}"); Object.assign(S,{groupId:p.groupId||null,level:p.level||"base",maxSize:p.maxSize||6}); }catch(e){}
 const saveUi=()=>{ try{ localStorage.setItem("getuma-ui2",JSON.stringify({groupId:S.groupId,level:S.level,maxSize:S.maxSize})); }catch(e){} };
 
@@ -214,16 +225,16 @@ const LS={get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v)
 let OUTBOX=LS.get("getuma-outbox",[]); let flushing=false; S.lastSync=LS.get("getuma-lastsync",null); S.me=LS.get("getuma-me",null);
 function deepMerge(a,b){ const o={...(a||{})}; for(const k in b){ const v=b[k]; o[k]=(v&&typeof v==="object"&&!Array.isArray(v)&&o[k]&&typeof o[k]==="object"&&!Array.isArray(o[k]))?deepMerge(o[k],v):v; } return o; }
 function applyLocal(op){ const c={...S[op.col]}; if(op.op==="del") delete c[op.id]; else c[op.id]=op.op==="patch"?deepMerge(c[op.id],op.data):op.data; S[op.col]=c; }
-const saveCache=()=>{ LS.set("getuma-cache",{clubs:S.clubs,groups:S.groups,gymnasts:S.gymnasts,sessions:S.sessions,attendance:S.attendance,members:S.members}); LS.set("getuma-me",S.me); };
+const saveCache=()=>{ LS.set("getuma-cache",{content:S.content,clubs:S.clubs,groups:S.groups,gymnasts:S.gymnasts,sessions:S.sessions,attendance:S.attendance,members:S.members}); LS.set("getuma-me",S.me); };
 function queue(op){ op.qid=uid(); applyLocal(op); OUTBOX.push(op); LS.set("getuma-outbox",OUTBOX); saveCache(); render(); flush(); }
 const store={ set:(col,id,data)=>queue({op:"set",col,id,data}), patch:(col,id,data)=>queue({op:"patch",col,id,data}), del:(col,id)=>queue({op:"del",col,id}) };
 const isAdmin=()=>S.me&&S.me.role==="admin";
 async function call(url,method,body){ const r=await fetch(url,{method,credentials:"same-origin",headers:{"x-getuma":"1","content-type":"application/json"},body:body?JSON.stringify(body):undefined,cache:"no-store"}); let d={}; try{ d=await r.json(); }catch(e){} return {status:r.status,ok:r.ok,d}; }
 async function api(method,body){ const r=await call("/api/db",method,body); if(r.status===401){ toLogin(); throw new Error("auth"); } if(!r.ok) throw new Error("http "+r.status); return r.d; }
 function toLogin(){ S.mode="login"; S.authView="login"; render(); }
-function wipeLocal(){ OUTBOX=[]; ["getuma-outbox","getuma-cache","getuma-me","getuma-lastsync"].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); Object.assign(S,{clubs:{},groups:{},gymnasts:{},sessions:{},attendance:{},members:{},me:null,groupId:null}); }
+function wipeLocal(){ OUTBOX=[]; ["getuma-outbox","getuma-cache","getuma-me","getuma-lastsync"].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); Object.assign(S,{content:{},ed:null,clubs:{},groups:{},gymnasts:{},sessions:{},attendance:{},members:{},me:null,groupId:null}); }
 async function flush(){ if(flushing||!OUTBOX.length||!S.me||!navigator.onLine) return; flushing=true; try{ const batch=OUTBOX.slice(0,40); const res=await api("POST",{ops:batch}); const done=new Set(res.done); OUTBOX=OUTBOX.filter(o=>!done.has(o.qid)); LS.set("getuma-outbox",OUTBOX); S.syncErr=false; if(res.rejected&&res.rejected.length) toast("Une modification a été refusée (droits insuffisants)"); }catch(e){ if(e.message!=="auth") S.syncErr=true; } finally{ flushing=false; render(); if(OUTBOX.length&&!S.syncErr&&S.me) flush(); } }
-async function pull(){ if(!S.me||!navigator.onLine) return; try{ await flush(); const d=await api("GET"); if(OUTBOX.length) return; Object.assign(S,{me:d.me,clubs:d.clubs||{},groups:d.groups||{},gymnasts:d.gymnasts||{},sessions:d.sessions||{},attendance:d.attendance||{},members:d.members||{}}); S.lastSync=new Date().toISOString(); LS.set("getuma-lastsync",S.lastSync); S.syncErr=false; saveCache(); if(S.mode!=="login") S.mode="shared"; render(); }catch(e){ if(e.message!=="auth"){ S.syncErr=true; if(S.mode==="loading") S.mode="shared"; render(); } } }
+async function pull(){ if(!S.me||!navigator.onLine) return; try{ await flush(); const d=await api("GET"); if(OUTBOX.length) return; Object.assign(S,{me:d.me,content:d.content||{},clubs:d.clubs||{},groups:d.groups||{},gymnasts:d.gymnasts||{},sessions:d.sessions||{},attendance:d.attendance||{},members:d.members||{}}); S.lastSync=new Date().toISOString(); LS.set("getuma-lastsync",S.lastSync); S.syncErr=false; saveCache(); if(S.mode!=="login") S.mode="shared"; render(); }catch(e){ if(e.message!=="auth"){ S.syncErr=true; if(S.mode==="loading") S.mode="shared"; render(); } } }
 /* ---------- logique ---------- */
 const gGroups=g=>Array.isArray(g&&g.groupIds)?g.groupIds:(g&&g.groupId?[g.groupId]:[]);
 const gyms=()=>Object.entries(S.gymnasts).filter(([,g])=>gGroups(g).includes(S.groupId)).map(([id,g])=>({id,...g})).sort((a,b)=>(a.name||"").localeCompare(b.name||"","fr"));
@@ -232,7 +243,7 @@ const inLevel=e=>S.level==="all"?true:(e.base||minCat(e)<=1);
 const elements=()=>ALLE.filter(e=>e.a===S.engin).filter(inLevel).sort((a,b)=>famRank(famOf(a))-famRank(famOf(b))||codeOf(a)-codeOf(b)||minCat(a)-minCat(b)||a.n.localeCompare(b.n,"fr"));
 const forGym=(e,g)=>e.base||e.c.includes(g.cat)||minCat(e)<catIdx(g.cat);
 function preOk(g,pid){ const s=stOf(g,pid); if(s>=3) return true; const p=BY[pid]; if(!p) return true; return s===0&&!p.base&&minCat(p)<catIdx(g.cat); }
-function needs(g){ const out=[]; for(const e of elements()){ if(!forGym(e,g)) continue; const s=stOf(g,e.id); if(s>=3) continue; const miss=(PRE[e.id]||[]).filter(p=>!preOk(g,p)); out.push({e,s,ready:!miss.length,miss}); } out.sort((a,b)=>(b.ready-a.ready)||((b.s>0)-(a.s>0))||(b.s-a.s)||(minCat(a.e)-minCat(b.e))); return out; }
+function needs(g){ const out=[]; for(const e of elements()){ if(!forGym(e,g)) continue; const s=stOf(g,e.id); if(s>=3) continue; const miss=preOf(e.id).filter(p=>!preOk(g,p)); out.push({e,s,ready:!miss.length,miss}); } out.sort((a,b)=>(b.ready-a.ready)||((b.s>0)-(a.s>0))||(b.s-a.s)||(minCat(a.e)-minCat(b.e))); return out; }
 function progress(g){ const els=elements().filter(e=>forGym(e,g)); const done=els.filter(e=>stOf(g,e.id)>=3).length; return {done,total:els.length,pct:els.length?Math.round(done/els.length*100):0}; }
 function workGroups(list,max){ const b={},free=[]; for(const g of list){ const n=needs(g).filter(x=>x.ready); if(!n.length){ free.push(g); continue; } (b[n[0].e.id]=b[n[0].e.id]||[]).push(g); } const out=[]; for(const [eid,l] of Object.entries(b)) for(let i=0;i<l.length;i+=max) out.push({eid,gyms:l.slice(i,i+max)}); out.sort((a,b)=>b.gyms.length-a.gyms.length||minCat(BY[a.eid])-minCat(BY[b.eid])); if(free.length) out.push({eid:null,gyms:free}); return out; }
 function setStatus(gid,eid,s){ const d=today(); store.patch("gymnasts",gid,{st:{[eid]:{s,d}},log:{[Date.now().toString(36)+uid().slice(0,3)]:{e:eid,s,d}}}); }
@@ -266,14 +277,14 @@ function vEvaluer(id){
 function rankList(eid,list){ return list.filter(g=>stOf(g,eid)>=3).sort((a,b)=>{ const ra=(a.rk||{})[eid], rb=(b.rk||{})[eid]; return (ra??1e6)-(rb??1e6)||stOf(b,eid)-stOf(a,eid)||(a.name||"").localeCompare(b.name||"","fr"); }); }
 function vElement(e,list){
   const tgt=S.showAll?list:list.filter(g=>forGym(e,g));
-  const pre=(PRE[e.id]||[]).map(p=>BY[p]).filter(Boolean);
+  const pre=preOf(e.id).map(p=>BY[p]).filter(Boolean);
   return `<button class="back" data-go="evaluer">‹ Éléments</button>
   <div class="head"><div style="flex:1"><h1 style="font-size:22px">${esc(e.n)}</h1><div class="sub">${e.base?"Base GETUMA":esc(e.c.join(" · "))}${e.est?` · EST ${esc(e.est)}`:""}${e.h?" · tenue exigée":""}</div></div></div>
   ${legend()}
-  <div class="sec"><div class="label">Gymnastes (${tgt.length})</div>${tgt.length?`<div class="divide">${tgt.map(g=>`<div class="li"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${(PRE[e.id]||[]).some(p=>!preOk(g,p))&&stOf(g,e.id)<3?" · prérequis manquant":""}</span></span>${pick(g.id,e.id)}</div>`).join("")}</div>`:`<div class="empty">Aucun gymnaste concerné par cet élément.</div>`}
+  <div class="sec"><div class="label">Gymnastes (${tgt.length})</div>${tgt.length?`<div class="divide">${tgt.map(g=>`<div class="li"><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${preOf(e.id).some(p=>!preOk(g,p))&&stOf(g,e.id)<3?" · prérequis manquant":""}</span></span>${pick(g.id,e.id)}</div>`).join("")}</div>`:`<div class="empty">Aucun gymnaste concerné par cet élément.</div>`}
   ${(()=>{ const r=rankList(e.id,list); return r.length>1?`<div class="sec"><div class="label">Classement : qui le fait le mieux</div><p class="xs muted" style="margin:0 4px 4px">Parmi les gymnastes qui l'ont acquis ou maîtrisé. Monte ou descends avec les flèches.</p><div class="divide">${r.map((g,i)=>`<div class="li"><span class="nm muted" style="width:22px">${i+1}</span><span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${ST[stOf(g,e.id)].l}</span></span><button class="btn link" data-rk="${e.id}|${g.id}|-1" aria-label="Monter ${esc(g.name)}" ${i===0?"disabled":""}>↑</button><button class="btn link" data-rk="${e.id}|${g.id}|1" aria-label="Descendre ${esc(g.name)}" ${i===r.length-1?"disabled":""}>↓</button></div>`).join("")}</div></div>`:""; })()}
   <button class="btn link" data-toggleall>${S.showAll?"Afficher seulement les catégories concernées":"Afficher tout le groupe"}</button></div>
-  <div class="box"><h3>Ateliers</h3><ol class="steps small">${postesFor(e.id).map(p=>`<li>${esc(p)}</li>`).join("")}</ol>${pre.length?`<div class="small muted">Prérequis : ${pre.map(p=>esc(p.n)).join(" · ")}</div>`:""}<a class="small" href="#biblio--el-${e.id}">Fiche technique et renforcement</a></div>`;
+  <div class="box"><h3>Exercices d'apprentissage</h3><div class="divide">${postesIds(e.id).map((p,i)=>poLi(p,i)).join("")}</div>${pre.length?`<div class="small muted">Prérequis : ${pre.map(p=>esc(p.n)).join(" · ")}</div>`:""}<a class="small" href="#biblio--el-${e.id}">Fiche technique et renforcement</a></div>`;
 }
 function vGroupes(){
   const po=presentOnly(gyms(),today()); const list=po.list; const wg=workGroups(list,S.maxSize);
@@ -431,75 +442,227 @@ const ENGIN_ZONES={anneaux:["Épaules","Tronc (gainage)","Poignets & mains"],rec
 const FAM_ZONES={"Roulés":["Tronc (gainage)","Colonne & dos","Cou"],"Appuis renversés":["Épaules","Poignets & mains","Tronc (gainage)"],"Renversements latéraux":["Épaules","Hanches","Tronc (gainage)"],"Ponts et souplesses":["Colonne & dos","Épaules"],"Sauts":["Jambes","Pieds & chevilles"],"Souplesse":["Hanches"],"Balances":["Hanches","Jambes","Pieds & chevilles"],"Force et gainage":["Tronc (gainage)","Hanches"]};
 const norm=s=>String(s||"").normalize("NFD").replace(/\p{M}/gu,"").toLowerCase();
 function suggestEx(e,n=6){ if(!EX) return []; const z=FAM_ZONES[famOf(e)]||ENGIN_ZONES[e.a]||[]; const wantSoup=famOf(e)==="Souplesse"||famOf(e)==="Ponts et souplesses"; return EX.filter(x=>x.zone.some(v=>z.includes(v))&&x.niv<=2).map(x=>({x,s:x.zone.reduce((s,v,i)=>s+(z.includes(v)?(3-z.indexOf(v))*(i===0?2:1):0),0)+(wantSoup&&x.type.includes("Souplesse")?2:0)+(x.type.includes("Force")&&!wantSoup?1:0)-x.niv})).sort((a,b)=>b.s-a.s).slice(0,n).map(o=>o.x); }
-const nextOf=id=>Object.entries(PRE).filter(([,arr])=>arr.includes(id)).map(([k])=>BY[k]).filter(Boolean);
-const exLi=x=>`<button class="li" data-go="biblio--ex-${x.id}"><span class="grow"><span class="t">${esc(x.n)}</span><span class="d">${esc(x.type.join(", "))} · ${esc(x.zone.join(", "))} · ${NIV[x.niv]||""}</span></span><span class="chev">›</span></button>`;
+/* ---------- contenu modifiable par l'admin (collection content) ---------- */
+const CT=k=>(S.content&&S.content[k])||null;
+const elC=id=>CT("el_"+id)||{};
+const preOf=id=>{ const c=elC(id); return Array.isArray(c.pre)?c.pre:(PRE[id]||[]); };
+const nextOf=id=>ALLE.filter(e=>preOf(e.id).includes(id));
+const ficheOf=e=>elC(e.id).fiche||FICHES[e.id]||"";
+const hashId=s=>{ let h=5381; for(const ch of String(s)) h=((h*33)^ch.charCodeAt(0))>>>0; return "p"+h.toString(36); };
+const POSTE_DEF={}; const pidOf=n=>{ const id=hashId(n); POSTE_DEF[id]=POSTE_DEF[id]||{n}; return id; };
+const POSTE_GEN=["Éducatif ciblé","Élément avec parade","Élément seul, 3 essais"].map(pidOf);
+Object.values(POSTES_EL).flat().forEach(pidOf); Object.values(POSTES_FAM).flat().forEach(pidOf);
+const posteOf=pid=>{ const d=POSTE_DEF[pid], c=CT("po_"+pid); if(!d&&!c) return null; return {id:pid,...(d||{}),...(c||{})}; };
+const postesIds=eid=>{ const c=elC(eid); if(Array.isArray(c.postes)) return c.postes.filter(posteOf); const e=BY[eid]; return (POSTES_EL[eid]||(e&&POSTES_FAM[famOf(e)])||null)?.map(pidOf)||POSTE_GEN; };
+postesFor=id=>postesIds(id).map(p=>posteOf(p).n);
+const exOf=id=>EXBY[id]?{...EXBY[id],...(CT("ex_"+id)||{})}:null;
+const lines=v=>Array.isArray(v)?v:String(v||"").split("\n").map(s=>s.trim()).filter(Boolean);
+
+/* ---------- médias : liens intégrés (YouTube, Vimeo, Instagram, TikTok, Drive) ou fichiers envoyés ---------- */
+const okUrl=u=>/^https:\/\/[^\s"'<>]+$/.test(u)||/^\/api\/media\?k=[0-9a-f-]{36}\.(jpg|png|webp|gif|mp4|webm|mov)$/.test(u);
+function embedOf(m){ const u=String(m&&m.url||""); let x; if(!okUrl(u)) return null;
+  if((x=u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/))) return {k:"if",src:`https://www.youtube-nocookie.com/embed/${x[1]}?rel=0&playsinline=1`,thumb:`https://i.ytimg.com/vi/${x[1]}/mqdefault.jpg`,r:/shorts\//.test(u)?"9/16":"16/9"};
+  if((x=u.match(/vimeo\.com\/(?:video\/)?(\d+)/))) return {k:"if",src:`https://player.vimeo.com/video/${x[1]}`,r:"16/9"};
+  if((x=u.match(/instagram\.com\/(?:[\w.]+\/)?(p|reel|reels|tv)\/([\w-]+)/))) return {k:"if",src:`https://www.instagram.com/${x[1]==="reels"?"reel":x[1]}/${x[2]}/embed`,r:"4/6"};
+  if((x=u.match(/tiktok\.com\/@[\w.-]+\/video\/(\d+)/))) return {k:"if",src:`https://www.tiktok.com/embed/v2/${x[1]}`,r:"9/16"};
+  if((x=u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/))) return {k:"if",src:`https://drive.google.com/file/d/${x[1]}/preview`,r:"16/9"};
+  if(m.type==="video"||/\.(mp4|webm|mov)(\?|$)/i.test(u)) return {k:"vid",src:u};
+  if(m.type==="img"||/\.(jpe?g|png|gif|webp|avif)(\?|$)/i.test(u)) return {k:"img",src:u,thumb:u};
+  return {k:"link",src:u};
+}
+function mediaHTML(m){ const e=embedOf(m); if(!e) return ""; const cap=m.cap?`<figcaption>${esc(m.cap)}</figcaption>`:"";
+  if(e.k==="if") return `<figure class="med"><div class="frame" style="aspect-ratio:${e.r}"><iframe src="${esc(e.src)}" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="${esc(m.cap||"Vidéo")}"></iframe></div>${cap}</figure>`;
+  if(e.k==="vid") return `<figure class="med"><video src="${esc(e.src)}" controls loop muted playsinline preload="metadata"></video>${cap}</figure>`;
+  if(e.k==="img") return `<figure class="med"><img src="${esc(e.src)}" alt="${esc(m.cap||"")}" loading="lazy">${cap}</figure>`;
+  return `<figure class="med"><a class="btn" href="${esc(e.src)}" target="_blank" rel="noopener" style="text-decoration:none">Ouvrir le média ↗</a>${cap}</figure>`; }
+const gallery=list=>(list||[]).length?`<div class="gallery">${list.map(mediaHTML).join("")}</div>`:"";
+function thumbHTML(list){ const m=(list||[]).map(x=>({x,e:embedOf(x)})).find(o=>o.e&&o.e.k!=="link"); if(!m) return "";
+  if(m.e.thumb) return `<img class="thumb" src="${esc(m.e.thumb)}" alt="" loading="lazy">`;
+  if(m.e.k==="vid") return `<video class="thumb" src="${esc(m.e.src)}#t=0.5" muted playsinline preload="metadata" aria-hidden="true"></video>`;
+  return `<span class="thumb play" aria-hidden="true">▶</span>`; }
+const ico=(d,l)=>`<svg class="mico" viewBox="0 0 24 24" role="img" aria-label="${l}"><title>${l}</title>${d}</svg>`;
+const IC={img:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-8 7"/>',vid:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/>',doc:'<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/>'};
+function mediaIcons(list,fiche){ const ks=new Set((list||[]).map(m=>{ const e=embedOf(m); return e?(e.k==="img"?"img":"vid"):""; }).filter(Boolean)); return (ks.has("img")?ico(IC.img,"Image"):"")+(ks.has("vid")?ico(IC.vid,"Vidéo"):"")+(fiche?ico(IC.doc,"Fiche technique"):""); }
+
+/* ---------- mise en page des fiches ---------- */
+const card=(icon,title,body)=>body?`<section class="card"><h2><span aria-hidden="true">${icon}</span>${title}</h2>${body}</section>`:"";
+const olist=a=>(a||[]).length?`<ol class="steps">${a.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`:"";
+const ulist=a=>(a||[]).length?`<ul class="bul">${a.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`:"";
+const sub=(t,body)=>body?`<div class="subsec"><h3>${t}</h3>${body}</div>`:"";
+const editBtn=route=>isAdmin()?`<button class="btn" data-go="biblio--edit-${route}">Modifier</button>`:"";
+const elLink=p=>`<button class="chip" data-go="biblio--el-${p.id}">${/^\d{5}$/.test(p.stv||"")?`<span class="code">${p.stv}</span>`:""}${esc(p.n)}</button>`;
+const exLi=x0=>{ const x=exOf(x0.id)||x0; return `<button class="li rowthumb" data-go="biblio--ex-${x.id}">${thumbHTML(x.media)}<span class="grow"><span class="t">${esc(x.n)}</span><span class="d">${esc(x.type.join(", "))} · ${esc(x.zone.join(", "))} · ${NIV[x.niv]||""}</span></span><span class="chev">›</span></button>`; };
+const poLi=(pid,i,used)=>{ const p=posteOf(pid); if(!p) return ""; return `<button class="li rowthumb" data-go="biblio--po-${pid}">${i!=null?`<span class="num">${i+1}</span>`:""}${thumbHTML(p.media)}<span class="grow"><span class="t">${esc(p.n)}</span>${p.desc||used?`<span class="d">${esc(used||p.desc)}</span>`:""}</span><span class="chev">›</span></button>`; };
+
 function vBiblio(id){
+  if(id&&id.startsWith("edit-")) return isAdmin()?vEdit(id.slice(5,7),id.slice(8)):`<div class="empty">Réservé à l'administrateur.</div>`;
   if(id&&id.startsWith("el-")&&BY[id.slice(3)]) return vFicheEl(BY[id.slice(3)]);
-  if(id&&id.startsWith("ex-")){ loadEx(); return EX?(EXBY[id.slice(3)]?vFicheEx(EXBY[id.slice(3)]):`<button class="back" data-go="biblio--renfo">‹ Renforcement</button><div class="empty">Exercice introuvable.</div>`):`<div class="empty">Chargement…</div>`; }
+  if(id&&id.startsWith("po-")) return posteOf(id.slice(3))?vFichePo(id.slice(3)):`<button class="back" data-go="biblio--appr">‹ Apprentissage</button><div class="empty">Poste introuvable.</div>`;
+  if(id&&id.startsWith("ex-")){ loadEx(); return EX?(EXBY[id.slice(3)]?vFicheEx(exOf(id.slice(3))):`<button class="back" data-go="biblio--renfo">‹ Renforcement</button><div class="empty">Exercice introuvable.</div>`):`<div class="empty">Chargement…</div>`; }
   if(id==="elements") return vBibElements();
   if(id==="appr") return vBibAppr();
   if(id==="renfo") return vBibRenfo();
+  const tile=(go,ic,t,d)=>`<button class="tile" data-go="${go}"><span class="tic" aria-hidden="true">${ic}</span><span class="grow"><span class="t">${t}</span><span class="d">${d}</span></span><span class="chev">›</span></button>`;
   return `${header("Bibliothèque","Fiches et exercices")}
-  <div class="divide">
-   <button class="li" data-go="biblio--elements"><span class="grow"><span class="t">Éléments</span><span class="d">Fiches par engin : codes EST, prérequis, éléments suivants</span></span><span class="chev">›</span></button>
-   <button class="li" data-go="biblio--appr"><span class="grow"><span class="t">Exercices d'apprentissage</span><span class="d">Ateliers et éducatifs par famille d'éléments</span></span><span class="chev">›</span></button>
-   <button class="li" data-go="biblio--renfo"><span class="grow"><span class="t">Renforcement et mobilité</span><span class="d">172 exercices de préparation physique spécifique</span></span><span class="chev">›</span></button>
-  </div>`;
+  <div class="tiles">${tile("biblio--elements","📖","Éléments","Fiches techniques par engin : code, catégories, prérequis, progression")}
+  ${tile("biblio--appr","🧩","Exercices d'apprentissage","Postes et éducatifs pour apprendre chaque élément")}
+  ${tile("biblio--renfo","💪","Renforcement et mobilité","172 exercices de préparation physique spécifique")}</div>`;
 }
 function vBibElements(){
   const q=norm(S.bibQ); const sol=S.engin==="sol";
   const els=ALLE.filter(e=>e.a===S.engin&&(!q||norm(e.n+" "+e.stv).includes(q))).sort((a,b)=>codeOf(a)-codeOf(b)||minCat(a)-minCat(b)||a.n.localeCompare(b.n,"fr"));
   const by={}; els.forEach(e=>{ const f=sol?famOf(e):"Éléments"; (by[f]=by[f]||[]).push(e); });
-  const fk=f=>Math.min(...by[f].map(e=>e.base?99999:codeOf(e))); const fams=Object.keys(by).sort((a,b)=>fk(a)-fk(b)); /* familles dans l'ordre des codes */
-  const ico=(d,l)=>`<svg class="mico" viewBox="0 0 24 24" role="img" aria-label="${l}"><title>${l}</title>${d}</svg>`;
-  const media=e=>{ const m=MEDIA[e.id]||{}; return [m.img?ico('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-8 7"/>',"Image"):"",m.vid?ico('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/>',"Vidéo"):"",FICHES[e.id]?ico('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/>',"Fiche technique"):""].join(""); };
+  const fk=f=>Math.min(...by[f].map(e=>e.base?99999:codeOf(e))); const fams=Object.keys(by).sort((a,b)=>fk(a)-fk(b));
   return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Éléments · ${enginName(S.engin)}</h1>${enginBar()}
   <input class="inp" id="bibQ" type="search" placeholder="Rechercher un nom ou un code" value="${esc(S.bibQ||"")}" aria-label="Rechercher un élément">
-  ${fams.map(f=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${by[f].map(e=>`<button class="li elrow" data-go="biblio--el-${e.id}"><span class="code">${/^\d{5}$/.test(e.stv||"")?e.stv:e.base?"GETUMA":"·"}</span><span class="tag cat">${catRange(e)}</span><span class="grow t">${esc(e.n)}</span><span class="media">${media(e)}</span><span class="chev">›</span></button>`).join("")}</div></div>`).join("")||`<div class="empty">Aucun élément trouvé.</div>`}
-  <p class="xs muted" style="margin:0">Code STV, puis catégories où l'élément est demandé. Icônes : image, vidéo, fiche technique quand elles existent.</p>`;
+  ${fams.map(f=>`<section class="card flush"><h2>${esc(f)}</h2><div class="divide">${by[f].map(e=>`<button class="li elrow" data-go="biblio--el-${e.id}"><span class="code">${/^\d{5}$/.test(e.stv||"")?e.stv:e.base?"GETUMA":"·"}</span><span class="tag cat">${catRange(e)}</span><span class="grow t">${esc(e.n)}</span><span class="media">${mediaIcons(elC(e.id).media,ficheOf(e)||elC(e.id).desc)}</span><span class="chev">›</span></button>`).join("")}</div></section>`).join("")||`<div class="empty">Aucun élément trouvé.</div>`}
+  <p class="xs muted" style="margin:0">Code STV, catégories où l'élément est demandé, nom. Icônes : image, vidéo, fiche technique.</p>`;
 }
 function vFicheEl(e){
-  loadEx(); const pre=(PRE[e.id]||[]).map(p=>BY[p]).filter(Boolean); const nx=nextOf(e.id); const sug=suggestEx(e);
+  loadEx(); const c=elC(e.id); const pre=preOf(e.id).map(p=>BY[p]).filter(Boolean); const nx=nextOf(e.id); const sug=suggestEx(e); const f=ficheOf(e);
+  const tech=[c.desc?`<p class="lead">${esc(c.desc)}</p>`:"",sub("Points clés",olist(c.pts)),sub("Erreurs fréquentes",ulist(c.err)),sub("Parade et sécurité",c.parade?`<p>${esc(c.parade)}</p>`:""),
+    f?`<a class="btn primary" style="text-decoration:none;text-align:center" href="${esc(f)}" target="_blank" rel="noopener">Ouvrir la fiche technique complète ↗</a>`:""].join("");
   return `<button class="back" data-go="biblio--elements">‹ Éléments</button>
-  <div style="display:grid;gap:6px"><h1 style="font-size:22px">${esc(e.n)}</h1><div class="row">${/^\d{5}$/.test(e.stv||"")?`<span class="tag">N° ${e.stv}</span>`:""}<span class="tag">${e.base?"Base GETUMA":catRange(e)}</span>${e.h?`<span class="tag">Tenue 2 s</span>`:""}</div></div>
-  <div class="box small"><div><b>Famille :</b> ${esc(famOf(e))}</div>${e.s?`<div><b>Structure de mouvement :</b> ${esc(e.s)}</div>`:""}${e.est?`<div><b>Code EST :</b> ${esc(e.est)}</div>`:""}${e.stv?`<div><b>Code STV :</b> ${esc(e.stv)}</div>`:""}</div>
-  ${FICHES[e.id]?`<a class="btn primary" style="text-decoration:none;text-align:center" href="${FICHES[e.id]}" target="_blank" rel="noopener">Ouvrir la fiche technique complète</a>`:`<p class="small muted" style="margin:0">Fiche technique complète (phases, erreurs, parade) en cours de rédaction.</p>`}
-  ${pre.length?`<div class="sec"><div class="label">Prérequis</div><div class="divide">${pre.map(p=>`<button class="li" data-go="biblio--el-${p.id}"><span class="grow"><span class="t">${esc(p.n)}</span></span><span class="chev">›</span></button>`).join("")}</div></div>`:""}
-  ${nx.length?`<div class="sec"><div class="label">Éléments suivants</div><div class="divide">${nx.map(p=>`<button class="li" data-go="biblio--el-${p.id}"><span class="grow"><span class="t">${esc(p.n)}</span></span><span class="chev">›</span></button>`).join("")}</div></div>`:""}
-  <div class="sec"><div class="label">Exercices d'apprentissage</div><ol class="steps small" style="padding:4px 4px 4px 24px">${postesFor(e.id).map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>
-  <div class="sec"><div class="label">Renforcement conseillé</div>${EX?`<div class="divide">${sug.map(exLi).join("")||`<span class="small muted">Aucune suggestion.</span>`}</div>`:`<div class="small muted">Chargement…</div>`}</div>
-  <button class="btn" data-go="evaluer--${e.id}">Évaluer le groupe sur cet élément</button>`;
+  <header class="hero"><div class="row">${/^\d{5}$/.test(e.stv||"")?`<span class="tag">N° ${e.stv}</span>`:""}<span class="tag">${e.base?"Base GETUMA":catRange(e)}</span>${e.h?`<span class="tag">Tenue 2 s</span>`:""}</div>
+   <h1>${esc(e.n)}</h1><div class="sub">${enginName(e.a)} · ${esc(famOf(e))}${e.est?` · EST ${esc(e.est)}`:""}</div>
+   <div class="row">${editBtn("el-"+e.id)}<button class="btn" data-go="evaluer--${e.id}">Évaluer le groupe</button></div></header>
+  ${gallery(c.media)}
+  ${card("🎯","Technique",tech||`<p class="muted small" style="margin:0">Fiche technique en cours de rédaction.</p>`)}
+  ${card("🔗","Progression",`<div class="prog"><div><h3>Avant : prérequis</h3>${pre.length?`<div class="chips">${pre.map(elLink).join("")}</div>`:`<span class="small muted">Aucun</span>`}</div><div><h3>Après : éléments suivants</h3>${nx.length?`<div class="chips">${nx.map(elLink).join("")}</div>`:`<span class="small muted">Aucun</span>`}</div></div>`)}
+  ${card("🧩","Exercices d'apprentissage",`<p class="small muted" style="margin:0">Dans l'ordre de progression. Touche un poste pour voir sa fiche.</p><div class="divide">${postesIds(e.id).map((p,i)=>poLi(p,i)).join("")}</div>`)}
+  ${card("💪","Renforcement conseillé",EX?`<div class="divide">${sug.map(exLi).join("")||`<span class="small muted">Aucune suggestion.</span>`}</div>`:`<div class="small muted">Chargement…</div>`)}`;
+}
+function vFichePo(pid){
+  const p=posteOf(pid); const used=ALLE.filter(e=>postesIds(e.id).includes(pid)&&(e.a==="sol"||Array.isArray(elC(e.id).postes)));
+  return `<button class="back" data-go="biblio--appr">‹ Apprentissage</button>
+  <header class="hero"><div class="row"><span class="tag">Exercice d'apprentissage</span>${p.fam?`<span class="tag">${esc(p.fam)}</span>`:""}</div><h1>${esc(p.n)}</h1>${p.desc?`<div class="sub">${esc(p.desc)}</div>`:""}
+   <div class="row">${editBtn("po-"+pid)}</div></header>
+  ${gallery(p.media)||(isAdmin()?`<div class="box small muted">Pas encore d'image ni de vidéo. Ajoute un GIF, une photo ou un lien YouTube avec « Modifier ».</div>`:"")}
+  ${card("🧰","Mise en place",p.mat?`<p>${esc(p.mat)}</p>`:"")}
+  ${card("📋","Consignes",olist(p.steps))}
+  ${card("✅","Critères de réussite",ulist(p.crit))}
+  ${card("⚠️","Sécurité et parade",p.secu?`<p>${esc(p.secu)}</p>`:"")}
+  ${!p.mat&&!(p.steps||[]).length&&!(p.crit||[]).length?`<p class="small muted" style="margin:0">Fiche du poste en cours de rédaction.</p>`:""}
+  ${card("🔗","Utilisé pour",used.length?`<div class="chips">${used.slice(0,30).map(elLink).join("")}</div>`:"")}`;
 }
 function vBibAppr(){
+  const fams={}; const add=(f,pid,e)=>{ fams[f]=fams[f]||{}; fams[f][pid]=fams[f][pid]||[]; if(e) fams[f][pid].push(e); };
+  ALLE.filter(e=>e.a==="sol").forEach(e=>postesIds(e.id).forEach(pid=>{ if(!POSTE_GEN.includes(pid)) add(famOf(e),pid,e); }));
+  Object.entries(S.content||{}).forEach(([k,v])=>{ if(k.startsWith("po_")&&v.fam) add(v.fam,k.slice(3)); });
+  const order=Object.keys(fams).sort((a,b)=>famRank(a)-famRank(b));
+  const usedTxt=arr=>arr.length?`Pour : ${arr.slice(0,3).map(e=>e.n.length>28?e.n.slice(0,27)+"…":e.n).join(", ")}${arr.length>3?` +${arr.length-3}`:""}`:"";
   return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Exercices d'apprentissage</h1>
-  <p class="small muted" style="margin:0">Ateliers par famille. Les fiches complètes ajouteront des ateliers propres à chaque élément.</p>
-  ${FAM_ORDER.filter(f=>POSTES_FAM[f]).map(f=>`<div class="sec"><div class="label">${esc(f)}</div><div class="box"><ol class="steps small">${POSTES_FAM[f].map(x=>`<li>${esc(x)}</li>`).join("")}</ol><div class="xs muted">Éléments : ${ALL.filter(e=>famOf(e)===f&&(e.base||minCat(e)<=1)).slice(0,6).map(e=>esc(e.n)).join(" · ")}</div></div></div>`).join("")}
-  ${Object.entries(POSTES_EL).map(([id,arr])=>BY[id]?`<div class="sec"><div class="label">${esc(BY[id].n)}</div><div class="box"><ol class="steps small">${arr.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div></div>`:"").join("")}`;
+  <p class="small muted" style="margin:0">Postes et éducatifs du Sol, par famille d'éléments. Touche un poste pour voir sa fiche.</p>
+  ${isAdmin()?`<form class="row" id="newPoste"><input class="inp" id="newPosteN" data-keep placeholder="Nom d'un nouveau poste" style="flex:1" aria-label="Nom du nouveau poste"><select class="sel" id="newPosteF" style="width:auto" aria-label="Famille">${FAM_ORDER.map(f=>`<option>${esc(f)}</option>`).join("")}</select><button class="btn primary">Créer</button></form>`:""}
+  ${order.map(f=>`<section class="card flush"><h2>${esc(f)}</h2><div class="divide">${Object.entries(fams[f]).map(([pid,arr])=>poLi(pid,null,usedTxt(arr))).join("")}</div></section>`).join("")}`;
 }
 function vBibRenfo(){
   loadEx(); if(!EX) return `<button class="back" data-go="biblio">‹ Bibliothèque</button>${S.exErr?`<div class="empty">Impossible de charger les exercices. Vérifie le réseau.</div>`:`<div class="empty">Chargement des exercices…</div>`}`;
   const f=S.bib||{}; const q=norm(S.bibQ);
-  const list=EX.filter(x=>(!f.type||x.type.includes(f.type))&&(!f.zone||x.zone.includes(f.zone))&&(!f.niv||String(x.niv)===f.niv)&&(!q||norm(x.n+" "+x.orig).includes(q))).sort((a,b)=>a.niv-b.niv||a.n.localeCompare(b.n,"fr"));
+  const list=EX.map(x=>exOf(x.id)).filter(x=>(!f.type||x.type.includes(f.type))&&(!f.zone||x.zone.includes(f.zone))&&(!f.niv||String(x.niv)===f.niv)&&(!q||norm(x.n+" "+x.orig).includes(q))).sort((a,b)=>a.niv-b.niv||a.n.localeCompare(b.n,"fr"));
   const zones=[...new Set(EX.flatMap(x=>x.zone))].sort((a,b)=>a.localeCompare(b,"fr"));
   const pills=(k,vals,lab=v=>v)=>`<div class="pillbar">${vals.map(v=>`<button class="pill" data-bf="${k}|${esc(v)}" aria-pressed="${f[k]===String(v)}">${esc(lab(v))}</button>`).join("")}</div>`;
   return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Renforcement et mobilité</h1>
   <input class="inp" id="bibQ" type="search" placeholder="Rechercher (hollow, appui renversé, pont…)" value="${esc(S.bibQ||"")}" aria-label="Rechercher un exercice">
-  ${pills("type",["Force","Mobilité","Souplesse"])}${pills("niv",["1","2","3"],v=>NIV[v])}${pills("zone",zones)}
+  <div class="filters"><span class="xs muted">Type</span>${pills("type",["Force","Mobilité","Souplesse"])}<span class="xs muted">Niveau</span>${pills("niv",["1","2","3"],v=>NIV[v])}<span class="xs muted">Zone</span>${pills("zone",zones)}</div>
   <div class="small muted">${list.length} exercice${list.length>1?"s":""}</div>
   <div class="divide">${list.map(exLi).join("")||`<div class="empty">Aucun exercice pour ces filtres.</div>`}</div>`;
 }
 function vFicheEx(x){
-  const rel=(k,l)=>x.rel[k]&&x.rel[k].length?`<div class="sec"><div class="label">${l}</div><div class="divide">${x.rel[k].map(i=>EXBY[i]).filter(Boolean).map(exLi).join("")}</div></div>`:"";
+  const rel=(k,l)=>x.rel[k]&&x.rel[k].length?sub(l,`<div class="divide">${x.rel[k].map(i=>EXBY[i]).filter(Boolean).map(exLi).join("")}</div>`):"";
+  const mat=Array.isArray(x.mat)?x.mat.join(", "):x.mat;
   return `<button class="back" data-go="biblio--renfo">‹ Renforcement</button>
-  <div style="display:grid;gap:6px"><h1 style="font-size:22px">${esc(x.n)}</h1><div class="row">${x.type.map(v=>`<span class="tag">${esc(v)}</span>`).join("")}<span class="tag">${NIV[x.niv]||""}</span></div></div>
-  <div class="box small"><div><b>Zone :</b> ${esc(x.zone.join(", "))}</div><div><b>Dosage :</b> ${esc(x.dos||"à adapter")}</div>${x.mat.length?`<div><b>Matériel :</b> ${esc(x.mat.join(", "))}</div>`:""}</div>
-  ${x.exec.length?`<div class="sec"><div class="label">Exécution</div><ol class="steps" style="padding:4px 4px 4px 24px">${x.exec.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div>`:""}
-  ${x.keys.length?`<div class="sec"><div class="label">Points clés et erreurs</div><ul style="margin:0;padding:4px 4px 4px 24px;display:grid;gap:4px">${x.keys.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>`:""}
-  ${x.var.length?`<div class="sec"><div class="label">Variantes</div><ul style="margin:0;padding:4px 4px 4px 24px">${x.var.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>`:""}
-  ${x.bio?`<div class="sec"><div class="label">Pourquoi ça marche</div><p style="margin:4px">${esc(x.bio)}</p></div>`:""}
-  ${rel("easier","Plus facile")}${rel("same","Même niveau")}${rel("harder","Plus difficile")}
-  <p class="xs muted" style="margin:0">Exercice repris de ${esc(x.auteur||"la source")}${x.orig?` (« ${esc(x.orig)} »)`:""}, reformulé en français. ${x.src.slice(0,2).map((u,i)=>`<a href="${esc(u)}" target="_blank" rel="noopener">Vidéo ${i+1}</a>`).join(" · ")}</p>`;
+  <header class="hero"><div class="row">${x.type.map(v=>`<span class="tag">${esc(v)}</span>`).join("")}<span class="tag">${NIV[x.niv]||""}</span></div><h1>${esc(x.n)}</h1><div class="sub">${esc(x.zone.join(", "))}</div>
+   <div class="row">${editBtn("ex-"+x.id)}</div></header>
+  ${gallery(x.media)}
+  <div class="facts"><div><span class="xs muted">Dosage</span><b>${esc(x.dos||"à adapter")}</b></div><div><span class="xs muted">Matériel</span><b>${esc(mat||"aucun")}</b></div></div>
+  ${card("▶️","Exécution",olist(x.exec))}
+  ${card("✅","Points clés et erreurs",ulist(x.keys))}
+  ${card("🔁","Variantes",ulist(x.var))}
+  ${card("🧠","Pourquoi ça marche",x.bio?`<p>${esc(x.bio)}</p>`:"")}
+  ${card("📈","Progression",rel("easier","Plus facile")+rel("same","Même niveau")+rel("harder","Plus difficile"))}
+  <p class="xs muted" style="margin:0">Exercice repris de ${esc(x.auteur||"la source")}${x.orig?` (« ${esc(x.orig)} »)`:""}, reformulé en français. ${(x.src||[]).slice(0,2).map((u,i)=>`<a href="${esc(u)}" target="_blank" rel="noopener">Vidéo ${i+1}</a>`).join(" · ")}</p>`;
 }
+
+/* ---------- édition (admin) ---------- */
+function edInit(kind,id){
+  const key=`${kind}_${id}`; if(S.ed&&S.ed.key===key) return S.ed;
+  let d;
+  if(kind==="el"){ const c=elC(id); d={desc:c.desc||"",pts:c.pts||[],err:c.err||[],parade:c.parade||"",fiche:c.fiche||FICHES[id]||"",pre:[...preOf(id)],next:nextOf(id).map(e=>e.id),postes:[...postesIds(id)],media:[...(c.media||[])]}; }
+  else if(kind==="po"){ const p=posteOf(id)||{n:""}; d={n:p.n||"",desc:p.desc||"",fam:p.fam||"",mat:p.mat||"",steps:p.steps||[],crit:p.crit||[],secu:p.secu||"",media:[...(p.media||[])]}; }
+  else { const x=exOf(id)||{}; d={n:x.n||"",dos:x.dos||"",mat:Array.isArray(x.mat)?x.mat.join(", "):(x.mat||""),exec:x.exec||[],keys:x.keys||[],bio:x.bio||"",media:[...(x.media||[])]}; }
+  S.ed={key,kind,id,d:JSON.parse(JSON.stringify(d))}; return S.ed;
+}
+const fText=(f,l,v,ph="")=>`<label class="f">${l}<input class="inp" data-keep data-ed="${f}" value="${esc(v)}" placeholder="${esc(ph)}"></label>`;
+const fArea=(f,l,v,ph="",list)=>`<label class="f">${l}${list?`<span class="xs muted">Une ligne par point</span>`:""}<textarea class="inp" data-keep data-ed="${f}"${list?' data-list="1"':""} placeholder="${esc(ph)}">${esc(list?(v||[]).join("\n"):v)}</textarea></label>`;
+function edMedia(d){
+  return `<section class="card"><h2><span aria-hidden="true">🎬</span>Images et vidéos</h2>
+  <div class="divide">${d.media.map((m,i)=>{ const e=embedOf(m); return `<div class="li"><span class="grow"><span class="t small">${esc(m.cap||(e?{if:"Vidéo intégrée",vid:"Vidéo",img:"Image",link:"Lien"}[e.k]:"Lien invalide"))}</span><span class="d" style="word-break:break-all">${esc(m.url.startsWith("/api/media")?"Fichier envoyé dans GETUMA":m.url)}</span></span><button class="btn link" data-edm="up|${i}" ${i?"":"disabled"} aria-label="Monter">↑</button><button class="btn link danger" data-edm="del|${i}" aria-label="Retirer">✕</button></div>`; }).join("")||`<span class="small muted">Aucun média.</span>`}</div>
+  <div class="form"><label class="f" style="grid-column:1/-1">Lien (YouTube, Vimeo, Instagram, TikTok, Google Drive, image ou GIF en ligne)<input class="inp" id="edUrl" data-keep type="url" placeholder="https://…"></label>
+   <label class="f" style="grid-column:1/-1">Légende (facultatif)<input class="inp" id="edCap" data-keep placeholder="Ex. Vue de côté"></label>
+   <button class="btn" id="edAddUrl" type="button">Ajouter le lien</button>
+   <label class="btn" style="text-align:center;cursor:pointer">Envoyer un fichier<input type="file" id="edFile" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" hidden></label></div>
+  <span class="xs muted">Fichiers : photo, GIF ou courte vidéo, 4 Mo max (les photos sont réduites automatiquement). Pour une vidéo plus longue, mets-la sur YouTube (non répertoriée) et colle le lien.${S.upl?` <b>Envoi en cours…</b>`:""}</span>
+  ${gallery(d.media)}</section>`;
+}
+function edElPicker(list,field,eng){
+  const opts=ALLE.filter(e=>e.a===eng&&e.id!==S.ed.id&&!list.includes(e.id)).sort((a,b)=>codeOf(a)-codeOf(b));
+  return `<div class="chips">${list.map(id=>BY[id]?`<span class="chip">${esc(BY[id].n)}<button class="x" data-edrm="${field}|${id}" aria-label="Retirer ${esc(BY[id].n)}">✕</button></span>`:"").join("")||`<span class="small muted">Aucun</span>`}</div>
+  <select class="sel" data-edadd="${field}" aria-label="Ajouter"><option value="">+ Ajouter…</option>${opts.map(e=>`<option value="${e.id}">${/^\d{5}$/.test(e.stv||"")?e.stv+" · ":""}${esc(e.n)}</option>`).join("")}</select>`;
+}
+function vEdit(kind,id){
+  if(!["el","po","ex"].includes(kind)) return `<div class="empty">Fiche inconnue.</div>`;
+  if(kind==="ex"){ loadEx(); if(!EX) return `<div class="empty">Chargement…</div>`; if(!EXBY[id]) return `<div class="empty">Exercice introuvable.</div>`; }
+  if(kind==="el"&&!BY[id]) return `<div class="empty">Élément introuvable.</div>`;
+  if(kind==="po"&&!posteOf(id)) return `<div class="empty">Poste introuvable.</div>`;
+  const ed=edInit(kind,id), d=ed.d; const back=`biblio--${kind}-${id}`;
+  const title=kind==="el"?BY[id].n:d.n;
+  let body="";
+  if(kind==="el"){ const e=BY[id]; const all=Object.keys(POSTE_DEF).concat(Object.keys(S.content||{}).filter(k=>k.startsWith("po_")).map(k=>k.slice(3))).filter((v,i,a)=>a.indexOf(v)===i&&!d.postes.includes(v)&&posteOf(v));
+    body=`<section class="card"><h2><span aria-hidden="true">🎯</span>Technique</h2>
+      ${fArea("desc","Présentation",d.desc,"Description courte de l'élément")}
+      ${fArea("pts","Points clés",d.pts,"Gainage, regard, placement des mains…",1)}
+      ${fArea("err","Erreurs fréquentes",d.err,"",1)}
+      ${fArea("parade","Parade et sécurité",d.parade)}
+      ${fText("fiche","Lien vers la fiche complète (facultatif)",d.fiche,"https://…")}</section>
+    <section class="card"><h2><span aria-hidden="true">🔗</span>Progression</h2><h3>Prérequis (avant)</h3>${edElPicker(d.pre,"pre",e.a)}<h3>Éléments suivants (après)</h3>${edElPicker(d.next,"next",e.a)}
+      <span class="xs muted">Ajouter un élément suivant ajoute « ${esc(e.n)} » à ses prérequis. Ces liens servent aussi au calcul des besoins.</span></section>
+    <section class="card"><h2><span aria-hidden="true">🧩</span>Exercices d'apprentissage</h2><div class="divide">${d.postes.map((p,i)=>`<div class="li"><span class="num">${i+1}</span><span class="grow"><span class="t small">${esc(posteOf(p).n)}</span></span><button class="btn link" data-edp="up|${i}" ${i?"":"disabled"} aria-label="Monter">↑</button><button class="btn link danger" data-edp="del|${i}" aria-label="Retirer">✕</button></div>`).join("")||`<span class="small muted">Aucun poste.</span>`}</div>
+      <select class="sel" data-edpadd aria-label="Ajouter un poste existant"><option value="">+ Ajouter un poste existant…</option>${all.map(p=>`<option value="${p}">${esc(posteOf(p).n)}</option>`).join("")}</select>
+      <div class="row"><input class="inp" id="edNewPo" data-keep placeholder="Ou créer un nouveau poste" style="flex:1" aria-label="Nouveau poste"><button class="btn" id="edNewPoBtn" type="button">Créer</button></div>
+      <span class="xs muted">Après l'enregistrement, ouvre un poste pour compléter sa fiche (consignes, image, vidéo).</span></section>`; }
+  else if(kind==="po") body=`<section class="card"><h2><span aria-hidden="true">🧩</span>Poste</h2>${fText("n","Nom",d.n)}${fArea("desc","But du poste",d.desc,"Ce que le poste fait travailler")}
+      <label class="f">Famille<select class="sel" data-keep data-ed="fam"><option value="">(selon les éléments)</option>${FAM_ORDER.map(f=>`<option ${d.fam===f?"selected":""}>${esc(f)}</option>`).join("")}</select></label>
+      ${fArea("mat","Mise en place et matériel",d.mat,"Plinth bas, tapis, repères au sol…")}${fArea("steps","Consignes",d.steps,"",1)}${fArea("crit","Critères de réussite",d.crit,"",1)}${fArea("secu","Sécurité et parade",d.secu)}</section>`;
+  else body=`<section class="card"><h2><span aria-hidden="true">💪</span>Exercice</h2>${fText("n","Nom",d.n)}${fText("dos","Dosage",d.dos,"3 x 10")}${fText("mat","Matériel",d.mat)}${fArea("exec","Exécution",d.exec,"",1)}${fArea("keys","Points clés et erreurs",d.keys,"",1)}${fArea("bio","Pourquoi ça marche",d.bio)}</section>`;
+  return `<button class="back" data-go="${back}">‹ Annuler</button><header class="hero"><div class="row"><span class="tag">Modification</span></div><h1>${esc(title||"Sans nom")}</h1></header>
+  ${body}${edMedia(d)}
+  <div class="row sticky"><button class="btn primary" id="edSave">Enregistrer</button><button class="btn" data-go="${back}">Annuler</button>${CT(ed.key)?`<button class="btn link danger" id="edReset">Revenir à la version d'origine</button>`:""}</div>`;
+}
+function edSave(){
+  const ed=S.ed; if(!ed) return; const d=ed.d, key=ed.key; const clean=a=>lines(a);
+  if(ed.kind==="el"){
+    const prevNext=nextOf(ed.id).map(e=>e.id);
+    const out={...elC(ed.id),desc:d.desc.trim(),pts:clean(d.pts),err:clean(d.err),parade:d.parade.trim(),fiche:okUrl(d.fiche.trim())?d.fiche.trim():"",pre:d.pre,postes:d.postes,media:d.media};
+    store.set("content",key,out);
+    for(const x of d.next.filter(x=>!prevNext.includes(x))) store.set("content","el_"+x,{...elC(x),pre:[...new Set([...preOf(x),ed.id])]});
+    for(const x of prevNext.filter(x=>!d.next.includes(x))) store.set("content","el_"+x,{...elC(x),pre:preOf(x).filter(p=>p!==ed.id)});
+  } else if(ed.kind==="po") store.set("content",key,{...(CT(key)||{}),n:d.n.trim()||"Poste",desc:d.desc.trim(),fam:d.fam,mat:d.mat.trim(),steps:clean(d.steps),crit:clean(d.crit),secu:d.secu.trim(),media:d.media});
+  else store.set("content",key,{...(CT(key)||{}),n:d.n.trim()||EXBY[ed.id].n,dos:d.dos.trim(),mat:d.mat.trim(),exec:clean(d.exec),keys:clean(d.keys),bio:d.bio.trim(),media:d.media});
+  const back=`biblio--${ed.kind}-${ed.id}`; S.ed=null; toast("Fiche enregistrée"); go(...back.split("--"));
+}
+async function uploadMedia(file){
+  if(!navigator.onLine){ toast("Pas de réseau : envoi impossible"); return; }
+  let f=file;
+  if(/^image\/(jpeg|png|webp)$/.test(f.type)) f=await shrink(f).catch(()=>file);
+  if(f.size>4*1024*1024){ toast("Fichier trop lourd (4 Mo max). Mets la vidéo sur YouTube et colle le lien."); return; }
+  S.upl=true; render();
+  try{ const fd=new FormData(); fd.append("file",f,f.name||"media"); const r=await fetch("/api/media",{method:"POST",body:fd,headers:{"x-getuma":"1"},credentials:"same-origin"}); const j=await r.json().catch(()=>({}));
+    if(!r.ok||!j.url){ toast(r.status===415?"Format non pris en charge":r.status===413?"Fichier trop lourd (4 Mo max)":"Envoi impossible"); return; }
+    if(S.ed){ S.ed.d.media.push({url:j.url,type:j.type,cap:($("#edCap")||{}).value||""}); } toast("Fichier ajouté");
+  } finally{ S.upl=false; render(); }
+}
+function shrink(file){ return new Promise((ok,ko)=>{ const img=new Image(); const u=URL.createObjectURL(file); img.onload=()=>{ const k=Math.min(1,1600/Math.max(img.width,img.height)); if(k===1&&file.size<1.5e6){ URL.revokeObjectURL(u); ok(file); return; } const c=document.createElement("canvas"); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext("2d").drawImage(img,0,0,c.width,c.height); c.toBlob(b=>{ URL.revokeObjectURL(u); b?ok(new File([b],"photo.jpg",{type:"image/jpeg"})):ko(); },"image/jpeg",0.85); }; img.onerror=()=>{ URL.revokeObjectURL(u); ko(); }; img.src=u; }); }
 function vGymnastes(id){
   if(id==="ajouter") return vAjouter();
   if(id==="tableau") return vTableau();
@@ -627,6 +790,13 @@ document.addEventListener("click",e=>{
   if(t.dataset.unlink){ const gid=t.dataset.unlink; const g=S.gymnasts[gid]; const next=gGroups(g).filter(x=>x!==S.groupId); if(!next.length){ confirmBox(`Retirer ${g.name} de ${S.groups[S.groupId]?.name||"ce groupe"} ? S'il n'est inscrit dans aucun autre groupe, son suivi sera supprimé.`,"Retirer",()=>{ store.del("gymnasts",gid); go("gymnastes"); }); } else { store.patch("gymnasts",gid,{groupIds:next}); go("gymnastes"); } return; }
   if(t.id==="addRow"){ const gid=uid(); store.set("gymnasts",gid,{name:"Nouveau",prenom:"",nom:"",cat:"C1",groupIds:[S.groupId],groupId:S.groupId,st:{},log:{},created:today()}); setTimeout(()=>{ const el=document.querySelector(`[data-cell="${gid}|prenom"]`); if(el){ el.focus(); el.scrollIntoView({block:"center"}); } },50); return; }
   if(t.id==="presAll"){ const key=presKey(); ensurePres(key); const a=S.attendance[key]; const pres={},st={}; gyms().forEach(g=>{ if(!pst(a,g.id).s){ pres[g.id]=1; st[g.id]={s:"p"}; } }); store.patch("attendance",key,{present:pres,st}); return; }
+  if(t.id==="edSave"){ edSave(); return; }
+  if(t.id==="edReset"){ const ed=S.ed; confirmBox("Revenir à la version d'origine de cette fiche ? Tes modifications seront perdues.","Revenir",()=>{ store.del("content",ed.key); S.ed=null; go("biblio",`${ed.kind}-${ed.id}`); }); return; }
+  if(t.id==="edAddUrl"){ const u=($("#edUrl").value||"").trim(); if(!okUrl(u)){ toast("Lien invalide (il doit commencer par https://)"); return; } S.ed.d.media.push({url:u,cap:($("#edCap").value||"").trim()}); render(); return; }
+  if(t.dataset.edm){ const [a,i]=t.dataset.edm.split("|"); const m=S.ed.d.media; if(a==="del") m.splice(+i,1); else if(+i>0) [m[+i-1],m[+i]]=[m[+i],m[+i-1]]; render(); return; }
+  if(t.dataset.edp){ const [a,i]=t.dataset.edp.split("|"); const m=S.ed.d.postes; if(a==="del") m.splice(+i,1); else if(+i>0) [m[+i-1],m[+i]]=[m[+i],m[+i-1]]; render(); return; }
+  if(t.dataset.edrm){ const [f,id]=t.dataset.edrm.split("|"); S.ed.d[f]=S.ed.d[f].filter(x=>x!==id); render(); return; }
+  if(t.id==="edNewPoBtn"){ const n=($("#edNewPo").value||"").trim(); if(!n) return; const pid="n"+uid(); store.set("content","po_"+pid,{n,fam:famOf(BY[S.ed.id])==="Autres"?"":famOf(BY[S.ed.id])}); S.ed.d.postes.push(pid); $("#edNewPo").value=""; render(); return; }
   if(t.dataset.presgo){ S.presDate=t.dataset.presgo; go("presences"); return; }
   if(t.dataset.ps){ const [key,gid,s]=t.dataset.ps.split("|"); const cur=pst(S.attendance[key],gid); setPres(key,gid,cur.s===s?{s:"",late:0,early:0}:{s}); return; }
   if(t.dataset.pf){ const [key,gid,f]=t.dataset.pf.split("|"); const cur=pst(S.attendance[key],gid); setPres(key,gid,{[f]:cur[f]?0:(f==="late"?10:15)}); return; }
@@ -647,6 +817,9 @@ document.addEventListener("change",e=>{
   else if(t.dataset.cell){ const [gid,f]=t.dataset.cell.split("|"); let v=t.value.trim(); if(f==="bdns"||f==="fsg") v=v.replace(/[^\d]/g,"").slice(0,12); else v=v.slice(0,f==="adresse"?120:60); const g=S.gymnasts[gid]; if(!g||(g[f]||"")===v) return; const patch={[f]:v}; if(f==="prenom"||f==="nom"){ const [p0,n0]=splitName(g); const pr=f==="prenom"?v:p0, nm=f==="nom"?v:n0; patch.prenom=pr; patch.nom=nm; const full=`${pr} ${nm}`.trim(); if(full) patch.name=full; } store.patch("gymnasts",gid,patch); }
   else if(t.dataset.gymgroup){ const [gid,grp]=t.dataset.gymgroup.split("|"); const cur=gGroups(S.gymnasts[gid]); const next=t.checked?[...new Set([...cur,grp])]:cur.filter(x=>x!==grp); if(!next.length){ t.checked=true; toast("Un gymnaste doit rester dans au moins un groupe"); return; } store.patch("gymnasts",gid,{groupIds:next}); }
   else if(t.dataset.bdns){ const v=t.value.replace(/\D/g,"").slice(0,12); t.blur(); store.patch("gymnasts",t.dataset.bdns,{bdns:v}); }
+  else if(t.dataset.edadd!==undefined){ if(t.value){ S.ed.d[t.dataset.edadd].push(t.value); render(); } }
+  else if(t.dataset.edpadd!==undefined){ if(t.value){ S.ed.d.postes.push(t.value); render(); } }
+  else if(t.id==="edFile"){ if(t.files&&t.files[0]) uploadMedia(t.files[0]); }
   else if(t.dataset.pm){ const [key,gid,f]=t.dataset.pm.split("|"); let v=t.value.trim(); if(f!=="m") v=Math.max(0,Math.min(300,parseInt(v,10)||0)); else v=v.slice(0,80); setPres(key,gid,{[f]:v}); }
   else if(t.dataset.pres){ const [key,gid]=t.dataset.pres.split("|"); togglePresence(key,gid,t.checked); }
   else if(t.dataset.prescoach){ const [key,name]=t.dataset.prescoach.split("|"); togglePresence(key,null,t.checked,name); }
@@ -658,6 +831,7 @@ document.addEventListener("change",e=>{
   else if(t.id==="gName"){ const v=t.value.trim().slice(0,60)||"Groupe"; t.blur(); store.patch("groups",S.groupId,{name:v}); }
 });
 document.addEventListener("submit",e=>{
+  if(e.target.id==="newPoste"){ e.preventDefault(); const n=($("#newPosteN").value||"").trim(); if(!n) return; const pid="n"+uid(); store.set("content","po_"+pid,{n,fam:$("#newPosteF").value}); go("biblio","edit-po-"+pid); return; }
   e.preventDefault(); const f=e.target;
   if(f.id==="bulkForm"){ const names=$("#bulkIn").value.split(/\n|,/).map(s=>s.trim()).filter(Boolean).slice(0,60); const cat=$("#bulkCat").value; $("#bulkIn").blur(); (async()=>{ for(const n of names) await store.set("gymnasts",uid(),{name:n.slice(0,40),cat,groupIds:[S.groupId],groupId:S.groupId,st:{},log:{},created:today()}); })(); toast(`${names.length} ajouté${names.length>1?"s":""}`); go("gymnastes"); }
   if(f.id==="loginForm"){ const email=$("#liEmail").value.trim(), password=$("#liPw").value; document.activeElement.blur(); S.authErr=""; call("/api/auth/login","POST",{email,password}).then(r=>{ if(r.ok){ wipeLocal(); S.me=r.d.user; S.mode="loading"; saveCache(); render(); pull(); } else { S.authErr=r.d.error==="pending"?"":r.d.error==="locked"?"Trop d'essais. Réessaie dans 15 minutes.":r.d.error==="disabled"?"Ce compte est désactivé.":"E-mail ou mot de passe incorrect."; if(r.d.error==="pending") S.authView="pending"; render(); } }).catch(()=>{ S.authErr="Pas de réseau."; render(); }); return; }
@@ -670,11 +844,11 @@ document.addEventListener("submit",e=>{
   if(f.dataset.newgroup){ const inp=f.querySelector("input"); const v=inp.value.trim().slice(0,60); inp.blur(); if(v){ const gid=uid(); store.set("groups",gid,{name:v,clubId:f.dataset.newgroup,apps:["sol"]}); toast("Groupe créé"); } return; }
   if(f.id==="planForm"){ S.plan=buildPlan({date:$("#pDate").value,start:$("#pStart").value||"18:00",dur:+$("#pDur").value||90,warm:+$("#pWarm").value||0,cool:+$("#pCool").value||0,rot:+$("#pRot").value||0,coaches:[...document.querySelectorAll("[data-coach]")].filter(x=>x.checked).map(x=>x.dataset.coach)}); go("seance","nouvelle"); }
 });
-document.addEventListener("input",e=>{ if(e.target.id==="bibQ"){ S.bibQ=e.target.value; clearTimeout(S._qt); S._qt=setTimeout(()=>{ const pos=e.target.selectionStart; const keep=document.activeElement===e.target; e.target.blur(); render(); const el=$("#bibQ"); if(el&&keep){ el.focus(); try{ el.setSelectionRange(pos,pos); }catch(x){} } },250); } });
-window.addEventListener("hashchange",()=>{ window.scrollTo(0,0); if(location.hash==="#gymnastes--admin") S.admin=null; if(location.hash==="#gymnastes--tableau") S.tOrd=null; render(); });
+document.addEventListener("input",e=>{ if(e.target.dataset&&e.target.dataset.ed&&S.ed){ S.ed.d[e.target.dataset.ed]=e.target.dataset.list?e.target.value.split("\n"):e.target.value; return; } if(e.target.id==="bibQ"){ S.bibQ=e.target.value; clearTimeout(S._qt); S._qt=setTimeout(()=>{ const pos=e.target.selectionStart; const keep=document.activeElement===e.target; e.target.blur(); render(); const el=$("#bibQ"); if(el&&keep){ el.focus(); try{ el.setSelectionRange(pos,pos); }catch(x){} } },250); } });
+window.addEventListener("hashchange",()=>{ window.scrollTo(0,0); if(location.hash==="#gymnastes--admin") S.admin=null; if(location.hash==="#gymnastes--tableau") S.tOrd=null; if(!location.hash.startsWith("#biblio--edit-")) S.ed=null; render(); });
 
 /* ---------- démarrage ---------- */
-(()=>{ const c=LS.get("getuma-cache",null); if(c&&S.me){ Object.assign(S,{clubs:c.clubs||{},groups:c.groups||{},gymnasts:c.gymnasts||{},sessions:c.sessions||{},attendance:c.attendance||{},members:c.members||{}}); S.mode="shared"; } for(const op of OUTBOX) applyLocal(op); })();
+(()=>{ const c=LS.get("getuma-cache",null); if(c&&S.me){ Object.assign(S,{content:c.content||{},clubs:c.clubs||{},groups:c.groups||{},gymnasts:c.gymnasts||{},sessions:c.sessions||{},attendance:c.attendance||{},members:c.members||{}}); S.mode="shared"; } for(const op of OUTBOX) applyLocal(op); })();
 if(!S.me) S.mode="login";
 render();
 if(navigator.onLine) call("/api/auth/me","GET").then(r=>{ if(r.status===401){ wipeLocal(); toLogin(); } else if(r.ok){ S.me=r.d.user; if(S.mode==="login") S.mode="loading"; saveCache(); render(); pull(); } }).catch(()=>{});

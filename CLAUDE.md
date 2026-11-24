@@ -18,7 +18,7 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - `lib/blobdb.ts` : lecture, écriture, mise à jour conditionnelle (`ifMatch`) des documents JSON du Blob privé.
 - `lib/auth.ts` : comptes (scrypt), session en cookie HttpOnly signé HMAC (`gsess`, 30 jours), version de session `sv` pour couper les sessions.
 - Routes : `/api/auth/{signup,login,logout,me,password,profile}`, `/api/admin` (admin seulement), `/api/db` (données filtrées par droits).
-- Stockage Blob PRIVÉ : `db/{clubs|groups|gymnasts|sessions|attendance}/{id}.json`, `users/{uid}.json`, `users-email/{sha256(email)}.json`.
+- Stockage Blob PRIVÉ : `db/{clubs|groups|gymnasts|sessions|attendance|content}/{id}.json`, `media/{uuid}.{ext}`, `users/{uid}.json`, `users-email/{sha256(email)}.json`.
 - Variables requises : `BLOB_READ_WRITE_TOKEN`, `SESSION_SECRET` (64 caractères hex), `ADMIN_EMAIL` (emails admin séparés par des virgules).
   `CLUB_CODE` n'est plus utilisé depuis le passage aux comptes.
 
@@ -68,6 +68,17 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   Les captures d'écran des vidéos ne sont PAS reprises (droits de l'auteur). Champs : id, n, orig, type, zone, niv (1-3),
   mat, dos, exec, keys, bio, var, rel {easier, same, harder}, routines, src, auteur. « ATR » remplacé par « appui renversé ».
 - Renforcement conseillé pour un élément : correspondance famille → zones (FAM_ZONES), niveaux 1-2.
+
+## Édition de la bibliothèque (admin)
+- Collection `content` : lisible par tous les comptes actifs, modifiable par l'admin seulement. Clés :
+  `el_{id}` (desc, pts[], err[], parade, fiche, pre[], postes[], media[]), `po_{pid}` (n, desc, fam, mat, steps[], crit[], secu, media[]),
+  `ex_{id}` (n, dos, mat, exec[], keys[], bio, media[]). Ces documents surchargent les valeurs par défaut du code.
+- Prérequis effectifs : `preOf(id)` (content.pre sinon table PRE). Éléments suivants = inverse (`nextOf`). Ajouter un suivant X
+  à E écrit E dans les prérequis de X. Ces liens servent aussi au calcul des besoins.
+- Postes : id `p` + hash du texte pour les postes d'origine (POSTES_EL / POSTES_FAM), `n…` pour les postes créés.
+- Médias : `{url, cap, type?}`. Liens intégrés : YouTube (youtube-nocookie), Vimeo, Instagram, TikTok, Google Drive ; image/GIF/vidéo directe.
+  Fichiers envoyés via `/api/media` (POST admin, 4 Mo max, jpg/png/webp/gif/mp4/webm/mov ; photos réduites à 1600 px côté app),
+  servis seulement aux comptes actifs, avec lecture par plages (vidéo iPhone). Seuls les liens https:// ou /api/media sont acceptés.
 
 ## Conventions importantes
 - Langue : tout en français. Jamais de tiret long (em dash) dans les textes.
