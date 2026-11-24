@@ -52,7 +52,7 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - Catalogue : programme (RAW, fichier GETUMA_elements.xlsx, catégories C1-C3 exigées) + 4 fondamentaux GETUMA
   + catalogue complet EST (`EST`, 709 éléments extraits le 24.11.2026 des tableaux d'évaluation : Sol 2025-09, Anneaux 2025-09,
   Saut 2025-01, Reck 2025-01, Barres parallèles 2025-01, Barres asymétriques scolaires 2018-04 ; script /tmp/est/parse.py, pdfplumber).
-  Champs EST : id `x{code}`, a, n (nom FR), stv (code), v (valeur B ou 4 à 7), s (famille FR), i (passe par l'appui renversé).
+  Champs EST : id `x{code}`, a, n (nom FR), stv (code), v (valeur B, L = liaison, ou 4 à 7), s (famille FR), i (passe par l'appui renversé).
   Fusion : un élément du programme avec le même code reçoit v/i/s ; les autres deviennent `XTRA` (x:1).
   Affichage : valeur EST (« B », « C5 ») puis « Programme C1-C2 » si exigé. Niveaux d'affichage (Évaluer, Réglages) :
   base (bases C1-C2), all (programme), est (catalogue complet). Les éléments x:1 sont proposés aux gymnastes dont la catégorie
@@ -110,6 +110,16 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   (bundle esbuild de `@vercel/blob/client`) et jeton délivré par `/api/media/upload` (admin). Lecture : plages transmises au Blob.
   Ancienne règle : `/api/media` (POST admin, 4 Mo max, jpg/png/webp/gif/mp4/webm/mov ; photos réduites à 1600 px côté app),
   servis seulement aux comptes actifs, avec lecture par plages (vidéo iPhone). Seuls les liens https:// ou /api/media sont acceptés.
+
+## Boucle de relecture (fiches)
+- Chaque fiche (élément, poste, exercice) a un champ admin `rev` « Remarques de relecture » dans l'éditeur.
+- Biblio (admin) › « Mes corrections » : télécharge ou copie un JSON {fiches: {clé: {nom, modifie, origine}}}.
+  Hippolyte l'envoie à Claude, qui : 1) intègre les fiches corrigées dans FICHE_DEF/POSTE_INFO (elles deviennent la version
+  d'origine), 2) tire de ses corrections les règles générales (vocabulaire, longueur, ordre, contenu manquant) et les applique
+  aux autres fiches, 3) note ces règles ici (section « Règles de rédaction des fiches »).
+
+## Règles de rédaction des fiches
+- (à compléter à partir des corrections d'Hippolyte)
 
 ## Conventions importantes
 - Langue : tout en français. Jamais de tiret long (em dash) dans les textes.
