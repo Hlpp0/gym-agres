@@ -76,14 +76,19 @@ details.card.edit>summary,.acc>summary{cursor:pointer;list-style:none;display:fl
 .cue{margin:0;border-left:3px solid var(--s3i);padding:4px 0 4px 10px;color:var(--ink);font-style:italic}blockquote.cue{background:var(--soft);border-radius:0 8px 8px 0;padding:8px 10px}
 .checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}.checks li{padding-left:26px;position:relative}.checks li::before{content:"☐";position:absolute;left:2px;color:var(--muted)}
 .toc{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:4;background:var(--bg);padding:6px 0}.card{scroll-margin-top:56px}
-.tree{position:relative;display:grid;gap:26px;padding:4px 0 10px}.tlevel{display:grid;gap:6px;position:relative;z-index:1}.lvl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
-.tnodes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}.tnode{all:unset;box-sizing:border-box;cursor:pointer;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 10px;display:grid;gap:1px;flex:0 1 calc(50% - 4px);max-width:200px;font-size:13px;line-height:1.25;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.tnode .code{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--muted)}.tnode.ghost{border-style:dashed}.tnode.sel{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}.tnode.pre{border-color:#2383e2;background:#e7f1fb}.tnode.nxt{border-color:var(--s3i);background:var(--s3)}.tnode.dim{color:#b4b3af;border-color:var(--line)}.tnode.dim .xs,.tnode.dim .code{color:#c9c8c4}
-.tlinks{position:absolute;left:0;top:0;pointer-events:none;z-index:0}.tlinks path{fill:none;stroke:var(--line);stroke-width:1.6}.tlinks path.hl{stroke:var(--ink);stroke-width:2.2}
+.tcanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbfa;max-height:72vh;-webkit-overflow-scrolling:touch}.tstage{position:relative}.tzoom{position:relative;transform-origin:0 0}
+.tnode{position:absolute;box-sizing:border-box;width:150px;height:58px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 9px;display:grid;align-content:center;gap:1px;font-size:12.5px;line-height:1.2;box-shadow:0 1px 2px rgba(0,0,0,.05);cursor:pointer;user-select:none;-webkit-user-select:none;z-index:2;overflow:hidden}
+.tnode .code{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--muted)}.tnode .tn{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tnode.ghost{border-style:dashed}.tnode.sel{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}.tnode.pre{border-color:#2383e2;background:#e7f1fb}.tnode.nxt{border-color:var(--s3i);background:var(--s3)}.tnode.dim{color:#b4b3af}.tnode.dim .code{color:#c9c8c4}.tnode.target{box-shadow:0 0 0 3px #2383e2}
+.editing .tnode{touch-action:none;cursor:grab}.tplug{position:absolute;right:-1px;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:#2383e2;border:2px solid #fff;touch-action:none;cursor:crosshair}
+.tlinks{position:absolute;left:0;top:0;z-index:1;overflow:visible}.tlinks path{fill:none;stroke:#d5d4d0;stroke-width:1.6}.tlinks path.hl,.tlinks path.on{stroke:var(--ink);stroke-width:2.4}.tlinks path.hit{stroke:transparent;stroke-width:14;pointer-events:none}.editing .tlinks path.hit{pointer-events:stroke;cursor:pointer}.tlinks path.drag{stroke:#2383e2;stroke-dasharray:5 4;stroke-width:2}
+.tiso{position:absolute;left:24px;right:24px;border-top:1px dashed var(--line);padding-top:4px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+.tip{background:var(--soft);border-radius:10px;padding:8px 10px;line-height:1.5}
 .selbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--soft);border-radius:10px;padding:8px 10px}.selbar .btn{margin-left:auto;min-height:34px;padding:4px 12px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 4px 0 2px}.dot.pre{background:#2383e2}.dot.nxt{background:var(--s3i)}
 .card ol a,.card p a{color:var(--ink);text-decoration-color:var(--line);text-underline-offset:3px}
 .revbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fdf6e3;border:1px solid #f1e2b8;border-radius:10px;padding:8px 10px}.revbar .small{margin-right:auto}.revbar .btn{min-height:34px;padding:4px 12px}
 .review{border-color:#f1e2b8;background:linear-gradient(#fffdf6,var(--bg))}.tabs a.due{position:relative}.tabs a.due::after{content:"";position:absolute;top:7px;left:calc(50% + 9px);width:8px;height:8px;border-radius:50%;background:#e16b2b}
+.etbl .cell{min-width:0}.etbl td.stick .cell{width:min(56vw,320px)}.etbl tr.dupr td{background:#fdf6e3}.etbl tr.hidr td{opacity:.5}
 .tbl th.stick{z-index:3;background:var(--soft)}
 .tscroll{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:70vh}
 .wrap{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(104px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
@@ -206,7 +211,12 @@ const famOf=e=>!e?"Autres":(e.a==="sol"?(FAM[e.s]||"Autres"):(e.s||(minCat(e)<99
 const famRank=f=>{ const i=FAM_ORDER.indexOf(f); if(i>=0) return i; const n=EST_FAMNUM[S.engin+"|"+f]; if(n) return 100+n%100; const m=String(f).match(/C(\d)$/); return m?300+ +m[1]:400; };
 const codeOf=e=>/^\d{5}$/.test(e.stv||"")?+e.stv:(e.base?0:99999);
 /* noms modifiés et éléments masqués par l'admin (content el_{id}.n / .hide), appliqués à chaque rendu */
-function syncEls(){ for(const e of ALLE){ if(e.n0===undefined) e.n0=e.n; const c=S.content&&S.content["el_"+e.id]; e.n=(c&&c.n)||e.n0; e.hide=!!(c&&c.hide); } }
+function syncEls(){ for(const e of ALLE){ if(e.n0===undefined){ e.n0=e.n; e.stv0=e.stv||""; e.v0=e.v||""; e.c0=e.c||[]; } const c=S.content&&S.content["el_"+e.id];
+  e.n=(c&&c.n)||e.n0; e.stv=c&&c.stv!=null?c.stv:e.stv0; e.v=c&&c.v!=null?c.v:e.v0; e.c=c&&Array.isArray(c.c)?c.c:e.c0; e.hide=!!(c&&c.hide); } }
+/* identité d'un élément (nom, code, valeur, catégories) : on n'enregistre que ce qui diffère de l'origine */
+function elIdent(e,{n,stv,v,cats}){ const o={}; n=String(n||"").trim().slice(0,160); stv=String(stv||"").replace(/\D/g,"").slice(0,5); v=String(v||"");
+  const cs=String(cats||"").toUpperCase().match(/C[1-7]/g)||[]; const c=[...new Set(cs)].sort().concat((e.c0||[]).filter(x=>!/^C\d$/.test(x)));
+  o.n=n&&n!==e.n0?n:""; o.stv=stv!==(e.stv0||"")?stv:null; o.v=v!==(e.v0||"")?v:null; o.c=JSON.stringify(c)!==JSON.stringify(e.c0||[])?c:null; return o; }
 const valTag=e=>e.base?"Base":e.v?(e.v==="B"||e.v==="L"?e.v:"C"+e.v):""; /* L = liaison */
 const catRange=e=>{ if(e.base) return "Base"; const ix=e.c.map(catIdx).filter(i=>i>=0).sort((a,b)=>a-b); if(!ix.length) return ""; const a=CATS[ix[0]],b=CATS[ix[ix.length-1]]; return a===b?a:`${a}-${b}`; };
 /* images et vidéos par élément : {id:{img:"url",vid:"url"}} (à compléter) */
@@ -628,6 +638,7 @@ function vBiblio(id){
   if(id&&id.startsWith("ex-")){ loadEx(); return EX?(EXBY[id.slice(3)]?vFicheEx(exOf(id.slice(3))):`<button class="back" data-go="biblio--renfo">‹ Renforcement</button><div class="empty">Exercice introuvable.</div>`):`<div class="empty">Chargement…</div>`; }
   if(id==="elements") return vBibElements();
   if(id==="arbre") return vTree();
+  if(id==="table") return isAdmin()?vElTable():`<div class="empty">Réservé à l'administrateur.</div>`;
   if(id==="appr") return vBibAppr();
   if(id==="renfo") return vBibRenfo();
   const tile=(go,ic,t,d)=>`<button class="tile" data-go="${go}"><span class="tic" aria-hidden="true">${ic}</span><span class="grow"><span class="t">${t}</span><span class="d">${d}</span></span><span class="chev">›</span></button>`;
@@ -636,7 +647,8 @@ function vBiblio(id){
   <div class="tiles">${tile("biblio--elements","📖","Éléments","Fiches techniques par engin : code, catégories, prérequis, progression")}
   ${tile("biblio--appr","🧩","Exercices d'apprentissage","Postes et éducatifs pour apprendre chaque élément")}
   ${tile("biblio--renfo","💪","Renforcement et mobilité","172 exercices de préparation physique spécifique")}
-  ${tile("biblio--arbre","🌳","Arbre de progression","Qui mène à quoi : prérequis et éléments suivants")}</div>
+  ${tile("biblio--arbre","🌳","Arbre de progression","Qui mène à quoi : prérequis et éléments suivants")}
+  ${isAdmin()?tile("biblio--table","🗂️","Tableau des éléments","Vérifier et corriger rapidement noms, codes, valeurs et catégories"):""}</div>
   ${isAdmin()?`<section class="card"><h2><span aria-hidden="true">📤</span>Mes corrections</h2><p class="small">${Object.keys(S.content||{}).filter(k=>/^(el|po|ex)_/.test(k)).length} fiche(s) modifiée(s), dont ${Object.values(S.content||{}).filter(v=>v&&v.rev).length} avec une remarque de relecture. Exporte-les pour que Claude les intègre et applique tes corrections aux autres fiches.</p><div class="row"><button class="btn primary" id="expContent">Télécharger le fichier</button><button class="btn" id="copyContent">Copier</button></div></section>`:""}`;
 }
 function vBibElements(){
@@ -686,22 +698,92 @@ function vFicheEl(e){
   ${html}`;
 }
 /* ---------- arbre de progression ---------- */
+/* ---------- tableau des éléments (admin) : correction rapide, comme le tableau des gymnastes ---------- */
+function vElTable(){
+  const q=norm(S.etQ||""); const f=S.etF||"";
+  const all=ALLE.filter(e=>e.a===S.engin&&!e.base);
+  const dupN={}; all.forEach(e=>{ const k=norm(e.n).replace(/[^a-z0-9]+/g," ").trim()+(/--/.test(e.n)?"|t":""); dupN[k]=(dupN[k]||0)+1; });
+  const isDup=e=>dupN[norm(e.n).replace(/[^a-z0-9]+/g," ").trim()+(/--/.test(e.n)?"|t":"")]>1;
+  const list=all.filter(e=>(!q||norm(e.n+" "+e.stv).includes(q))&&(!f||(f==="prog"&&!e.x)||(f==="dup"&&isDup(e))||(f==="nocode"&&!e.stv)||(f==="hide"&&e.hide)||(f==="edit"&&CT("el_"+e.id)&&(CT("el_"+e.id).n||CT("el_"+e.id).stv!=null||CT("el_"+e.id).v!=null||CT("el_"+e.id).c))))
+    .sort((a,b)=>codeOf(a)-codeOf(b)||a.n.localeCompare(b.n,"fr"));
+  const flt=[["","Tous"],["prog","Programme"],["dup","Doublons"],["nocode","Sans code"],["edit","Modifiés"],["hide","Masqués"]];
+  return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Tableau des éléments · ${enginName(S.engin)}</h1>${enginBar()}
+  <div class="pillbar">${flt.map(([k,l])=>`<button class="pill" data-etf="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
+  <input class="inp" id="etQ" data-keep type="search" placeholder="Rechercher un nom ou un code" value="${esc(S.etQ||"")}" aria-label="Rechercher">
+  <p class="small muted" style="margin:0">${list.length} élément${list.length>1?"s":""}. Touche une case pour la modifier ; c'est enregistré dès que tu quittes la case. Les lignes jaunes ont le même nom qu'un autre élément.</p>
+  <div class="tscroll"><table class="tbl etbl"><thead><tr><th class="stick">Nom</th><th>Code</th><th>Valeur</th><th>Programme</th><th>Masqué</th><th>Fiche</th></tr></thead><tbody>
+  ${list.map(e=>`<tr class="${isDup(e)?"dupr":""}${e.hide?" hidr":""}"><td class="stick"><input class="cell" data-elcell="${e.id}|n" value="${esc(e.n)}" aria-label="Nom"></td>
+   <td><input class="cell" style="width:70px" inputmode="numeric" data-elcell="${e.id}|stv" value="${esc(e.stv||"")}" aria-label="Code"></td>
+   <td><select class="cell" data-elcell="${e.id}|v" aria-label="Valeur"><option value="">-</option>${["B","L","4","5","6","7"].map(v=>`<option ${e.v===v?"selected":""}>${v}</option>`).join("")}</select></td>
+   <td><input class="cell" style="width:90px" data-elcell="${e.id}|cats" value="${esc((e.c||[]).filter(x=>/^C\d$/.test(x)).join(" "))}" placeholder="C1 C2" aria-label="Catégories"></td>
+   <td style="text-align:center"><input type="checkbox" data-elcell="${e.id}|hide" ${e.hide?"checked":""} aria-label="Masquer" style="width:20px;height:20px"></td>
+   <td><a href="#biblio--el-${e.id}">›</a></td></tr>`).join("")}</tbody></table></div>`;
+}
+function saveElCell(id,field,val){ const e=BY[id]; if(!e) return; const cur={n:e.n,stv:e.stv,v:e.v,cats:(e.c||[]).filter(x=>/^C\d$/.test(x)).join(" ")};
+  const k="el_"+id; const base={...(CT(k)||{})};
+  if(field==="hide"){ store.set("content",k,{...base,hide:!!val}); return; }
+  cur[field]=val; store.set("content",k,{...base,...elIdent(e,cur)}); }
+/* ---------- arbre de progression : canevas interactif (étapes en lignes, ordre qui limite les croisements) ---------- */
+const TN={w:150,h:58,gx:22,gy:84,pad:24,cx:70,ry:14}; /* flux de gauche à droite : colonnes = étapes */
+const treeKey=()=>"tree_"+hashId(S.engin+"|"+(S.treeFam||""));
+function treeLayout(all){
+  /* 1) composantes (groupes d'éléments reliés entre eux), chacune dessinée comme un petit arbre, empilées de haut en bas
+     2) dans chaque arbre : étapes par profondeur, ordre par barycentres pour limiter les croisements
+     3) les éléments sans lien : grille en bas */
+  const ids0=new Set(all.map(e=>e.id)); const nb={}; const link=(a,b)=>{ (nb[a]=nb[a]||new Set()).add(b); (nb[b]=nb[b]||new Set()).add(a); };
+  all.forEach(e=>preOf(e.id).forEach(p=>{ if(ids0.has(p)) link(p,e.id); }));
+  const iso=all.filter(e=>!nb[e.id]); const seen=new Set(); const comps=[];
+  all.filter(e=>nb[e.id]).forEach(e=>{ if(seen.has(e.id)) return; const c=[]; const st=[e.id]; seen.add(e.id); while(st.length){ const x=st.pop(); c.push(BY[x]&&all.find(y=>y.id===x)); nb[x].forEach(y=>{ if(!seen.has(y)){ seen.add(y); st.push(y); } }); } comps.push(c.filter(Boolean)); });
+  const key=c=>Math.min(...c.map(e=>famRank(famOf(e))*1e6+codeOf(e)));
+  comps.sort((a,b)=>key(a)-key(b));
+  const pos={}; let y=TN.pad; let W=TN.pad*2+2*TN.w+TN.gx; const blocks=[];
+  for(const set of comps){
+    const ids=new Set(set.map(e=>e.id)); const lv={};
+    const level=(id,stack=new Set())=>{ if(lv[id]!=null) return lv[id]; if(stack.has(id)) return 0; stack.add(id); const ps=preOf(id).filter(p=>ids.has(p)); lv[id]=ps.length?1+Math.max(...ps.map(p=>level(p,stack))):0; return lv[id]; };
+    set.forEach(e=>level(e.id));
+    const rows={}; set.forEach(e=>(rows[lv[e.id]]=rows[lv[e.id]]||[]).push(e)); const L=Object.keys(rows).map(Number).sort((a,b)=>a-b);
+    L.forEach(k=>rows[k].sort((a,b)=>codeOf(a)-codeOf(b)));
+    const kids={}; set.forEach(e=>preOf(e.id).filter(p=>ids.has(p)).forEach(p=>(kids[p]=kids[p]||[]).push(e.id)));
+    for(let it=0;it<8;it++){ const down=it%2===0; for(const k of (down?L:[...L].reverse())){ const m={}; L.forEach(kk=>rows[kk].forEach((e,i)=>m[e.id]=i-(rows[kk].length-1)/2)); rows[k].forEach(e=>{ const n=down?preOf(e.id).filter(p=>ids.has(p)):(kids[e.id]||[]); e._b=n.length?n.reduce((s,x)=>s+m[x],0)/n.length:m[e.id]; }); rows[k].sort((a,b)=>a._b-b._b); } }
+    const maxN=Math.max(...L.map(k=>rows[k].length)); const bh=maxN*TN.h+(maxN-1)*TN.ry; W=Math.max(W,TN.pad*2+L.length*TN.w+(L.length-1)*TN.cx);
+    blocks.push({L,rows,y,bh}); y+=bh+40;
+  }
+  blocks.forEach(({L,rows,y,bh})=>L.forEach((k,c)=>{ const n=rows[k].length; const ch=n*TN.h+(n-1)*TN.ry; const y0=y+(bh-ch)/2; rows[k].forEach((e,i)=>pos[e.id]=[TN.pad+c*(TN.w+TN.cx),y0+i*(TN.h+TN.ry)]); }));
+  const cols=Math.max(2,Math.floor((W-TN.pad*2+TN.gx)/(TN.w+TN.gx))); const isoY=iso.length?y+(comps.length?0:-10):null;
+  iso.sort((a,b)=>famRank(famOf(a))-famRank(famOf(b))||codeOf(a)-codeOf(b)).forEach((e,i)=>{ pos[e.id]=[TN.pad+(i%cols)*(TN.w+TN.gx),isoY+24+Math.floor(i/cols)*(TN.h+14)]; });
+  const H=iso.length?isoY+24+Math.ceil(iso.length/cols)*(TN.h+14)+TN.pad:y;
+  return {pos,W,H,isoY};
+}
 function vTree(){
   const all=ALLE.filter(e=>e.a===S.engin&&!e.hide); const fams=famList(all); if(S.treeFam&&!fams.includes(S.treeFam)) S.treeFam="";
   let set=all.filter(e=>!S.treeFam||famOf(e)===S.treeFam);
   if(S.treeFam){ const ids=new Set(set.map(e=>e.id)); const extra=all.filter(e=>!ids.has(e.id)&&(preOf(e.id).some(p=>ids.has(p))||set.some(s=>preOf(s.id).includes(e.id)))); set=set.concat(extra.map(e=>({...e,ghost:1}))); }
-  const ids=new Set(set.map(e=>e.id)); const lv={}; const level=(id,stack=new Set())=>{ if(lv[id]!=null) return lv[id]; if(stack.has(id)) return 0; stack.add(id); const ps=preOf(id).filter(p=>ids.has(p)); lv[id]=ps.length?1+Math.max(...ps.map(p=>level(p,stack))):0; return lv[id]; };
-  set.forEach(e=>level(e.id)); const rows={}; set.forEach(e=>(rows[lv[e.id]]=rows[lv[e.id]]||[]).push(e));
-  const sel=S.treeSel&&ids.has(S.treeSel)?BY[S.treeSel]:null; const sp=sel?new Set(preOf(sel.id)):new Set(), sn=sel?new Set(nextOf(sel.id).map(e=>e.id)):new Set();
+  if(!S.treeAll) set=set.filter(e=>!e.x||preOf(e.id).length||nextOf(e.id).length||e.id===S.treeSel); /* catalogue EST : seulement les éléments reliés */
+  const lay=treeLayout(set); const saved=(CT(treeKey())||{}).pos||{};
+  const P={}; set.forEach(e=>{ P[e.id]=saved[e.id]||lay.pos[e.id]; });
+  const W=Math.max(lay.W,...set.map(e=>P[e.id][0]+TN.w+TN.pad)), H=Math.max(lay.H,...set.map(e=>P[e.id][1]+TN.h+TN.pad));
+  S._tree={P,W,H,ids:new Set(set.map(e=>e.id))};
+  const sel=S.treeSel&&S._tree.ids.has(S.treeSel)?BY[S.treeSel]:null; const sp=sel?new Set(preOf(sel.id)):new Set(), sn=sel?new Set(nextOf(sel.id).map(e=>e.id)):new Set();
   const cls=e=>[e.ghost?"ghost":"",sel?(e.id===sel.id?"sel":sp.has(e.id)?"pre":sn.has(e.id)?"nxt":"dim"):""].join(" ");
-  const node=e=>`<button class="tnode ${cls(e)}" data-tn="${e.id}"><span class="code">${/^\d{5}$/.test(e.stv||"")?e.stv:e.base?"Base":""}</span><span class="tn">${esc(e.n.length>48?e.n.slice(0,46)+"…":e.n)}</span><span class="xs muted">${[valTag(e),catRange(e)?"Prog. "+catRange(e):""].filter(Boolean).join(" · ")}</span></button>`;
+  const z=S.tz||1; const ed=isAdmin()&&S.treeEdit;
+  const node=e=>`<div class="tnode ${cls(e)}" data-tn="${e.id}" style="left:${P[e.id][0]}px;top:${P[e.id][1]}px"><span class="code">${/^\d{5}$/.test(e.stv||"")?e.stv:e.base?"Base":""} <b>${valTag(e)}</b></span><span class="tn">${esc(e.n.length>46?e.n.slice(0,44)+"…":e.n)}</span>${ed?`<span class="tplug" data-plug="${e.id}" title="Tirer pour relier"></span>`:""}</div>`;
+  const edge=(p,c)=>{ const a=P[p], b=P[c]; if(!a||!b) return ""; const x1=a[0]+TN.w,y1=a[1]+TN.h/2,x2=b[0],y2=b[1]+TN.h/2,mx=(x1+x2)/2; const hl=sel&&(sel.id===p||sel.id===c); const on=S.treeEdge===p+">"+c;
+    const d=x2>x1+10?`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`:`M${a[0]+TN.w/2},${a[1]+TN.h} C${a[0]+TN.w/2},${a[1]+TN.h+40} ${b[0]+TN.w/2},${b[1]-40} ${b[0]+TN.w/2},${b[1]}`;
+    return `<path d="${d}" class="${hl?"hl":""} ${on?"on":""}" marker-end="url(#ar${hl||on?"h":""})"/><path d="${d}" class="hit" data-edge="${p}>${c}"/>`; };
+  const edges=set.map(e=>preOf(e.id).filter(p=>S._tree.ids.has(p)).map(p=>edge(p,e.id)).join("")).join("");
   return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Arbre de progression · ${enginName(S.engin)}</h1>${enginBar()}
   <div class="pillbar"><button class="pill" data-tf="" aria-pressed="${!S.treeFam}">Tout</button>${fams.map(f=>`<button class="pill" data-tf="${esc(f)}" aria-pressed="${S.treeFam===f}">${esc(f)}</button>`).join("")}</div>
-  ${isAdmin()?`<div class="row"><button class="btn ${S.treeEdit?"primary":""}" data-tedit>${S.treeEdit?"Terminer la modification":"Modifier les liens"}</button>${S.treeEdit?`<div class="seg" style="width:auto;grid-template-columns:1fr 1fr"><button data-tdir="pre" aria-pressed="${S.treeDir!=="next"}" class="s-p">Prérequis</button><button data-tdir="next" aria-pressed="${S.treeDir==="next"}" class="s-p">Suivant</button></div>`:""}</div>`:""}
-  <p class="small muted" style="margin:0">${S.treeEdit?(sel?`Touche un autre élément pour l'ajouter comme <b>${S.treeDir==="next"?"élément suivant":"prérequis"}</b> de « ${esc(sel.n)} », ou pour retirer un lien existant.`:"Touche d'abord l'élément à modifier."):"Du haut vers le bas : chaque élément s'appuie sur ceux du dessus. Touche un élément pour voir ses liens."}</p>
-  ${sel?`<div class="selbar"><b>${esc(sel.n)}</b><span class="small"><span class="dot pre"></span>${sp.size} prérequis · <span class="dot nxt"></span>${sn.size} suivant${sn.size>1?"s":""}</span><button class="btn" data-go="biblio--el-${sel.id}">Fiche</button></div>`:""}
-  ${isAdmin()?(()=>{ const ck=treeChecks(); return `<details class="acc"><summary><b>Vérifications automatiques</b><span class="muted">${ck.length}</span></summary><p class="xs muted" style="margin:4px">Doublons de noms, prérequis demandés dans une catégorie plus haute, éléments du programme (C2 et plus) sans prérequis.</p><div class="divide">${ck.map(c=>`<div class="li" style="min-height:0"><span class="grow"><span class="t small"><span class="tag">${c.t}</span> ${esc(c.msg)}</span><span class="d">${c.els.map(e=>`<a href="#biblio--el-${e.id}">${esc((e.stv?e.stv+" ":"")+e.n.slice(0,40))}</a>`).join(" · ")}</span></span></div>`).join("")||`<span class="small muted">Rien à signaler.</span>`}</div></details>`; })():""}
-  <div class="tree">${Object.keys(rows).sort((a,b)=>a-b).map(k=>`<div class="tlevel"><div class="lvl">Étape ${+k+1}</div><div class="tnodes">${rows[k].sort((a,b)=>famRank(famOf(a))-famRank(famOf(b))||codeOf(a)-codeOf(b)).map(node).join("")}</div></div>`).join("")}<svg class="tlinks" aria-hidden="true"></svg></div>`;
+  <div class="row"><button class="btn" data-tz="-1" aria-label="Dézoomer">−</button><button class="btn" data-tz="0">${Math.round(z*100)} %</button><button class="btn" data-tz="1" aria-label="Zoomer">+</button>
+   <button class="pill" data-tall aria-pressed="${!!S.treeAll}">Catalogue EST complet</button>
+   ${isAdmin()?`<button class="btn ${ed?"primary":""}" data-tedit>${ed?"Terminer":"Modifier"}</button>`:""}</div>
+  ${ed?`<div class="tip small">✋ <b>Déplace</b> une case en la faisant glisser. 🔗 <b>Relie</b> deux éléments en tirant le petit rond bleu à droite d'une case jusqu'à l'élément suivant. ✂️ <b>Supprime</b> un lien en le touchant. ${CT(treeKey())?`<button class="btn link" data-treset>Réorganiser automatiquement</button>`:""}</div>`:`<p class="small muted" style="margin:0">De gauche à droite : chaque élément s'appuie sur ceux de la colonne précédente. Touche un élément pour voir ses liens.</p>`}
+  ${S.treeEdge&&ed?(()=>{ const [p,c]=S.treeEdge.split(">"); return `<div class="selbar"><span class="small">Lien « ${esc(BY[p].n.slice(0,30))} » → « ${esc(BY[c].n.slice(0,30))} »</span><button class="btn" data-edgedel>Supprimer le lien</button></div>`; })():""}
+  ${sel&&!S.treeEdge?`<div class="selbar"><b>${esc(sel.n)}</b><span class="small"><span class="dot pre"></span>${sp.size} prérequis · <span class="dot nxt"></span>${sn.size} suivant${sn.size>1?"s":""}</span><button class="btn" data-go="biblio--el-${sel.id}">Fiche</button></div>`:""}
+  ${isAdmin()?(()=>{ const ck=treeChecks(); return `<details class="acc"><summary><b>Vérifications automatiques</b><span class="muted">${ck.length}</span></summary><div class="divide">${ck.map(c=>`<div class="li" style="min-height:0"><span class="grow"><span class="t small"><span class="tag">${c.t}</span> ${esc(c.msg)}</span><span class="d">${c.els.map(e=>`<a href="#biblio--el-${e.id}">${esc((e.stv?e.stv+" ":"")+e.n.slice(0,40))}</a>`).join(" · ")}</span></span></div>`).join("")||`<span class="small muted">Rien à signaler.</span>`}</div></details>`; })():""}
+  <div class="tcanvas ${ed?"editing":""}" id="tcanvas"><div class="tstage" style="width:${W*z}px;height:${H*z}px"><div class="tzoom" style="width:${W}px;height:${H}px;transform:scale(${z})">
+   ${lay.isoY!=null&&!Object.keys(saved).length?`<div class="tiso" style="top:${lay.isoY}px">Sans lien pour l'instant</div>`:""}
+   <svg class="tlinks" width="${W}" height="${H}"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c9c8c4"/></marker><marker id="arh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#37352f"/></marker></defs>${edges}<path id="tdrag" class="drag" d=""/></svg>
+   ${set.map(node).join("")}</div></div></div>`;
 }
 function treeChecks(){
   const all=ALLE.filter(e=>e.a===S.engin&&!e.hide); const ids=new Set(all.map(e=>e.id)); const out=[];
@@ -712,22 +794,36 @@ function treeChecks(){
   all.forEach(e=>{ if(!e.x&&!e.base&&minCat(e)>=1&&minCat(e)<99&&!preOf(e.id).length) out.push({t:"Sans prérequis",els:[e],msg:`« ${e.n} » (${catRange(e)}) n'a aucun prérequis.`}); });
   return out;
 }
-function drawTree(){ const box=document.querySelector(".tree"), svg=box&&box.querySelector(".tlinks"); if(!svg) return; const r0=box.getBoundingClientRect(); svg.setAttribute("width",r0.width); svg.setAttribute("height",r0.height);
-  const pos={}; box.querySelectorAll("[data-tn]").forEach(b=>{ const r=b.getBoundingClientRect(); pos[b.dataset.tn]={x:r.left-r0.left+r.width/2,top:r.top-r0.top,bot:r.bottom-r0.top}; });
-  let out=""; for(const id of Object.keys(pos)) for(const p of preOf(id)){ if(!pos[p]) continue; const a=pos[p], b=pos[id]; const hl=S.treeSel&&(S.treeSel===id||S.treeSel===p); const y1=a.bot, y2=b.top, my=(y1+y2)/2;
-    out+=`<path d="M${a.x},${y1} C${a.x},${my} ${b.x},${my} ${b.x},${y2}" class="${hl?"hl":""}"/>`; }
-  svg.innerHTML=out; }
-window.addEventListener("resize",()=>{ clearTimeout(window._dt); window._dt=setTimeout(drawTree,120); });
-function treeTap(id){
-  if(!S.treeEdit||!S.treeSel||S.treeSel===id){ S.treeSel=S.treeSel===id?null:id; render(); return; }
-  const sel=S.treeSel; const [child,parent]=S.treeDir==="next"?[id,sel]:[sel,id];
-  const linked=preOf(child).includes(parent), rev=preOf(parent).includes(child);
+function drawTree(){ /* le canevas est rendu en SVG directement : rien à recalculer après coup */ }
+/* glisser-déposer : déplacer une case ou tirer un lien (admin, mode Modifier) */
+let TD=null;
+function treeLink(parent,child){
+  if(parent===child) return;
   const save=(c,arr)=>store.set("content","el_"+c,{...(CT("el_"+c)||{}),pre:arr});
-  if(linked){ save(child,preOf(child).filter(p=>p!==parent)); toast("Lien retiré"); }
-  else if(rev){ save(parent,preOf(parent).filter(p=>p!==child)); toast("Lien retiré"); }
-  else if(ancestors(parent).has(child)){ toast("Impossible : ça créerait une boucle"); return; }
-  else { save(child,[...preOf(child),parent]); toast(`« ${BY[parent].n} » est maintenant prérequis de « ${BY[child].n} »`); }
+  if(preOf(child).includes(parent)){ toast("Ce lien existe déjà"); return; }
+  if(ancestors(parent).has(child)){ toast("Impossible : ça créerait une boucle"); return; }
+  save(child,[...preOf(child),parent]); toast(`« ${BY[parent].n.slice(0,30)} » → « ${BY[child].n.slice(0,30)} »`);
 }
+document.addEventListener("pointerdown",e=>{
+  const cv=e.target.closest&&e.target.closest("#tcanvas.editing"); if(!cv||!S._tree) return;
+  const plug=e.target.closest("[data-plug]"), nd=e.target.closest("[data-tn]"); if(!plug&&!nd) return;
+  const z=S.tz||1; const r=cv.querySelector(".tzoom").getBoundingClientRect(); const pt=ev=>[(ev.clientX-r.left)/z,(ev.clientY-r.top)/z];
+  const id=(plug||nd).dataset.plug||(plug||nd).dataset.tn; const [px,py]=pt(e);
+  TD={mode:plug?"link":"move",id,el:nd,sx:px,sy:py,ox:S._tree.P[id][0],oy:S._tree.P[id][1],moved:false,pt,cv};
+  try{ (plug||nd).setPointerCapture(e.pointerId); }catch(x){}
+  e.preventDefault();
+});
+document.addEventListener("pointermove",e=>{ if(!TD) return; const [x,y]=TD.pt(e); const dx=x-TD.sx, dy=y-TD.sy; if(Math.abs(dx)+Math.abs(dy)>4) TD.moved=true;
+  if(TD.mode==="move"){ const nx=Math.max(0,TD.ox+dx), ny=Math.max(0,TD.oy+dy); TD.el.style.left=nx+"px"; TD.el.style.top=ny+"px"; TD.nx=nx; TD.ny=ny; }
+  else { const a=S._tree.P[TD.id]; const x1=a[0]+TN.w, y1=a[1]+TN.h/2; const d=$("#tdrag"); if(d) d.setAttribute("d",`M${x1},${y1} L${x},${y}`);
+    document.querySelectorAll(".tnode.target").forEach(n=>n.classList.remove("target")); const over=document.elementFromPoint(e.clientX,e.clientY); const tn=over&&over.closest&&over.closest("[data-tn]"); if(tn&&tn.dataset.tn!==TD.id) tn.classList.add("target"); }
+});
+document.addEventListener("pointerup",e=>{ if(!TD) return; const d=TD; TD=null;
+  if(d.mode==="move"){ if(!d.moved){ treeTap(d.id); return; } const k=treeKey(); const pos={...(((CT(k)||{}).pos)||{})}; Object.entries(S._tree.P).forEach(([id,p])=>{ if(!pos[id]) pos[id]=[Math.round(p[0]),Math.round(p[1])]; }); pos[d.id]=[Math.round(d.nx),Math.round(d.ny)]; store.set("content",k,{pos}); return; }
+  const over=document.elementFromPoint(e.clientX,e.clientY); const tn=over&&over.closest&&over.closest("[data-tn]"); const dd=$("#tdrag"); if(dd) dd.setAttribute("d","");
+  if(tn&&tn.dataset.tn!==d.id) treeLink(d.id,tn.dataset.tn); else render();
+});
+function treeTap(id){ S.treeEdge=null; S.treeSel=S.treeSel===id?null:id; render(); }
 function vFichePo(pid){
   const p=posteOf(pid); const used=minimalEls(ALLE.filter(e=>postesIds(e.id).includes(pid)&&(e.a==="sol"||Array.isArray(elC(e.id).postes))));
   return `<button class="back" data-go="biblio--appr">‹ Apprentissage</button>
@@ -789,7 +885,7 @@ function vFicheEx(x){
 function edInit(kind,id){
   const key=`${kind}_${id}`; if(S.ed&&S.ed.key===key) return S.ed;
   let d;
-  if(kind==="el"){ const c=elC(id); const tb=v=>rowsOf(v).map(r=>r.join(" | ")); d={n:BY[id].n,hide:!!c.hide,desc:c.desc||"",cue:c.cue||"",obj:c.obj||[],pts:c.pts||[],phasesNote:c.phasesNote||"",phases:tb(c.phases),rythme:c.rythme||"",preTech:tb(c.preTech),prePhys:tb(c.prePhys),err:tb(c.err),aide:c.aide||"",parade:c.parade||"",progNote:c.progNote||"",prog:c.prog||[],jeunes:c.jeunes||"",prepaNote:c.prepaNote||"",prepa:tb(c.prepa),check:c.check||[],checkNote:c.checkNote||"",fiche:c.fiche||"",pre:[...preOf(id)],next:nextOf(id).map(e=>e.id),postes:[...postesIds(id)],media:[...(c.media||[])]}; }
+  if(kind==="el"){ const c=elC(id); const tb=v=>rowsOf(v).map(r=>r.join(" | ")); d={n:BY[id].n,hide:!!c.hide,stv:BY[id].stv||"",v:BY[id].v||"",cats:(BY[id].c||[]).filter(x=>/^C\d$/.test(x)).join(" "),desc:c.desc||"",cue:c.cue||"",obj:c.obj||[],pts:c.pts||[],phasesNote:c.phasesNote||"",phases:tb(c.phases),rythme:c.rythme||"",preTech:tb(c.preTech),prePhys:tb(c.prePhys),err:tb(c.err),aide:c.aide||"",parade:c.parade||"",progNote:c.progNote||"",prog:c.prog||[],jeunes:c.jeunes||"",prepaNote:c.prepaNote||"",prepa:tb(c.prepa),check:c.check||[],checkNote:c.checkNote||"",fiche:c.fiche||"",pre:[...preOf(id)],next:nextOf(id).map(e=>e.id),postes:[...postesIds(id)],media:[...(c.media||[])]}; }
   else if(kind==="po"){ const p=posteOf(id)||{n:""}; d={n:p.n||"",desc:p.desc||"",fam:p.fam||"",mat:p.mat||"",steps:p.steps||[],crit:p.crit||[],secu:p.secu||"",media:[...(p.media||[])]}; }
   else { const x=exOf(id)||{}; d={n:x.n||"",dos:x.dos||"",mat:Array.isArray(x.mat)?x.mat.join(", "):(x.mat||""),exec:x.exec||[],keys:x.keys||[],bio:x.bio||"",media:[...(x.media||[])]}; }
   d.rev=(CT(`${kind}_${id}`)||{}).rev||""; S.ed={key,kind,id,d:JSON.parse(JSON.stringify(d))}; return S.ed;
@@ -821,28 +917,33 @@ function vEdit(kind,id){
   let body="";
   if(kind==="el"){ const e=BY[id]; const all=Object.keys(POSTE_DEF).concat(Object.keys(S.content||{}).filter(k=>k.startsWith("po_")).map(k=>k.slice(3))).filter((v,i,a)=>a.indexOf(v)===i&&!d.postes.includes(v)&&posteOf(v));
     const fTab=(f,l,cols)=>`<label class="f">${l}<span class="xs muted">Une ligne par entrée, colonnes séparées par « | » : ${cols}</span><textarea class="inp" data-keep data-ed="${f}" data-list="1">${esc((d[f]||[]).join("\n"))}</textarea></label>`;
-    body=`<section class="card"><h2><span aria-hidden="true">🏷️</span>Nom et affichage</h2>${fText("n","Nom de l'élément",d.n)}<span class="xs muted">Nom d'origine : ${esc(BY[id].n0||BY[id].n)}${BY[id].stv?` · code ${BY[id].stv}`:""}</span>
-      <label class="row" style="gap:8px;align-items:center"><input type="checkbox" data-ed="hide" ${d.hide?"checked":""} style="width:22px;height:22px"> <span class="small">Masquer cet élément (doublon, erreur) : il n'apparaît plus dans Évaluer, les groupes et l'arbre</span></label></section>
-    <section class="card"><h2><span aria-hidden="true">📖</span>Présentation</h2>
-      ${fArea("desc","Présentation (paragraphes séparés par une ligne vide)",d.desc)}${fText("cue","Phrase pour le gymnaste",d.cue)}</section>
-    <section class="card"><h2><span aria-hidden="true">🎯</span>Objectifs et points clés</h2>${fArea("obj","Objectifs pédagogiques",d.obj,"",1)}${fArea("pts","Points clés (« Titre : explication »)",d.pts,"",1)}</section>
-    <section class="card"><h2><span aria-hidden="true">🎞️</span>Décomposition par phase</h2>${fText("phasesNote","Remarque",d.phasesNote)}${fTab("phases","Phases","Phase | Action | Posture | Regard | Consigne")}${fText("rythme","Rythme",d.rythme)}</section>
-    <section class="card"><h2><span aria-hidden="true">⚠️</span>Erreurs fréquentes</h2>${fTab("err","Erreurs","Erreur | Phase | Cause | Correction")}</section>
-    <section class="card"><h2><span aria-hidden="true">🧩</span>Apprentissage et sécurité</h2>${fArea("aide","Aide manuelle",d.aide)}${fArea("parade","Parade et sécurité",d.parade)}${fText("progNote","Règle de progression",d.progNote)}${fArea("prog","Étapes de progression",d.prog,"",1)}${fArea("jeunes","Conseil jeunes gymnastes",d.jeunes)}</section>
-    <section class="card"><h2><span aria-hidden="true">💪</span>Prérequis et préparation physique</h2>${fTab("preTech","Prérequis techniques","Prérequis | Test")}${fTab("prePhys","Prérequis physiques","Prérequis | Test")}${fText("prepaNote","Dosage par défaut",d.prepaNote)}${fTab("prepa","Exercices spécifiques","Exercice | Cible | Dosage")}</section>
-    <section class="card"><h2><span aria-hidden="true">✅</span>Checklist de validation</h2>${fText("checkNote","Remarque",d.checkNote)}${fArea("check","Critères",d.check,"",1)}${fText("fiche","Document lié (facultatif)",d.fiche,"https://…")}</section>
-    <section class="card"><h2><span aria-hidden="true">🔗</span>Progression</h2><h3>Prérequis (avant)</h3>${edElPicker(d.pre,"pre",e.a)}<h3>Éléments suivants (après)</h3>${edElPicker(d.next,"next",e.a)}
-      <span class="xs muted">Ajouter un élément suivant ajoute « ${esc(e.n)} » à ses prérequis. Ces liens servent aussi au calcul des besoins.</span></section>
-    <section class="card"><h2><span aria-hidden="true">🧩</span>Exercices d'apprentissage</h2><div class="divide">${d.postes.map((p,i)=>`<div class="li"><span class="num">${i+1}</span><span class="grow"><span class="t small">${esc(posteOf(p).n)}</span></span><button class="btn link" data-edp="up|${i}" ${i?"":"disabled"} aria-label="Monter">↑</button><button class="btn link danger" data-edp="del|${i}" aria-label="Retirer">✕</button></div>`).join("")||`<span class="small muted">Aucun poste.</span>`}</div>
+    const sec=(ic,ti,html)=>`<section class="card"><h2><span aria-hidden="true">${ic}</span>${ti}</h2>${html}</section>`;
+    /* même ordre que la fiche affichée */
+    body=sec("🏷️","Nom, code et affichage",`${fText("n","Nom de l'élément",d.n)}
+      <div class="form"><label class="f">Code STV<input class="inp" data-keep data-ed="stv" inputmode="numeric" value="${esc(d.stv)}" placeholder="10901"></label>
+      <label class="f">Valeur EST<select class="sel" data-ed="v"><option value="">-</option>${["B","L","4","5","6","7"].map(v=>`<option ${d.v===v?"selected":""}>${v}</option>`).join("")}</select></label></div>
+      <label class="f">Catégories du programme<input class="inp" data-keep data-ed="cats" value="${esc(d.cats)}" placeholder="C1 C2"></label>
+      <label class="row" style="gap:8px;align-items:center"><input type="checkbox" data-ed="hide" ${d.hide?"checked":""} style="width:22px;height:22px"> <span class="small">Masquer cet élément (doublon, erreur) : il n'apparaît plus dans Évaluer, les groupes et l'arbre</span></label>`)
+    +`__MEDIA__`
+    +sec("📖","Présentation",`${fArea("desc","Présentation (paragraphes séparés par une ligne vide)",d.desc)}${fText("cue","Phrase pour le gymnaste",d.cue)}`)
+    +sec("🎯","Objectifs et points clés",`${fArea("obj","Objectifs pédagogiques",d.obj,"",1)}${fArea("pts","Points clés (« Titre : explication »)",d.pts,"",1)}`)
+    +sec("🎞️","Décomposition par phase",`${fText("phasesNote","Remarque",d.phasesNote)}${fTab("phases","Phases","Phase | Action | Posture | Regard | Consigne")}${fText("rythme","Rythme",d.rythme)}`)
+    +sec("🔗","Progression",`<h3>Avant : prérequis</h3>${edElPicker(d.pre,"pre",e.a)}<h3>Après : éléments suivants</h3>${edElPicker(d.next,"next",e.a)}
+      <span class="xs muted">Ajouter un élément suivant ajoute « ${esc(e.n)} » à ses prérequis. Ces liens servent aussi au calcul des besoins.</span>
+      ${fTab("preTech","Prérequis techniques","Prérequis | Test")}${fTab("prePhys","Prérequis physiques","Prérequis | Test")}`)
+    +sec("⚠️","Erreurs fréquentes et corrections",fTab("err","Erreurs","Erreur | Phase | Cause | Correction"))
+    +sec("🧩","Exercices d'apprentissage",`<div class="divide">${d.postes.map((p,i)=>`<div class="li"><span class="num">${i+1}</span><span class="grow"><span class="t small">${esc(posteOf(p).n)}</span></span><button class="btn link" data-edp="up|${i}" ${i?"":"disabled"} aria-label="Monter">↑</button><button class="btn link danger" data-edp="del|${i}" aria-label="Retirer">✕</button></div>`).join("")||`<span class="small muted">Aucun poste.</span>`}</div>
       <select class="sel" data-edpadd aria-label="Ajouter un poste existant"><option value="">+ Ajouter un poste existant…</option>${all.map(p=>`<option value="${p}">${esc(posteOf(p).n)}</option>`).join("")}</select>
       <div class="row"><input class="inp" id="edNewPo" data-keep placeholder="Ou créer un nouveau poste" style="flex:1" aria-label="Nouveau poste"><button class="btn" id="edNewPoBtn" type="button">Créer</button></div>
-      <span class="xs muted">Après l'enregistrement, ouvre un poste pour compléter sa fiche (consignes, image, vidéo).</span></section>`; }
+      ${fArea("aide","Aide manuelle",d.aide)}${fArea("parade","Parade et sécurité",d.parade)}${fText("progNote","Règle de progression",d.progNote)}${fArea("prog","Étapes de progression",d.prog,"",1)}${fArea("jeunes","Conseil jeunes gymnastes",d.jeunes)}`)
+    +sec("💪","Préparation physique",`${fText("prepaNote","Dosage par défaut",d.prepaNote)}${fTab("prepa","Exercices spécifiques","Exercice | Cible | Dosage")}`)
+    +sec("✅","Checklist de validation",`${fText("checkNote","Remarque",d.checkNote)}${fArea("check","Critères",d.check,"",1)}${fText("fiche","Document lié (facultatif)",d.fiche,"https://…")}`); }
   else if(kind==="po") body=`<section class="card"><h2><span aria-hidden="true">🧩</span>Poste</h2>${fText("n","Nom",d.n)}${fArea("desc","But du poste",d.desc,"Ce que le poste fait travailler")}
       <label class="f">Famille<select class="sel" data-keep data-ed="fam"><option value="">(selon les éléments)</option>${FAM_ORDER.map(f=>`<option ${d.fam===f?"selected":""}>${esc(f)}</option>`).join("")}</select></label>
       ${fArea("mat","Mise en place et matériel",d.mat,"Plinth bas, tapis, repères au sol…")}${fArea("steps","Consignes",d.steps,"",1)}${fArea("crit","Critères de réussite",d.crit,"",1)}${fArea("secu","Sécurité et parade",d.secu)}</section>`;
   else body=`<section class="card"><h2><span aria-hidden="true">💪</span>Exercice</h2>${fText("n","Nom",d.n)}${fText("dos","Dosage",d.dos,"3 x 10")}${fText("mat","Matériel",d.mat)}${fArea("exec","Exécution",d.exec,"",1)}${fArea("keys","Points clés et erreurs",d.keys,"",1)}${fArea("bio","Pourquoi ça marche",d.bio)}</section>`;
   return `<button class="back" data-go="${back}">‹ Annuler</button><header class="hero"><div class="row"><span class="tag">Modification</span></div><h1>${esc(title||"Sans nom")}</h1></header>
-  ${body}${edMedia(d)}
+  ${kind==="el"?body.replace("__MEDIA__",edMedia(d)):body+edMedia(d)}
   <section class="card"><h2><span aria-hidden="true">💬</span>Remarques de relecture</h2>${fArea("rev","Ce qui ne va pas, à corriger ou à appliquer aussi aux autres fiches (visible seulement par l'admin)",d.rev,"Ex. trop long ; on dit plutôt « … » ; il manque la parade")}</section>
   <div class="row sticky"><button class="btn primary" id="edSave">Enregistrer</button><button class="btn" data-go="${back}">Annuler</button>${CT(ed.key)?`<button class="btn link danger" id="edReset">Annuler toutes mes modifications</button>`:""}</div>`;
 }
@@ -851,7 +952,7 @@ function edSave(){
   if(ed.kind==="el"){
     const prevNext=nextOf(ed.id).map(e=>e.id);
     const tb=v=>clean(v).map(l=>l.split("|").map(x=>x.trim()));
-    const nm=String(d.n||"").trim(); const out={...(CT(key)||{}),n:nm&&nm!==(BY[ed.id].n0||"")?nm.slice(0,160):"",hide:!!d.hide,desc:d.desc.trim(),cue:d.cue.trim(),obj:clean(d.obj),pts:clean(d.pts),phasesNote:d.phasesNote.trim(),phases:tb(d.phases),rythme:d.rythme.trim(),preTech:tb(d.preTech),prePhys:tb(d.prePhys),err:tb(d.err),aide:d.aide.trim(),parade:d.parade.trim(),progNote:d.progNote.trim(),prog:clean(d.prog),jeunes:d.jeunes.trim(),prepaNote:d.prepaNote.trim(),prepa:tb(d.prepa),check:clean(d.check),checkNote:d.checkNote.trim(),rev:(d.rev||"").trim(),fiche:okUrl(d.fiche.trim())?d.fiche.trim():"",pre:d.pre,postes:d.postes,media:d.media};
+    const nm=String(d.n||"").trim(); const out={...(CT(key)||{}),...elIdent(BY[ed.id],{n:nm,stv:d.stv,v:d.v,cats:d.cats}),hide:!!d.hide,desc:d.desc.trim(),cue:d.cue.trim(),obj:clean(d.obj),pts:clean(d.pts),phasesNote:d.phasesNote.trim(),phases:tb(d.phases),rythme:d.rythme.trim(),preTech:tb(d.preTech),prePhys:tb(d.prePhys),err:tb(d.err),aide:d.aide.trim(),parade:d.parade.trim(),progNote:d.progNote.trim(),prog:clean(d.prog),jeunes:d.jeunes.trim(),prepaNote:d.prepaNote.trim(),prepa:tb(d.prepa),check:clean(d.check),checkNote:d.checkNote.trim(),rev:(d.rev||"").trim(),fiche:okUrl(d.fiche.trim())?d.fiche.trim():"",pre:d.pre,postes:d.postes,media:d.media};
     store.set("content",key,out);
     for(const x of d.next.filter(x=>!prevNext.includes(x))) store.set("content","el_"+x,{...(CT("el_"+x)||{}),pre:[...new Set([...preOf(x),ed.id])]});
     for(const x of prevNext.filter(x=>!d.next.includes(x))) store.set("content","el_"+x,{...(CT("el_"+x)||{}),pre:preOf(x).filter(p=>p!==ed.id)});
@@ -994,13 +1095,14 @@ function render(){
   const keepSc=[...V.querySelectorAll(".tscroll,.pillbar")].map(el=>[el.scrollTop,el.scrollLeft]);
   V.innerHTML=({evaluer:vEvaluer,groupes:vGroupes,seance:vSeance,presences:vPresences,biblio:vBiblio,gymnastes:vGymnastes})[r](id);
   V.querySelectorAll(".tscroll,.pillbar").forEach((el,i)=>{ if(keepSc[i]){ el.scrollTop=keepSc[i][0]; el.scrollLeft=keepSc[i][1]; } });
-  if(V.querySelector(".tree")) requestAnimationFrame(drawTree);
   window.scrollTo(0,sy);
 }
 
 /* ---------- interactions ---------- */
+document.addEventListener("click",e=>{ const ed=e.target.closest&&e.target.closest("[data-edge]"); if(ed&&document.querySelector("#tcanvas.editing")){ S.treeEdge=S.treeEdge===ed.dataset.edge?null:ed.dataset.edge; S.treeSel=null; render(); } });
 document.addEventListener("toggle",e=>{ const d=e.target; if(d.dataset&&d.dataset.acc!==undefined){ S.acc=S.acc||{}; S.acc[d.dataset.acc]=d.open; } },true);
 document.addEventListener("click",e=>{
+  const nd=e.target.closest("[data-tn]"); if(nd&&!nd.closest("#tcanvas.editing")){ treeTap(nd.dataset.tn); return; }
   const t=e.target.closest("button"); if(!t) return;
   if(t.dataset.set){ const [gid,eid,s]=t.dataset.set.split("|"); const cur=stOf(S.gymnasts[gid],eid); if(+s!==cur) setStatus(gid,eid,+s); return; }
   if(t.id==="syncNow"){ pull().then(()=>toast(S.syncErr?"Pas de réseau":"Synchronisé")); return; }
@@ -1044,10 +1146,14 @@ document.addEventListener("click",e=>{
   if(t.dataset.ps){ const [key,gid,s]=t.dataset.ps.split("|"); const cur=pst(S.attendance[key],gid); setPres(key,gid,cur.s===s?{s:"",late:0,early:0}:{s}); return; }
   if(t.dataset.pf){ const [key,gid,f]=t.dataset.pf.split("|"); const cur=pst(S.attendance[key],gid); setPres(key,gid,{[f]:cur[f]?0:(f==="late"?10:15)}); return; }
   if(t.dataset.engin){ S.engin=t.dataset.engin; S.fam="Tous"; try{ localStorage.setItem("getuma-engin",S.engin); }catch(x){} render(); return; }
-  if(t.dataset.tn){ treeTap(t.dataset.tn); return; }
+  if(t.dataset.etf!==undefined){ S.etF=t.dataset.etf; render(); return; }
+  if(t.dataset.tz!==undefined){ const v=+t.dataset.tz; S.tz=v===0?1:Math.min(1.6,Math.max(.4,Math.round(((S.tz||1)+v*.2)*10)/10)); render(); return; }
+  if(t.dataset.tall!==undefined){ S.treeAll=!S.treeAll; render(); return; }
+  if(t.dataset.treset!==undefined){ store.del("content",treeKey()); toast("Arbre réorganisé"); return; }
+  if(t.dataset.edgedel!==undefined){ const [p,c]=S.treeEdge.split(">"); store.set("content","el_"+c,{...(CT("el_"+c)||{}),pre:preOf(c).filter(x=>x!==p)}); S.treeEdge=null; toast("Lien supprimé"); return; }
   if(t.dataset.tf!==undefined){ S.treeFam=t.dataset.tf; S.treeSel=null; render(); return; }
-  if(t.dataset.tedit!==undefined){ S.treeEdit=!S.treeEdit; render(); return; }
-  if(t.dataset.tdir){ S.treeDir=t.dataset.tdir; render(); return; }
+  if(t.dataset.tedit!==undefined){ S.treeEdit=!S.treeEdit; S.treeEdge=null; render(); return; }
+
   if(t.dataset.okrev){ const k=t.dataset.okrev; store.set("content",k,{...(CT(k)||{}),ok:today()}); toast("Merci, fiche relue ✓"); if(location.hash!=="#biblio") go("biblio"); return; }
   if(t.dataset.skiprev){ const sk=LS.get("getuma-revskip",{}); const ids=sk.d===today()?sk.ids||[]:[]; LS.set("getuma-revskip",{d:today(),ids:[...ids,t.dataset.skiprev]}); render(); return; }
   if(t.dataset.scroll){ const el=document.getElementById(t.dataset.scroll); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); return; }
@@ -1074,6 +1180,7 @@ document.addEventListener("change",e=>{
   else if(t.dataset.edpadd!==undefined){ if(t.value){ S.ed.d.postes.push(t.value); render(); } }
   else if(t.id==="edFile"){ if(t.files&&t.files[0]) uploadMedia(t.files[0]); }
   else if(t.dataset.extra!==undefined){ S.extra=t.checked; try{ localStorage.setItem("getuma-extra",S.extra?"1":"0"); }catch(x){} render(); }
+  else if(t.dataset.elcell){ const [id,f]=t.dataset.elcell.split("|"); saveElCell(id,f,t.type==="checkbox"?t.checked:t.value); }
   else if(t.dataset.pm){ const [key,gid,f]=t.dataset.pm.split("|"); let v=t.value.trim(); if(f!=="m") v=Math.max(0,Math.min(300,parseInt(v,10)||0)); else v=v.slice(0,80); setPres(key,gid,{[f]:v}); }
   else if(t.dataset.pres){ const [key,gid]=t.dataset.pres.split("|"); togglePresence(key,gid,t.checked); }
   else if(t.dataset.prescoach){ const [key,name]=t.dataset.prescoach.split("|"); togglePresence(key,null,t.checked,name); }
@@ -1099,7 +1206,7 @@ document.addEventListener("submit",e=>{
   if(f.id==="planForm"){ S.planEngins=[...document.querySelectorAll("[data-pe]")].filter(x=>x.checked).map(x=>x.dataset.pe); S.planFree=$("#pFree").value; const free=S.planFree.split(/\n/).map(l=>l.trim()).filter(Boolean).map(l=>{ const m=l.match(/^(.*?)[\s:;,-]+(\d{1,3})\s*(min)?$/i); return m?{t:m[1].trim().slice(0,40)||"Bloc libre",min:Math.min(180,+m[2])}:{t:l.slice(0,40),min:10}; });
     S.plan=buildPlan({engins:S.planEngins,free,date:$("#pDate").value,start:$("#pStart").value||"18:00",dur:+$("#pDur").value||90,warm:+$("#pWarm").value||0,cool:+$("#pCool").value||0,rot:+$("#pRot").value||0,coaches:[...document.querySelectorAll("[data-coach]")].filter(x=>x.checked).map(x=>x.dataset.coach)}); go("seance","nouvelle"); }
 });
-document.addEventListener("input",e=>{ if(e.target.dataset&&e.target.dataset.ed&&S.ed){ S.ed.d[e.target.dataset.ed]=e.target.type==="checkbox"?e.target.checked:e.target.dataset.list?e.target.value.split("\n"):e.target.value; return; } if(e.target.id==="bibQ"){ S.bibQ=e.target.value; clearTimeout(S._qt); S._qt=setTimeout(()=>{ const pos=e.target.selectionStart; const keep=document.activeElement===e.target; e.target.blur(); render(); const el=$("#bibQ"); if(el&&keep){ el.focus(); try{ el.setSelectionRange(pos,pos); }catch(x){} } },250); } });
+document.addEventListener("input",e=>{ if(e.target.id==="etQ"){ S.etQ=e.target.value; clearTimeout(S._etq); S._etq=setTimeout(()=>{ const el=e.target; const pos=el.selectionStart; el.blur(); render(); const n=$("#etQ"); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch(x){} } },300); return; } if(e.target.dataset&&e.target.dataset.ed&&S.ed){ S.ed.d[e.target.dataset.ed]=e.target.type==="checkbox"?e.target.checked:e.target.dataset.list?e.target.value.split("\n"):e.target.value; return; } if(e.target.id==="bibQ"){ S.bibQ=e.target.value; clearTimeout(S._qt); S._qt=setTimeout(()=>{ const pos=e.target.selectionStart; const keep=document.activeElement===e.target; e.target.blur(); render(); const el=$("#bibQ"); if(el&&keep){ el.focus(); try{ el.setSelectionRange(pos,pos); }catch(x){} } },250); } });
 window.addEventListener("hashchange",()=>{ window.scrollTo(0,0); if(location.hash==="#gymnastes--admin") S.admin=null; if(location.hash==="#gymnastes--tableau") S.tOrd=null; if(!location.hash.startsWith("#biblio--edit-")) S.ed=null; render(); });
 
 /* ---------- démarrage ---------- */

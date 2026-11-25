@@ -97,10 +97,21 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   Plusieurs éléments du programme partagent légitimement un code EST (variantes : 10606, 10106, 10901, 20206, 20207, 20304, 20306, 20301).
   Admin : nom modifiable (`content.el_X.n`, nom d'origine dans `e.n0`) et « Masquer » (`hide`) dans l'éditeur ; `syncEls()` applique
   à chaque rendu. Les éléments masqués disparaissent d'Évaluer, des besoins, des groupes et de l'arbre (l'admin les voit dans Biblio).
+- Tableau des éléments (Biblio › Tableau, admin, route `biblio--table`) : nom, code, valeur, catégories, masqué, lien fiche ;
+  filtres Tous / Programme / Doublons / Sans code / Modifiés / Masqués ; saisie `saveElCell`. Identité éditable aussi dans l'éditeur
+  (`elIdent` : n, stv, v, c ; valeurs d'origine n0/stv0/v0/c0 dans `syncEls`). Un nom modifié REMPLACE le nom (pas de double nom
+  affiché) ; à chaque export « Mes corrections », intégrer les nouveaux noms dans RAW pour qu'ils deviennent l'origine.
+- Éditeur d'élément : sections dans l'ordre de la fiche affichée (identité, médias, présentation, objectifs, phases, progression,
+  erreurs, exercices d'apprentissage, préparation physique, checklist, remarques de relecture).
 - Arbre : panneau admin « Vérifications automatiques » (`treeChecks`) : même nom, prérequis demandé dans une catégorie plus haute,
   élément du programme C2+ sans prérequis.
 - Relecture du jour : ordre Sol, Anneaux, Saut, Reck, Barres parallèles, Barres asymétriques (choix d'Hippolyte), 1 fiche par jour.
-- Arbre de progression (Biblio › Arbre) : étapes calculées par profondeur des prérequis, liens SVG ; admin : « Modifier les liens »,
+- Arbre de progression (Biblio › Arbre), refait le 25.11.2026 : canevas façon timeline Notion, flux de gauche à droite (colonne = étape).
+  `treeLayout` : chaque groupe d'éléments reliés forme son propre petit arbre (empilés), ordre par barycentres (8 passes) pour limiter
+  les croisements ; éléments sans lien en grille sous « Sans lien pour l'instant ». Liens = courbes de Bézier (droite → gauche).
+  Admin, mode « Modifier » : glisser une case (positions dans `content.tree_{hash(engin|famille)}` = {pos:{id:[x,y]}}),
+  tirer le rond bleu à droite d'une case vers un autre élément = lien (`treeLink`, boucles refusées), toucher un lien = « Supprimer le lien »,
+  « Réorganiser automatiquement » efface les positions. Zoom `S.tz`. Bascule « Catalogue EST complet ».
   toucher un élément puis un autre ajoute/retire un lien (prérequis ou suivant), boucles refusées.
 - Postes « Pour : » et « Utilisé pour » : seulement les éléments dont aucun prérequis (direct ou indirect) n'est déjà listé (`minimalEls`).
 - Exercices de renforcement sans média : la 1re vidéo Instagram source (@get.gymnast.fit) est intégrée via l'embed officiel.
