@@ -91,6 +91,15 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   + f3 pont, f4 gainage). Générées par /tmp/fiches/*.py (helper lib.py : fiche(), P()). Les fiches inline (FICHE_DEF) restent prioritaires.
   Fiches hors Sol plus compactes ; plusieurs descriptions d'éléments de barres ou d'anneaux sont à valider par Hippolyte (relecture du jour).
   Détail des postes d'origine : `POSTE_INFO` (par nom). « Version d'origine » = FICHE_DEF + catalogue ; le doc `content` surcharge.
+- Noms et doublons (25.11.2026) : codes ajoutés aux éléments du programme qui avaient un équivalent EST (anneaux e86-e109,
+  saut e41) ; e53 = 10108 (et non 10109, qui est la version tenue --) ; e65 sans code ; e70 = « Roulé en av. au siège écarté » (10602) ;
+  x11006 = « Souplesse en av. sur un bras » (nom FR incomplet dans le PDF, corrigé d'après l'allemand « Bögli vw. einarmig »).
+  Plusieurs éléments du programme partagent légitimement un code EST (variantes : 10606, 10106, 10901, 20206, 20207, 20304, 20306, 20301).
+  Admin : nom modifiable (`content.el_X.n`, nom d'origine dans `e.n0`) et « Masquer » (`hide`) dans l'éditeur ; `syncEls()` applique
+  à chaque rendu. Les éléments masqués disparaissent d'Évaluer, des besoins, des groupes et de l'arbre (l'admin les voit dans Biblio).
+- Arbre : panneau admin « Vérifications automatiques » (`treeChecks`) : même nom, prérequis demandé dans une catégorie plus haute,
+  élément du programme C2+ sans prérequis.
+- Relecture du jour : ordre Sol, Anneaux, Saut, Reck, Barres parallèles, Barres asymétriques (choix d'Hippolyte), 1 fiche par jour.
 - Arbre de progression (Biblio › Arbre) : étapes calculées par profondeur des prérequis, liens SVG ; admin : « Modifier les liens »,
   toucher un élément puis un autre ajoute/retire un lien (prérequis ou suivant), boucles refusées.
 - Postes « Pour : » et « Utilisé pour » : seulement les éléments dont aucun prérequis (direct ou indirect) n'est déjà listé (`minimalEls`).
