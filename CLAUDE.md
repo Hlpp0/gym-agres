@@ -97,8 +97,8 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   Plusieurs éléments du programme partagent légitimement un code EST (variantes : 10606, 10106, 10901, 20206, 20207, 20304, 20306, 20301).
   Admin : nom modifiable (`content.el_X.n`, nom d'origine dans `e.n0`) et « Masquer » (`hide`) dans l'éditeur ; `syncEls()` applique
   à chaque rendu. Les éléments masqués disparaissent d'Évaluer, des besoins, des groupes et de l'arbre (l'admin les voit dans Biblio).
-- Tableau des éléments (Biblio › Tableau, admin, route `biblio--table`) : nom, code, valeur, catégories, masqué, lien fiche ;
-  filtres Tous / Programme / Doublons / Sans code / Modifiés / Masqués ; saisie `saveElCell`. Identité éditable aussi dans l'éditeur
+- Tableau des éléments (Biblio › Tableau, admin, route `biblio--table`) : Code (1re colonne), Nom (texte entier, zone qui grandit),
+  Famille, Valeur, Programme, Origine, État (Doublon / Sans code / Modifié), Masqué ; saisie `saveElCell`. Identité éditable aussi dans l'éditeur
   (`elIdent` : n, stv, v, c ; valeurs d'origine n0/stv0/v0/c0 dans `syncEls`). Un nom modifié REMPLACE le nom (pas de double nom
   affiché) ; à chaque export « Mes corrections », intégrer les nouveaux noms dans RAW pour qu'ils deviennent l'origine.
 - Éditeur d'élément : sections dans l'ordre de la fiche affichée (identité, médias, présentation, objectifs, phases, progression,
@@ -106,13 +106,13 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 - Arbre : panneau admin « Vérifications automatiques » (`treeChecks`) : même nom, prérequis demandé dans une catégorie plus haute,
   élément du programme C2+ sans prérequis.
 - Relecture du jour : ordre Sol, Anneaux, Saut, Reck, Barres parallèles, Barres asymétriques (choix d'Hippolyte), 1 fiche par jour.
-- Arbre de progression (Biblio › Arbre), refait le 25.11.2026 : canevas façon timeline Notion, flux de gauche à droite (colonne = étape).
-  `treeLayout` : chaque groupe d'éléments reliés forme son propre petit arbre (empilés), ordre par barycentres (8 passes) pour limiter
-  les croisements ; éléments sans lien en grille sous « Sans lien pour l'instant ». Liens = courbes de Bézier (droite → gauche).
-  Admin, mode « Modifier » : glisser une case (positions dans `content.tree_{hash(engin|famille)}` = {pos:{id:[x,y]}}),
-  tirer le rond bleu à droite d'une case vers un autre élément = lien (`treeLink`, boucles refusées), toucher un lien = « Supprimer le lien »,
-  « Réorganiser automatiquement » efface les positions. Zoom `S.tz`. Bascule « Catalogue EST complet ».
-  toucher un élément puis un autre ajoute/retire un lien (prérequis ou suivant), boucles refusées.
+- Arbre de progression (Biblio › Arbre), refait le 25.11.2026 : tableau blanc plein écran (`.wrap.board`, fond pointillé,
+  barre d'outils flottante `.tbar`, zoom `.tzbar` dont ⤢ = ajuster à la largeur, panneau bas `.tpanel`). Flux de gauche à droite.
+  `treeLayout` : un petit arbre par groupe d'éléments reliés, ordre par barycentres ; éléments sans lien en grille en bas.
+  Liens : comme avant (choix d'Hippolyte) : mode « Modifier », toucher un élément, choisir « Prérequis » ou « Suivant » (`S.treeDir`),
+  puis toucher un autre élément = ajoute ou retire le lien (`treeTap`, boucles refusées). Toucher un lien = « Supprimer le lien ».
+  Glisser une case la déplace (positions dans `content.tree_{hash(engin|famille)}`), « Réorganiser » efface les positions.
+  Souris : glisser le fond = se déplacer, Ctrl + molette = zoom. Vérifications automatiques derrière le bouton ⚠️.
 - Postes « Pour : » et « Utilisé pour » : seulement les éléments dont aucun prérequis (direct ou indirect) n'est déjà listé (`minimalEls`).
 - Exercices de renforcement sans média : la 1re vidéo Instagram source (@get.gymnast.fit) est intégrée via l'embed officiel.
 - Exercices d'apprentissage : ateliers par famille (POSTES_FAM) et par élément (POSTES_EL).
@@ -148,6 +148,23 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
 
 ## Règles de rédaction des fiches
 - (à compléter à partir des corrections d'Hippolyte)
+
+## Interface (décisions du 25.11.2026)
+- Préférences d'Hippolyte : contenu large (`.wrap` max 1080 px, marges 14 px sur mobile, `.wide` sans limite pour les tableaux),
+  dans les tableaux tout le texte doit rester lisible (pas de texte coupé), filtres et tris dans l'ENTÊTE des colonnes, jamais
+  dans un sélecteur hors du tableau.
+- Filtres de colonnes génériques : `th(tid,col)` + `tfApply(tid,rows,cols)` + feuille `tfMenu` (tri, cases à cocher des valeurs ou
+  « Contient… »). État dans `S.tf[tid]` (localStorage `getuma-tf`). Colonnes : {k,l,get,enum,num,sv (valeur de tri),order,sl (libellés de tri)}.
+  Utilisé par : tableau des éléments (`el`), tableau des gymnastes (`gym`), « Qui sait faire quoi » (`rec`).
+- Navigation : 5 onglets : Aujourd'hui (`#accueil`, page par défaut), Évaluer, Entraînement (Séance / Présences / Groupes, sous-onglets
+  `trainNav`), Biblio, Équipe. Pastille de synchro (`syncPill`) dans chaque en-tête : À jour / n en attente / Hors ligne.
+- Aujourd'hui (`vAccueil`) : séance du jour, présences (« Tous présents » en 1 tap), 3 besoins prioritaires, progression, fiche du jour (admin).
+- « Qui sait faire quoi » (`gymnastes--recap`, `vRecap`) : gymnastes en lignes, éléments en colonnes, statut au croisement ;
+  « Évaluer dans le tableau » : toucher une case = statut suivant. Case hachurée = pas demandé dans sa catégorie.
+- Fiche gymnaste : « Éléments par catégorie » (`catCard`, maîtrisés et acquis sur les éléments exigés de chaque catégorie, engin choisi)
+  et « Progression mois par mois » (`chart`, acquis/maîtrisés à la fin de chaque mois, tous engins, depuis `log`).
+- Évaluation rapide : glisser une rangée `[data-sw]` vers la droite = statut suivant, vers la gauche = précédent (page élément et fiche gymnaste).
+- Attention : ne jamais réutiliser la classe `.wrap` (conteneur principal) sur un autre élément.
 
 ## Conventions importantes
 - Langue : tout en français. Jamais de tiret long (em dash) dans les textes.
