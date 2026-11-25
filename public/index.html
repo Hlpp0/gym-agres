@@ -115,6 +115,7 @@ body.boardmode{overflow:hidden}
 .tscroll.rec{max-height:72vh}
 .ccat{display:grid;gap:8px}.ccrow{display:grid;grid-template-columns:34px minmax(60px,1fr) auto;gap:4px 10px;align-items:center;padding:6px 8px;border-radius:8px}.ccrow .tag{grid-column:2/-1;justify-self:start}.ccrow.cur{background:var(--soft)}.ccrow.nxt{background:#f4f9f5}.ccrow .bar{height:10px;border-radius:5px}
 .selbar .btn,.revbar .btn{min-height:40px}
+.pen{all:unset;cursor:pointer;font-size:13px;opacity:.45;padding:0 4px;vertical-align:middle}.pen:hover,.pen:focus-visible{opacity:1}
 .tip{background:var(--soft);border-radius:10px;padding:8px 10px;line-height:1.5}
 .selbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--soft);border-radius:10px;padding:8px 10px}.selbar .btn{margin-left:auto;min-height:34px;padding:4px 12px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 4px 0 2px}.dot.pre{background:#2383e2}.dot.nxt{background:var(--s3i)}
 .card ol a,.card p a{color:var(--ink);text-decoration-color:var(--line);text-underline-offset:3px}
@@ -243,12 +244,22 @@ const FAM = {
   "Les saltos en avant":"Saltos avant"
 };
 const FAM_ORDER=["Appuis renversés","Force et gainage","Souplesse","Balances","Sauts","Roulés","Bascules","Cercles de jambes","Renversements latéraux","Ponts et souplesses","Saltos arrière","Saltos avant"]; /* ordre des codes EST 101 à 112 */
-const famOf=e=>!e?"Autres":(e.a==="sol"?(FAM[e.s]||"Autres"):(e.s||(minCat(e)<99?`Éléments ${CATS[minCat(e)]}`:"Autres éléments")));
-const famRank=f=>{ const i=FAM_ORDER.indexOf(f); if(i>=0) return i; const n=EST_FAMNUM[S.engin+"|"+f]; if(n) return 100+n%100; const m=String(f).match(/C(\d)$/); return m?300+ +m[1]:400; };
+/* familles : clé interne stable (famKey) + nom affiché modifiable par l'admin (content.fams = {n:{"engin|clé":nom}, o:{engin:[clés]}}) ;
+   un élément peut être déplacé dans une autre famille (content.el_X.fam = clé) */
+const FAM_LABEL={"Appuis renversés":"Stations, positions et appuis renversés","Force et gainage":"Éléments de force","Souplesse":"Positions assises ou sièges","Balances":"Balances","Sauts":"Sauts","Roulés":"Roulés","Bascules":"Bascules","Cercles de jambes":"Cercles de jambes","Renversements latéraux":"Renversements et saltos latéraux","Ponts et souplesses":"Renversements en avant et en arrière","Saltos arrière":"Saltos en arrière","Saltos avant":"Saltos en avant"};
+const famKey0=e=>!e?"Autres":(e.a==="sol"?(FAM[e.s]||"Autres"):(e.s||(minCat(e)<99?`Éléments ${CATS[minCat(e)]}`:"Autres éléments")));
+const famKey=e=>{ if(!e) return "Autres"; const c=S.content&&S.content["el_"+e.id]; return (c&&c.fam)||famKey0(e); };
+const FAMS=()=>(S.content&&S.content.fams)||{};
+const famName=(a,k)=>(FAMS().n||{})[a+"|"+k]||(a==="sol"&&FAM_LABEL[k])||k;
+const famOf=e=>!e?"Autres":famName(e.a,famKey(e));
+let FAMREV={}; /* nom affiché -> clé, par engin (recalculé à chaque rendu) */
+const keyOfFam=(f,a=S.engin)=>(FAMREV[a]&&FAMREV[a][f])||f;
+const famRank=f=>{ const k=keyOfFam(f); const o=(FAMS().o||{})[S.engin]; if(o){ const j=o.indexOf(k); if(j>=0) return j-1000; } const i=FAM_ORDER.indexOf(k); if(i>=0) return i; const n=EST_FAMNUM[S.engin+"|"+k]; if(n) return 100+n%100; const m=String(k).match(/C(\d)$/); return m?300+ +m[1]:400; };
 const codeOf=e=>/^\d{5}$/.test(e.stv||"")?+e.stv:(e.base?0:99999);
 /* noms modifiés et éléments masqués par l'admin (content el_{id}.n / .hide), appliqués à chaque rendu */
 function syncEls(){ for(const e of ALLE){ if(e.n0===undefined){ e.n0=e.n; e.stv0=e.stv||""; e.v0=e.v||""; e.c0=e.c||[]; } const c=S.content&&S.content["el_"+e.id];
-  e.n=(c&&c.n)||e.n0; e.stv=c&&c.stv!=null?c.stv:e.stv0; e.v=c&&c.v!=null?c.v:e.v0; e.c=c&&Array.isArray(c.c)?c.c:e.c0; e.hide=!!(c&&c.hide); } }
+  e.n=(c&&c.n)||e.n0; e.stv=c&&c.stv!=null?c.stv:e.stv0; e.v=c&&c.v!=null?c.v:e.v0; e.c=c&&Array.isArray(c.c)?c.c:e.c0; e.hide=!!(c&&c.hide); }
+  FAMREV={}; for(const e of ALLE){ const k=famKey(e); (FAMREV[e.a]=FAMREV[e.a]||{})[famName(e.a,k)]=k; } }
 /* identité d'un élément (nom, code, valeur, catégories) : on n'enregistre que ce qui diffère de l'origine */
 function elIdent(e,{n,stv,v,cats}){ const o={}; n=String(n||"").trim().slice(0,160); stv=String(stv||"").replace(/\D/g,"").slice(0,5); v=String(v||"");
   const cs=String(cats||"").toUpperCase().match(/C[1-7]/g)||[]; const c=[...new Set(cs)].sort().concat((e.c0||[]).filter(x=>!/^C\d$/.test(x)));
@@ -283,7 +294,7 @@ const POSTES_FAM={
   "Balances":["Tenue avec une main à l'espalier","Tenue libre 2 s","Renforcement de la jambe levée"],
   "Force et gainage":["Équerre sur blocs","Compression assise","Hollow et planche"]
 };
-let postesFor=id=>POSTES_EL[id]||POSTES_FAM[famOf(BY[id])]||["Éducatif ciblé","Élément avec parade","Élément seul, 3 essais"];
+let postesFor=id=>POSTES_EL[id]||POSTES_FAM[famKey(BY[id])]||["Éducatif ciblé","Élément avec parade","Élément seul, 3 essais"];
 
 /* ---------- utilitaires ---------- */
 const $=(s,r=document)=>r.querySelector(s);
@@ -398,7 +409,7 @@ function vEvaluer(id){
   ${enginBar()}
   <div class="pillbar" role="group" aria-label="Famille">${fams.map(f=>`<button class="pill" data-fam="${esc(f)}" aria-pressed="${f===S.fam}">${esc(f)}</button>`).join("")}</div>
   ${list.length?"":noGyms()}
-  ${Object.entries(by).map(([f,arr])=>`<div class="sec"><div class="label">${esc(f)}</div><div class="divide">${arr.map(e=>{ const tgt=list.filter(g=>forGym(e,g)); const ok=tgt.filter(g=>effSt(g,e.id)>=3).length; const wip=tgt.filter(g=>{const s=stOf(g,e.id);return s===1||s===2;}).length; return `<button class="li" data-go="evaluer--${e.id}"><span class="grow"><span class="t">${esc(e.n)}</span><span class="d">${e.base?"Base GETUMA":[valTag(e),catRange(e)?"Programme "+catRange(e):""].filter(Boolean).join(" · ")}${wip?` · ${wip} en cours`:""}</span></span><span class="nm small muted">${ok}/${tgt.length}</span><span class="chev">›</span></button>`; }).join("")}</div></div>`).join("")}`;
+  ${Object.entries(by).map(([f,arr])=>`<div class="sec"><div class="label">${esc(f)}${famPen(f)}</div><div class="divide">${arr.map(e=>{ const tgt=list.filter(g=>forGym(e,g)); const ok=tgt.filter(g=>effSt(g,e.id)>=3).length; const wip=tgt.filter(g=>{const s=stOf(g,e.id);return s===1||s===2;}).length; return `<button class="li" data-go="evaluer--${e.id}"><span class="grow"><span class="t">${esc(e.n)}</span><span class="d">${e.base?"Base GETUMA":[valTag(e),catRange(e)?"Programme "+catRange(e):""].filter(Boolean).join(" · ")}${wip?` · ${wip} en cours`:""}</span></span><span class="nm small muted">${ok}/${tgt.length}</span><span class="chev">›</span></button>`; }).join("")}</div></div>`).join("")}`;
 }
 function rankIn(eid,list,s){ return list.filter(g=>effSt(g,eid)===s).sort((a,b)=>{ const ra=(a.rk||{})[eid], rb=(b.rk||{})[eid]; return (ra??1e6)-(rb??1e6)||(a.name||"").localeCompare(b.name||"","fr"); }); }
 function vElement(e,list){
@@ -409,7 +420,7 @@ function vElement(e,list){
     return `<div class="li evrow" ${S.rankMode?"":`data-sw="${g.id}|${e.id}"`}>${S.rankMode&&arr.length>1?`<span class="num">${i+1}</span>`:""}<span class="grow"><span class="t">${esc(g.name)}</span><span class="d">${g.cat}${imp?" · catégorie inférieure, considéré acquis":""}${miss?" · prérequis manquant":""}</span></span>
     ${S.rankMode?(arr.length>1?`<span class="rk"><button class="btn link" data-rk="${e.id}|${g.id}|-1|${s}" aria-label="Monter ${esc(g.name)}" ${i===0?"disabled":""}>↑</button><button class="btn link" data-rk="${e.id}|${g.id}|1|${s}" aria-label="Descendre ${esc(g.name)}" ${i===arr.length-1?"disabled":""}>↓</button></span>`:""):pick(g.id,e.id)}</div>`; };
   return `<button class="back" data-go="evaluer">‹ Éléments</button>
-  <header class="hero"><div class="row">${/^\d{5}$/.test(e.stv||"")?`<span class="tag">N° ${e.stv}</span>`:""}${e.base?`<span class="tag">Base GETUMA</span>`:`${valTag(e)?`<span class="tag val" title="${e.v==="L"?"Liaison":"Valeur EST"}">${e.v==="L"?"Liaison":valTag(e)}</span>`:""}${catRange(e)?`<span class="tag" title="Exigée dans le programme">Programme ${catRange(e)}</span>`:""}`}${e.i?`<span class="tag">Pos. i</span>`:""}${e.h?`<span class="tag">Tenue 2 s</span>`:""}</div><h1>${esc(e.n)}</h1>
+  <header class="hero"><div class="row">${/^\d{5}$/.test(e.stv||"")?`<span class="tag">N° ${e.stv}</span>`:""}${e.base?`<span class="tag">Base GETUMA</span>`:`${valTag(e)?`<span class="tag val" title="${e.v==="L"?"Liaison":"Valeur EST"}">${e.v==="L"?"Liaison":valTag(e)}</span>`:""}${catRange(e)?`<span class="tag" title="Exigée dans le programme">Programme ${catRange(e)}</span>`:""}`}${e.i?`<span class="tag">Pos. i</span>`:""}${e.h?`<span class="tag">Tenue 2 s</span>`:""}</div><h1>${esc(e.n)}${isAdmin()?` <button class="pen" data-go="biblio--edit-el-${e.id}" aria-label="Modifier l'élément" title="Modifier">✏️</button>`:""}</h1>
    <div class="row"><button class="btn ${S.rankMode?"primary":""}" data-rankmode>${S.rankMode?"Terminer le classement":"Classer du meilleur au moins bon"}</button><a class="btn" href="#biblio--el-${e.id}" style="text-decoration:none">Fiche technique</a></div></header>
   ${S.rankMode?"":`<p class="xs muted" style="margin:0">⚡ Évaluation rapide : glisse un nom vers la droite pour monter d'un statut, vers la gauche pour descendre.</p>`}
   ${S.rankMode?`<p class="small muted" style="margin:0">Dans chaque statut, monte en haut le gymnaste le plus proche de réussir (ou qui le fait le mieux).</p>`:legend()}
@@ -586,7 +597,7 @@ const NIV=["","Débutant","Intermédiaire","Avancé"];
 const ENGIN_ZONES={anneaux:["Épaules","Tronc (gainage)","Poignets & mains"],reck:["Épaules","Poignets & mains","Tronc (gainage)"],bp:["Épaules","Tronc (gainage)","Poignets & mains"],ba:["Épaules","Tronc (gainage)","Hanches"],saut:["Jambes","Pieds & chevilles","Tronc (gainage)"]};
 const FAM_ZONES={"Roulés":["Tronc (gainage)","Colonne & dos","Cou"],"Appuis renversés":["Épaules","Poignets & mains","Tronc (gainage)"],"Renversements latéraux":["Épaules","Hanches","Tronc (gainage)"],"Ponts et souplesses":["Colonne & dos","Épaules"],"Sauts":["Jambes","Pieds & chevilles"],"Souplesse":["Hanches"],"Balances":["Hanches","Jambes","Pieds & chevilles"],"Force et gainage":["Tronc (gainage)","Hanches"]};
 const norm=s=>String(s||"").normalize("NFD").replace(/\p{M}/gu,"").toLowerCase();
-function suggestEx(e,n=6){ if(!EX) return []; const z=FAM_ZONES[famOf(e)]||ENGIN_ZONES[e.a]||[]; const wantSoup=famOf(e)==="Souplesse"||famOf(e)==="Ponts et souplesses"; return EX.filter(x=>x.zone.some(v=>z.includes(v))&&x.niv<=2).map(x=>({x,s:x.zone.reduce((s,v,i)=>s+(z.includes(v)?(3-z.indexOf(v))*(i===0?2:1):0),0)+(wantSoup&&x.type.includes("Souplesse")?2:0)+(x.type.includes("Force")&&!wantSoup?1:0)-x.niv})).sort((a,b)=>b.s-a.s).slice(0,n).map(o=>o.x); }
+function suggestEx(e,n=6){ if(!EX) return []; const z=FAM_ZONES[famKey(e)]||ENGIN_ZONES[e.a]||[]; const wantSoup=famKey(e)==="Souplesse"||famKey(e)==="Ponts et souplesses"; return EX.filter(x=>x.zone.some(v=>z.includes(v))&&x.niv<=2).map(x=>({x,s:x.zone.reduce((s,v,i)=>s+(z.includes(v)?(3-z.indexOf(v))*(i===0?2:1):0),0)+(wantSoup&&x.type.includes("Souplesse")?2:0)+(x.type.includes("Force")&&!wantSoup?1:0)-x.niv})).sort((a,b)=>b.s-a.s).slice(0,n).map(o=>o.x); }
 /* ---------- fiches techniques intégrées à GETUMA (version d'origine, modifiable par l'admin) ---------- */
 const FICHE_DEF={
  e58:{
@@ -636,7 +647,7 @@ const POSTE_DEF={}; const pidOf=n=>{ const id=hashId(n); POSTE_DEF[id]=POSTE_DEF
 const POSTE_GEN=["Éducatif ciblé","Élément avec parade","Élément seul, 3 essais"].map(pidOf);
 Object.values(POSTES_EL).flat().forEach(pidOf); Object.values(POSTES_FAM).flat().forEach(pidOf);
 const posteOf=pid=>{ const d=POSTE_DEF[pid], c=CT("po_"+pid); if(!d&&!c) return null; return {id:pid,...(d||{}),...(c||{})}; };
-const postesIds=eid=>{ const c=elC(eid); if(Array.isArray(c.postes)) return c.postes.filter(posteOf); const e=BY[eid]; return (POSTES_EL[eid]||(e&&POSTES_FAM[famOf(e)])||null)?.map(pidOf)||POSTE_GEN; };
+const postesIds=eid=>{ const c=elC(eid); if(Array.isArray(c.postes)) return c.postes.filter(posteOf); const e=BY[eid]; return (POSTES_EL[eid]||(e&&POSTES_FAM[famKey(e)])||null)?.map(pidOf)||POSTE_GEN; };
 postesFor=id=>postesIds(id).map(p=>posteOf(p).n);
 const exOf=id=>EXBY[id]?{...EXBY[id],...(CT("ex_"+id)||{})}:null;
 const lines=v=>Array.isArray(v)?v:String(v||"").split("\n").map(s=>s.trim()).filter(Boolean);
@@ -715,6 +726,7 @@ function vBiblio(id){
   if(id&&id.startsWith("ex-")){ loadEx(); return EX?(EXBY[id.slice(3)]?vFicheEx(exOf(id.slice(3))):`<button class="back" data-go="biblio--renfo">‹ Renforcement</button><div class="empty">Exercice introuvable.</div>`):`<div class="empty">Chargement…</div>`; }
   if(id==="elements") return vBibElements();
   if(id==="arbre") return vTree();
+  if(id==="familles") return isAdmin()?vFamilles():`<div class="empty">Réservé à l'administrateur.</div>`;
   if(id==="table") return isAdmin()?vElTable():`<div class="empty">Réservé à l'administrateur.</div>`;
   if(id==="appr") return vBibAppr();
   if(id==="renfo") return vBibRenfo();
@@ -725,7 +737,8 @@ function vBiblio(id){
   ${tile("biblio--appr","🧩","Exercices d'apprentissage","Postes et éducatifs pour apprendre chaque élément")}
   ${tile("biblio--renfo","💪","Renforcement et mobilité","172 exercices de préparation physique spécifique")}
   ${tile("biblio--arbre","🌳","Arbre de progression","Qui mène à quoi : prérequis et éléments suivants")}
-  ${isAdmin()?tile("biblio--table","🗂️","Tableau des éléments","Vérifier et corriger rapidement noms, codes, valeurs et catégories"):""}</div>
+  ${isAdmin()?tile("biblio--table","🗂️","Tableau des éléments","Vérifier et corriger rapidement noms, codes, familles, valeurs et catégories"):""}
+  ${isAdmin()?tile("biblio--familles","🏷️","Familles d'éléments","Renommer, réordonner, créer des familles"):""}</div>
   ${isAdmin()?`<section class="card"><h2><span aria-hidden="true">📤</span>Mes corrections</h2><p class="small">${Object.keys(S.content||{}).filter(k=>/^(el|po|ex)_/.test(k)).length} fiche(s) modifiée(s), dont ${Object.values(S.content||{}).filter(v=>v&&v.rev).length} avec une remarque de relecture. Exporte-les pour que Claude les intègre et applique tes corrections aux autres fiches.</p><div class="row"><button class="btn primary" id="expContent">Télécharger le fichier</button><button class="btn" id="copyContent">Copier</button></div></section>`:""}`;
 }
 function vBibElements(){
@@ -735,7 +748,8 @@ function vBibElements(){
   const fk=f=>Math.min(...by[f].map(e=>e.base?99999:codeOf(e))); const fams=Object.keys(by).sort((a,b)=>fk(a)-fk(b));
   return `<button class="back" data-go="biblio">‹ Bibliothèque</button><h1 style="font-size:22px">Éléments · ${enginName(S.engin)}</h1>${enginBar()}
   <input class="inp" id="bibQ" type="search" placeholder="Rechercher un nom ou un code" value="${esc(S.bibQ||"")}" aria-label="Rechercher un élément">
-  ${fams.map(f=>`<section class="card flush"><h2>${esc(f)}</h2><div class="divide">${by[f].map(e=>`<button class="li elrow" data-go="biblio--el-${e.id}"><span class="code">${/^\d{5}$/.test(e.stv||"")?e.stv:e.base?"GETUMA":"·"}</span><span class="tag cat val">${valTag(e)||"·"}</span><span class="grow t">${esc(e.n)}${e.hide?` <span class="tag">masqué</span>`:""}${!e.base&&catRange(e)?`<span class="d">Programme ${catRange(e)}</span>`:""}</span><span class="media">${mediaIcons(elC(e.id).media,ficheOf(e)||elC(e.id).desc)}</span><span class="chev">›</span></button>`).join("")}</div></section>`).join("")||`<div class="empty">Aucun élément trouvé.</div>`}
+  ${isAdmin()?`<div class="row"><button class="btn" data-go="biblio--familles">✏️ Familles</button><button class="btn" data-go="biblio--table">🗂️ Tableau des éléments</button></div>`:""}
+  ${fams.map(f=>`<section class="card flush"><h2>${esc(f)}${famPen(f)}</h2><div class="divide">${by[f].map(e=>`<button class="li elrow" data-go="biblio--el-${e.id}"><span class="code">${/^\d{5}$/.test(e.stv||"")?e.stv:e.base?"GETUMA":"·"}</span><span class="tag cat val">${valTag(e)||"·"}</span><span class="grow t">${esc(e.n)}${e.hide?` <span class="tag">masqué</span>`:""}${!e.base&&catRange(e)?`<span class="d">Programme ${catRange(e)}</span>`:""}</span><span class="media">${mediaIcons(elC(e.id).media,ficheOf(e)||elC(e.id).desc)}</span><span class="chev">›</span></button>`).join("")}</div></section>`).join("")||`<div class="empty">Aucun élément trouvé.</div>`}
   <p class="xs muted" style="margin:0">Code STV, catégories où l'élément est demandé, nom. Icônes : image, vidéo, fiche technique.</p>`;
 }
 const boldLead=s=>{ const m=String(s).match(/^([^:]{2,60}) : (.+)$/s); return m?`<b>${esc(m[1])}</b> : ${esc(m[2])}`:esc(s); };
@@ -815,12 +829,37 @@ document.addEventListener("click",e=>{ const m=e.target.closest&&e.target.closes
   if(b.dataset.tfall){ m.querySelectorAll("[data-tfv]").forEach(x=>x.checked=b.dataset.tfall==="1"); return; }
   if(b.hasAttribute("data-tfclear")){ st.f=st.f||{}; st.f[o.k]=null; if(st.s&&st.s.k===o.k) st.s=null; saveTf(); S.thOpen=null; renderTfMenu(); render(); return; }
   if(b.hasAttribute("data-tfok")){ tfCommit(); return; } });
-document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.matches&&e.target.matches("textarea.cell")){ e.preventDefault(); e.target.blur(); return; } if(e.key==="Enter"&&e.target.id==="tfText"){ e.preventDefault(); tfCommit(); } if(e.key==="Escape"&&S.thOpen){ S.thOpen=null; renderTfMenu(); } });
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.matches&&e.target.matches("textarea.cell,[data-famname]")){ e.preventDefault(); e.target.blur(); return; } if(e.key==="Enter"&&e.target.id==="tfText"){ e.preventDefault(); tfCommit(); } if(e.key==="Escape"&&S.thOpen){ S.thOpen=null; renderTfMenu(); } });
 const tfReset=tid=>`${Object.values((S.tf[tid]||{}).f||{}).some(v=>v&&(Array.isArray(v)?v.length:v))?`<button class="btn link" data-tfreset="${tid}">Effacer tous les filtres</button>`:""}`;
 /* zones de texte qui grandissent avec leur contenu (tableaux : tout le texte reste lisible) */
 function autoGrow(root=document){ root.querySelectorAll("textarea.grow").forEach(x=>{ x.style.height="auto"; x.style.height=x.scrollHeight+"px"; }); }
 document.addEventListener("input",e=>{ if(e.target.matches&&e.target.matches("textarea.grow")) autoGrow(e.target.parentNode); });
 
+
+/* ---------- familles d'éléments (admin) ---------- */
+const famPen=f=>isAdmin()?` <button class="pen" data-famren="${esc(S.engin)}|${esc(keyOfFam(f))}" aria-label="Renommer la famille ${esc(f)}" title="Renommer">✏️</button>`:"";
+function famKeys(a){ const ks=[...new Set(ALLE.filter(e=>e.a===a).map(famKey))]; ((FAMS().x||{})[a]||[]).forEach(k=>{ if(!ks.includes(k)) ks.push(k); });
+  const prev=S.engin; S.engin=a; ks.sort((x,y)=>famRank(famName(a,x))-famRank(famName(a,y))); S.engin=prev; return ks; }
+function saveFams(patch){ const f=FAMS(); store.set("content","fams",{n:{...(f.n||{})},o:{...(f.o||{})},x:{...(f.x||{})},...patch}); }
+function setFamName(a,k,name){ const f=FAMS(); const n={...(f.n||{})}; name=String(name||"").trim().slice(0,80); if(!name||name===((a==="sol"&&FAM_LABEL[k])||k)) delete n[a+"|"+k]; else n[a+"|"+k]=name; saveFams({n}); }
+function vFamilles(){
+  const a=S.engin; const ks=famKeys(a); const cnt=k=>ALLE.filter(e=>e.a===a&&famKey(e)===k).length;
+  return `<button class="back" data-go="biblio">‹ Bibliothèque</button>${header("Familles d'éléments",enginName(a))}${enginBar()}
+  <p class="small muted" style="margin:0">Modifie le nom directement dans la case (enregistré en quittant la case). Les flèches changent l'ordre partout dans l'app. Pour déplacer un élément dans une autre famille : colonne « Famille » du <a href="#biblio--table">tableau des éléments</a>.</p>
+  <div class="divide">${ks.map((k,i)=>{ const dflt=(a==="sol"&&FAM_LABEL[k])||k; const nm=famName(a,k); return `<div class="li"><span class="grow" style="display:grid;gap:2px"><textarea class="inp grow" rows="1" style="resize:none;overflow:hidden;min-height:42px" data-keep data-famname="${esc(a)}|${esc(k)}" aria-label="Nom de la famille">${esc(nm)}</textarea><span class="xs muted">${cnt(k)} élément${cnt(k)>1?"s":""}${nm!==dflt?` · nom d'origine : ${esc(dflt)}`:""}</span></span>
+   <span class="row" style="flex-wrap:nowrap;gap:2px"><button class="btn icon" data-famord="${esc(k)}|-1" ${i===0?"disabled":""} aria-label="Monter">↑</button><button class="btn icon" data-famord="${esc(k)}|1" ${i===ks.length-1?"disabled":""} aria-label="Descendre">↓</button></span></div>`; }).join("")}</div>
+  <form id="famNew" class="row"><input class="inp" id="famNewIn" data-keep placeholder="Nouvelle famille" style="flex:1"><button class="btn">Ajouter</button></form>
+  ${(FAMS().o||{})[a]?`<button class="btn link" data-famreset>Revenir à l'ordre des codes EST</button>`:""}`;
+}
+function famRenameBox(a,k){ const m=document.createElement("div"); m.className="modal"; m.innerHTML=`<section role="dialog" aria-modal="true"><label class="f" for="frIn">Nom de la famille<input class="inp" id="frIn" value="${esc(famName(a,k))}"></label><span class="xs muted">Nom d'origine : ${esc((a==="sol"&&FAM_LABEL[k])||k)}</span><div class="row" style="justify-content:flex-end"><button class="btn" data-no>Annuler</button><button class="btn primary" data-yes>Renommer</button></div></section>`;
+  const ok=()=>{ const v=$("#frIn",m).value; m.remove(); setFamName(a,k,v); toast("Famille renommée"); };
+  m.addEventListener("click",e=>{ if(e.target===m||e.target.closest("[data-no]")) m.remove(); if(e.target.closest("[data-yes]")) ok(); }); m.addEventListener("keydown",e=>{ if(e.key==="Enter") ok(); });
+  document.body.appendChild(m); setTimeout(()=>{ const i=$("#frIn",m); i.focus(); i.select(); },30); }
+function newFamBox(cb){ const m=document.createElement("div"); m.className="modal"; m.innerHTML=`<section role="dialog" aria-modal="true"><label class="f" for="nfIn">Nom de la nouvelle famille<input class="inp" id="nfIn"></label><div class="row" style="justify-content:flex-end"><button class="btn" data-no>Annuler</button><button class="btn primary" data-yes>Créer</button></div></section>`;
+  const ok=()=>{ const v=$("#nfIn",m).value.trim().slice(0,80); m.remove(); if(v) cb(v); };
+  m.addEventListener("click",e=>{ if(e.target===m||e.target.closest("[data-no]")){ m.remove(); cb(null); } if(e.target.closest("[data-yes]")) ok(); }); m.addEventListener("keydown",e=>{ if(e.key==="Enter") ok(); });
+  document.body.appendChild(m); setTimeout(()=>$("#nfIn",m).focus(),30); }
+function addFam(a,name){ const f=FAMS(); const x={...(f.x||{})}; const ks=famKeys(a); if(ks.some(k=>famName(a,k)===name)) return keyOfFam(name,a); x[a]=[...(x[a]||[]),name]; const o={...(f.o||{})}; o[a]=[...ks,name]; saveFams({x,o}); return name; }
 /* ---------- tableau des éléments (admin) : correction rapide, comme le tableau des gymnastes ---------- */
 function vElTable(){
   const q=norm(S.etQ||"");
@@ -839,7 +878,7 @@ function vElTable(){
   <div class="tscroll"><table class="tbl etbl"><thead><tr>${cols.map(c=>th("el",c,c.k==="code"?"stick":"")).join("")}<th></th></tr></thead><tbody>
   ${list.map(e=>`<tr class="${isDup(e)?"dupr":""}${e.hide?" hidr":""}"><td class="stick"><input class="cell code" inputmode="numeric" data-elcell="${e.id}|stv" value="${esc(e.stv||"")}" aria-label="Code"></td>
    <td class="wide"><textarea class="cell grow" rows="1" data-elcell="${e.id}|n" aria-label="Nom">${esc(e.n)}</textarea></td>
-   <td class="small">${esc(famOf(e))}</td>
+   <td><select class="cell" data-elcell="${e.id}|fam" aria-label="Famille" style="min-width:150px">${famKeys(S.engin).map(k=>`<option value="${esc(k)}" ${famKey(e)===k?"selected":""}>${esc(famName(S.engin,k))}</option>`).join("")}<option value="__new">+ Nouvelle famille…</option></select></td>
    <td><select class="cell" data-elcell="${e.id}|v" aria-label="Valeur"><option value="">-</option>${["B","L","4","5","6","7"].map(v=>`<option ${e.v===v?"selected":""}>${v}</option>`).join("")}</select></td>
    <td><input class="cell" style="width:96px" data-elcell="${e.id}|cats" value="${esc(cats(e))}" placeholder="C1 C2" aria-label="Catégories"></td>
    <td class="small">${e.x?"EST":"Programme"}</td>
@@ -850,10 +889,11 @@ function vElTable(){
 function saveElCell(id,field,val){ const e=BY[id]; if(!e) return; const cur={n:e.n,stv:e.stv,v:e.v,cats:(e.c||[]).filter(x=>/^C\d$/.test(x)).join(" ")};
   const k="el_"+id; const base={...(CT(k)||{})};
   if(field==="hide"){ store.set("content",k,{...base,hide:!!val}); return; }
+  if(field==="fam"){ if(val==="__new"){ newFamBox(n=>{ if(!n){ render(); return; } const key=addFam(e.a,n); setTimeout(()=>store.set("content",k,{...(CT(k)||{}),fam:key===famKey0(e)?null:key}),0); }); return; } store.set("content",k,{...base,fam:val===famKey0(e)?null:val}); return; }
   cur[field]=val; store.set("content",k,{...base,...elIdent(e,cur)}); }
 /* ---------- arbre de progression : canevas interactif (étapes en lignes, ordre qui limite les croisements) ---------- */
 const TN={w:160,h:72,gx:22,gy:84,pad:24,cx:70,ry:14}; /* flux de gauche à droite : colonnes = étapes */
-const treeKey=()=>"tree_"+hashId(S.engin+"|"+(S.treeFam||""));
+const treeKey=()=>"tree_"+hashId(S.engin+"|"+(S.treeFam?keyOfFam(S.treeFam):""));
 function treeLayout(all){
   /* 1) composantes (groupes d'éléments reliés entre eux), chacune dessinée comme un petit arbre, empilées de haut en bas
      2) dans chaque arbre : étapes par profondeur, ordre par barycentres pour limiter les croisements
@@ -1334,6 +1374,9 @@ document.addEventListener("click",e=>{
   if(t.dataset.fam){ S.fam=t.dataset.fam; render(); return; }
   if(t.dataset.max){ S.maxSize=+t.dataset.max; saveUi(); render(); return; }
   if(t.dataset.level){ S.level=t.dataset.level; saveUi(); render(); return; }
+  if(t.dataset.famren){ const [a,k]=t.dataset.famren.split("|"); famRenameBox(a,k); return; }
+  if(t.dataset.famord){ const [k,d]=t.dataset.famord.split("|"); const ks=famKeys(S.engin); const i=ks.indexOf(k), j=i+ +d; if(i<0||j<0||j>=ks.length) return; [ks[i],ks[j]]=[ks[j],ks[i]]; saveFams({o:{...(FAMS().o||{}),[S.engin]:ks}}); return; }
+  if(t.hasAttribute("data-famreset")){ const o={...(FAMS().o||{})}; delete o[S.engin]; saveFams({o}); return; }
   if(t.dataset.recfam){ S.recFam=t.dataset.recfam; render(); return; }
   if(t.hasAttribute("data-recedit")){ S.recEdit=!S.recEdit; render(); return; }
   if(t.dataset.cyc){ const [gid,eid]=t.dataset.cyc.split("|"); setStatus(gid,eid,(stOf(S.gymnasts[gid],eid)+1)%5); return; }
@@ -1386,6 +1429,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.id==="groupSel"){ S.groupId=t.value; saveUi(); render(); }
+  else if(t.dataset.famname){ const [a,k]=t.dataset.famname.split("|"); setFamName(a,k,t.value); toast("Nom enregistré"); }
   else if(t.id==="treeEngin"){ S.engin=t.value; S.treeFam=""; S.treeSel=null; try{ localStorage.setItem("getuma-engin",S.engin); }catch(x){} render(); }
   else if(t.dataset.cat){ store.patch("gymnasts",t.dataset.cat,{cat:t.value}); }
   else if(t.dataset.cell){ const [gid,f]=t.dataset.cell.split("|"); let v=t.value.trim(); if(f==="annee"){ v=v.replace(/\D/g,"").slice(0,4); if(v&&(+v<1950||+v>new Date().getFullYear())){ toast("Année invalide"); t.value=yearOf(S.gymnasts[gid]||{}); return; } } if(f==="bdns"||f==="fsg") v=v.replace(/[^\d]/g,"").slice(0,12); else v=v.slice(0,f==="adresse"?120:60); const g=S.gymnasts[gid]; if(!g||(g[f]||"")===v) return; const patch={[f]:v}; if(f==="prenom"||f==="nom"){ const [p0,n0]=splitName(g); const pr=f==="prenom"?v:p0, nm=f==="nom"?v:n0; patch.prenom=pr; patch.nom=nm; const full=`${pr} ${nm}`.trim(); if(full) patch.name=full; } store.patch("gymnasts",gid,patch); }
@@ -1406,6 +1450,7 @@ document.addEventListener("change",e=>{
   else if(t.dataset.userclub){ const [u]=t.dataset.userclub.split("|"); const cl=[...document.querySelectorAll(`[data-userclub^="${u}|"]`)].filter(x=>x.checked).map(x=>x.dataset.userclub.split("|")[1]); adminAction({action:"update",uid:u,clubs:cl},"Sociétés mises à jour"); }
   else if(t.id==="gName"){ const v=t.value.trim().slice(0,60)||"Groupe"; t.blur(); store.patch("groups",S.groupId,{name:v}); }
 });
+document.addEventListener("submit",e=>{ if(e.target.id!=="famNew") return; e.preventDefault(); const v=($("#famNewIn").value||"").trim().slice(0,80); if(!v) return; $("#famNewIn").value=""; addFam(S.engin,v); toast("Famille ajoutée"); });
 document.addEventListener("submit",e=>{
   if(e.target.id==="newPoste"){ e.preventDefault(); const n=($("#newPosteN").value||"").trim(); if(!n) return; const pid="n"+uid(); store.set("content","po_"+pid,{n,fam:$("#newPosteF").value}); go("biblio","edit-po-"+pid); return; }
   e.preventDefault(); const f=e.target;

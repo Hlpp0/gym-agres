@@ -103,6 +103,12 @@ L'historique Git conserve l'ancien site (dernier commit : e9f782c).
   affiché) ; à chaque export « Mes corrections », intégrer les nouveaux noms dans RAW pour qu'ils deviennent l'origine.
 - Éditeur d'élément : sections dans l'ordre de la fiche affichée (identité, médias, présentation, objectifs, phases, progression,
   erreurs, exercices d'apprentissage, préparation physique, checklist, remarques de relecture).
+- Familles d'éléments (25.11.2026) : clé interne stable `famKey(e)` (FAM pour le Sol, famille EST sinon ; `content.el_X.fam` déplace un
+  élément) et nom affiché `famOf(e)` = `famName(engin,clé)`. Noms par défaut du Sol dans `FAM_LABEL` (proches des familles EST ;
+  les anciens noms courts comme « Souplesse » ou « Ponts et souplesses » étaient faux). Admin : doc `content.fams` =
+  {n:{"engin|clé":nom}, o:{engin:[clés ordonnées]}, x:{engin:[familles créées]}}. Biblio › Familles d'éléments (`vFamilles`) : renommer,
+  ↑↓, créer ; crayon ✏️ (`famPen`) sur chaque titre de famille (Évaluer, Biblio) ; colonne Famille modifiable dans le tableau des éléments.
+  Toujours utiliser `famKey` pour les tables internes (POSTES_FAM, FAM_ZONES, FAM_ORDER) et `famOf` pour l'affichage ; `keyOfFam(nom)` pour revenir à la clé.
 - Arbre : panneau admin « Vérifications automatiques » (`treeChecks`) : même nom, prérequis demandé dans une catégorie plus haute,
   élément du programme C2+ sans prérequis.
 - Relecture du jour : ordre Sol, Anneaux, Saut, Reck, Barres parallèles, Barres asymétriques (choix d'Hippolyte), 1 fiche par jour.
